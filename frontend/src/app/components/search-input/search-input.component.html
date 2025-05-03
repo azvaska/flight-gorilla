@@ -1,0 +1,34 @@
+<app-popover
+  #popover="appPopover"
+  [popoverRelativePosition]="popoverRelativePosition"
+  [popoverWidth]="popoverWidth"
+>
+  <input
+    #input
+    popover-trigger
+    class="text-lg font-normal placeholder:font-light placeholder:text-muted-foreground text-zinc-900 focus:outline-none focus:ring-0"
+    [placeholder]="placeHolder"
+    [value]="value"
+    (input)="onInput($event)"
+    (click)="onInput($event)"
+  />
+  <div
+    popover-content
+    class="bg-white border border-gray-200 shadow-md rounded-lg"
+  >
+    <ul class="py-2">
+      @if (filteredList.length > 0) {
+      <ng-container *ngFor="let item of filteredList">
+        <li
+          class="px-4 py-1 hover:bg-gray-100 cursor-pointer"
+          (click)="onSelect(item)"
+        >
+          {{ item }}
+        </li>
+      </ng-container>
+      } @else {
+      <li class="px-4 py-1 text-muted-foreground italic">{{ noResultsText }}</li>
+      }
+    </ul>
+  </div>
+</app-popover>

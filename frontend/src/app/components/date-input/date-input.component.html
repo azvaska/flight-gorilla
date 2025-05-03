@@ -1,0 +1,33 @@
+<app-popover
+  #popover="appPopover"
+  [popoverRelativePosition]="popoverRelativePosition"
+  [popoverWidth]="popoverWidth"
+>
+  <button
+    popover-trigger
+    class="text-lg"
+    (click)="onClick()"
+  >
+    <span 
+    [ngClass]="{
+      'font-light text-muted-foreground': !date,
+      'font-normal text-zinc-900': date
+    }"
+    >{{ date ? formatDate(date) : placeholder }}</span>
+  </button>
+  <div
+    popover-content
+    class="bg-white border border-gray-200 shadow-md rounded-lg"
+  >
+    <div class="flex flex-col">
+      <hlm-calendar
+        [date]="date"
+        (dateChange)="onDateChange($event)"
+        [min]="minDate"
+        [max]="maxDate"
+        [disabled]="false"
+        [weekStartsOn]="1"
+      />
+    </div>
+  </div>
+</app-popover>
