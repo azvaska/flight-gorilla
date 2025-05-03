@@ -15,29 +15,31 @@ import { CommonModule } from '@angular/common';
   exportAs: 'appPopover',
   templateUrl: './popover.component.html',
   styleUrls: ['./popover.component.css'],
-  imports: [CommonModule, PopoverTriggerDirective],
+  imports: [CommonModule],
 })
 export class PopoverComponent {
-  @Input() customValues: {
+  @Input() popoverRelativePosition: {
     additionalTop?: number;
     additionalLeft?: number;
-    width?: string;
   } = {
     additionalTop: 0,
     additionalLeft: 0,
-    width: 'auto',
   };
+  @Input() popoverWidth: string = 'auto';
 
   @ContentChild(PopoverTriggerDirective) triggerDir!: PopoverTriggerDirective;
   @ViewChild('popover') popoverEl!: ElementRef<HTMLElement>;
 
   popoverStyles!: { top: string; left: string; width: string };
   showPopover = false;
+  private ignoreOutsideClick = false;
 
   open() {
     if (!this.showPopover) {
       this.updatePosition();
       this.showPopover = true;
+      this.ignoreOutsideClick = true;
+      setTimeout(() => (this.ignoreOutsideClick = false), 0);
     }
   }
 
@@ -52,14 +54,19 @@ export class PopoverComponent {
   private updatePosition() {
     const rect = this.triggerDir.el.nativeElement.getBoundingClientRect();
     this.popoverStyles = {
-      top: `${rect.height + (this.customValues.additionalTop ?? 0)}px`,
-      left: `${this.customValues.additionalLeft ?? 0}px`,
-      width: this.customValues.width ?? 'auto',
+      top: `${
+        rect.height + (this.popoverRelativePosition.additionalTop ?? 0)
+      }px`,
+      left: `${this.popoverRelativePosition.additionalLeft ?? 0}px`,
+      width: this.popoverWidth,
     };
   }
 
   @HostListener('document:click', ['$event.target'])
   onClickOutside(target: HTMLElement) {
+    if (this.ignoreOutsideClick) {
+      return;
+    }
     if (
       !this.triggerDir.el.nativeElement.contains(target) &&
       !this.popoverEl?.nativeElement.contains(target)
@@ -67,4 +74,5 @@ export class PopoverComponent {
       this.close();
     }
   }
+
 }

@@ -2,6 +2,7 @@
   <ng-content select="[popover-trigger]"></ng-content>
   <div
     #popover
+    (click)="$event.stopPropagation()"
     class="absolute transform origin-top transition-all duration-200 ease-out"
     [ngClass]="{
       'scale-100 opacity-100 visible pointer-events-auto': showPopover,
