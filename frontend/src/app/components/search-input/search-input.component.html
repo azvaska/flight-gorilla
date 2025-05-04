@@ -2,6 +2,7 @@
   #popover="appPopover"
   [popoverRelativePosition]="popoverRelativePosition"
   [popoverWidth]="popoverWidth"
+  [preventDefaultBehavior]="true"
 >
   <input
     #input
@@ -14,7 +15,6 @@
   />
   <div
     popover-content
-    class="bg-white border border-gray-200 shadow-md rounded-lg"
   >
     <ul class="py-2">
       @if (filteredList.length > 0) {

@@ -43,6 +43,9 @@
       ],
       "@spartan-ng/ui-calendar-helm": [
         "./libs/ui/ui-calendar-helm/src/index.ts"
+      ],
+      "@spartan-ng/ui-card-helm": [
+        "./libs/ui/ui-card-helm/src/index.ts"
       ]
     }
   },
