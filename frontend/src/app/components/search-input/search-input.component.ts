@@ -1,4 +1,11 @@
-import { Component, ViewChild, Input, Output, EventEmitter, ElementRef } from '@angular/core';
+import {
+  Component,
+  ViewChild,
+  Input,
+  Output,
+  EventEmitter,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PopoverComponent } from '@/app/components/popover/popover.component';
 import { PopoverTriggerDirective } from '@/app/components/popover/popover-trigger.directive';
@@ -9,21 +16,21 @@ import { PopoverTriggerDirective } from '@/app/components/popover/popover-trigge
   imports: [CommonModule, PopoverComponent, PopoverTriggerDirective],
 })
 export class SearchInputComponent {
-  @Input() placeHolder: string = '';
-  @Input() popoverRelativePosition: {
+  @Input() public placeHolder: string = '';
+  @Input() public popoverRelativePosition: {
     additionalTop?: number;
     additionalLeft?: number;
   } = {
     additionalTop: 0,
     additionalLeft: 0,
   };
-  @Input() popoverWidth: string = 'auto';
-  @Input() noResultsText: string = 'No results found.';
+  @Input() public popoverWidth: string = 'auto';
+  @Input() public noResultsText: string = 'No results found.';
 
-  @Input() value: string = '';
-  @Output() valueChange = new EventEmitter<string>();
+  @Input() public value: string = '';
+  @Output() public valueChange = new EventEmitter<string>();
 
-  @Input() nextInputRef?: {
+  @Input() public nextInputRef?: {
     focus: () => void;
   };
 

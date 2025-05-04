@@ -4,8 +4,6 @@ import {
   ElementRef,
   HostListener,
   Input,
-  AfterContentInit,
-  Renderer2,
   ViewChild,
 } from '@angular/core';
 import { PopoverTriggerDirective } from './popover-trigger.directive';
@@ -18,36 +16,47 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
 })
 export class PopoverComponent {
-  @Input() popoverRelativePosition: {
+  @Input() public popoverRelativePosition: {
     additionalTop?: number;
     additionalLeft?: number;
   } = {
     additionalTop: 0,
     additionalLeft: 0,
   };
-  @Input() popoverWidth: string = 'auto';
+  @Input() public popoverWidth: string = 'auto';
+  @Input() public preventDefaultBehavior: boolean = false;
 
-  @ContentChild(PopoverTriggerDirective) triggerDir!: PopoverTriggerDirective;
-  @ViewChild('popover') popoverEl!: ElementRef<HTMLElement>;
+  @ContentChild(PopoverTriggerDirective)
+  public readonly triggerDir!: PopoverTriggerDirective;
+  @ViewChild('popover') public readonly popoverEl!: ElementRef<HTMLElement>;
 
-  popoverStyles!: { top: string; left: string; width: string };
-  showPopover = false;
-  private ignoreOutsideClick = false;
+  public popoverStyles!: { top: string; left: string; width: string };
+  public showPopover = false;
 
-  open() {
-    if (!this.showPopover) {
-      this.updatePosition();
-      this.showPopover = true;
-      this.ignoreOutsideClick = true;
-      setTimeout(() => (this.ignoreOutsideClick = false), 0);
+  private _ignoreOutsideClick = false;
+
+  public ngAfterViewInit() {
+    if (!this.preventDefaultBehavior) {
+      this.triggerDir.el.nativeElement.addEventListener('click', () => {
+        this.toggle();
+      });
     }
   }
 
-  close() {
+  public open() {
+    if (!this.showPopover) {
+      this.updatePosition();
+      this.showPopover = true;
+      this._ignoreOutsideClick = true;
+      setTimeout(() => (this._ignoreOutsideClick = false), 0);
+    }
+  }
+
+  public close() {
     this.showPopover = false;
   }
 
-  toggle() {
+  public toggle() {
     this.showPopover ? this.close() : this.open();
   }
 
@@ -63,8 +72,8 @@ export class PopoverComponent {
   }
 
   @HostListener('document:click', ['$event.target'])
-  onClickOutside(target: HTMLElement) {
-    if (this.ignoreOutsideClick) {
+  public onClickOutside(target: HTMLElement) {
+    if (this._ignoreOutsideClick) {
       return;
     }
     if (
@@ -74,5 +83,4 @@ export class PopoverComponent {
       this.close();
     }
   }
-
 }
