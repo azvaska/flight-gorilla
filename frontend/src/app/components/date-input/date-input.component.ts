@@ -46,11 +46,7 @@ export class DateInputComponent {
   @ViewChild('popover') popover!: PopoverComponent;
 
   focus() {
-    this.onClick();
-  }
-
-  onClick() {
-    this.popover.toggle();
+    this.popover.open();
   }
 
   formatDate(date: Date) {

@@ -1,0 +1,15 @@
+<section
+  hlmCard
+  class="min-w-sm hover:cursor-pointer hover:scale-[101%] transition-all duration-100"
+  (click)="handleClick()"
+>
+  <div hlmCardHeader class="flex flex-col gap-2">
+    <h3 hlmCardTitle>{{ cityName }}</h3>
+    <div hlmCardDescription class="flex flex-row w-full justify-between">
+      <p class="flex items-center">Starting from</p>
+      <p class="text-xl font-bold text-black flex items-center">
+        {{ startingPrice }}€
+      </p>
+    </div>
+  </div>
+</section>

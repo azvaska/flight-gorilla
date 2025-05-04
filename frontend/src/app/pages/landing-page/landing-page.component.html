@@ -1,60 +1,13 @@
-<div class="flex items-center justify-center h-full w-full overflow-y-hidden">
-  <div
-    class="grid grid-cols-4 divide-x-3 divide-zinc-900 border border-3 border-zinc-900 rounded-lg"
-  >
-    <div class="flex flex-col p-4">
-      <h1 class="text-sm text-zinc-600 font-bold">From</h1>
-      <search-input
-        #firstLocationInput
-        [placeHolder]="'Enter a city or country'"
-        [popoverRelativePosition]="{ additionalTop: 20, additionalLeft: -20 }"
-        [popoverWidth]="'200px'"
-        [(value)]="departurePlace"
-        [nextInputRef]="secondLocationInput"
+<div class="w-full h-full flex items-center justify-center">
+  <section hlmCard>
+    <div hlmCardContent class="p-16">
+      <flight-search-bar
+        [(departurePlace)]="departurePlace"
+        [(arrivalPlace)]="arrivalPlace"
+        [(departureDate)]="departureDate"
+        [(returnDate)]="returnDate"
+        [searchCallback]="submitFlightSearch.bind(this)"
       />
     </div>
-    <div class="flex flex-col p-4">
-      <h1 class="text-sm text-zinc-600 font-bold">To</h1>
-      <search-input
-        #secondLocationInput
-        [placeHolder]="'Enter a city or country'"
-        [popoverRelativePosition]="{ additionalTop: 20, additionalLeft: -20 }"
-        [popoverWidth]="'200px'"
-        [(value)]="arrivalPlace"
-        [nextInputRef]="firstDateInput"
-      />
-    </div>
-    <div class="flex flex-col p-4">
-      <h1 class="text-sm text-zinc-600 font-bold">Depart</h1>
-      <date-input
-        #firstDateInput
-        [popoverRelativePosition]="{ additionalTop: 20, additionalLeft: -20 }"
-        [popoverWidth]="'auto'"
-        [(date)]="departureDate"
-        (dateChange)="onDepartureDateChange($event)"
-        [placeholder]="'Add a date'"
-        [nextInputRef]="secondDateInput"
-      />
-    </div>
-    <div class="flex flex-col p-4">
-      <h1 class="text-sm text-zinc-600 font-bold">Return</h1>
-      <date-input
-        #secondDateInput
-        [popoverRelativePosition]="{ additionalTop: 20, additionalLeft: -20 }"
-        [popoverWidth]="'auto'"
-        [(date)]="returnDate"
-        [placeholder]="'Add a date'"
-        [minDate]="departureDate"
-      />
-    </div>
-  </div>
-
-  <div class="flex flex-col p-4">
-    <button
-      class="bg-zinc-900 text-white px-4 py-2 rounded-xl h-14"
-      (click)="submitFlightSearch()"
-      >
-      Search
-    </button>
-  </div>
+  </section>
 </div>

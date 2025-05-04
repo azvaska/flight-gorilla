@@ -1,0 +1,37 @@
+<div class="flex flex-col gap-12">
+  <app-popover
+    [popoverRelativePosition]="{ additionalTop: 20 }"
+    [popoverWidth]="'100%'"
+  >
+    <button popover-trigger class="text-lg w-full">
+      <section
+        hlmCard
+        class="flex flex-col w-full hover:cursor-pointer pt-4"
+      >
+        <div class="flex flex-col gap-2">
+          <p class="text-2xl font-semibold">Travel Overview</p>
+          <hr class="w-full border-t border-gray-200" />
+        </div>
+        <div
+          hlmCardContent
+          class="flex flex-row gap-4 justify-center font-light px-16 py-6"
+        >
+          <p>Rome - Milan</p>
+          <p>•</p>
+          <p>11 May 2025 - 12 May 2025</p>
+        </div>
+      </section>
+    </button>
+    <div popover-content class="flex flex-col">
+      <div class="p-6">
+        <flight-search-bar
+          [departurePlace]="'sydney'"
+          [arrivalPlace]="'paris'"
+
+
+        />
+      </div>
+    </div>
+  </app-popover>
+  <router-outlet />
+</div>
