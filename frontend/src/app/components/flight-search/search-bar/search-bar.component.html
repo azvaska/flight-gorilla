@@ -10,7 +10,9 @@
         [popoverRelativePosition]="{ additionalTop: 20, additionalLeft: -20 }"
         [popoverWidth]="'200px'"
         [value]="departurePlace ?? ''"
-        (valueChange)="departurePlace = $event; departurePlaceChange.emit($event)"
+        (valueChange)="
+          departurePlace = $event; departurePlaceChange.emit($event)
+        "
         [nextInputRef]="secondLocationInput"
       />
     </div>
@@ -32,10 +34,13 @@
         #firstDateInput
         [popoverRelativePosition]="{ additionalTop: 20, additionalLeft: -20 }"
         [popoverWidth]="'auto'"
-        [(date)]="departureDate"
-        (dateChange)="onDepartureDateChange(); departureDateChange.emit($event)"
+        [(value)]="departureDate"
+        (valueChange)="onDepartureDateChange($event)"
         [placeholder]="'Add a date'"
         [nextInputRef]="secondDateInput"
+        [dateType]="dateType"
+        (dateTypeChange)="onDateTypeChange($event)"
+
       />
     </div>
     <div class="flex flex-col p-4">
@@ -44,10 +49,12 @@
         #secondDateInput
         [popoverRelativePosition]="{ additionalTop: 20, additionalLeft: -20 }"
         [popoverWidth]="'auto'"
-        [(date)]="returnDate"
-        (dateChange)="returnDateChange.emit($event)"
+        [(value)]="returnDate"
+        (valueChange)="onReturnDateChange($event)"
         [placeholder]="'Add a date'"
-        [minDate]="departureDate"
+        [dateType]="dateType"
+        (dateTypeChange)="onDateTypeChange($event)"
+        [minDate]="departureDateMinDate"
       />
     </div>
   </div>

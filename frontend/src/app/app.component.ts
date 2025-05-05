@@ -8,8 +8,4 @@ import { NavbarComponent } from './components/navbar/navbar.component';
   templateUrl: './app.component.html',
 })
 export class AppComponent {
-
-  onClick() {
-    console.log('clicked');
-  }
 }

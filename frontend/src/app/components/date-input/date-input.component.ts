@@ -1,6 +1,5 @@
 import {
   Component,
-  ElementRef,
   EventEmitter,
   Input,
   Output,
@@ -10,6 +9,14 @@ import { PopoverComponent } from '@/app/components/popover/popover.component';
 import { PopoverTriggerDirective } from '../popover/popover-trigger.directive';
 import { CommonModule } from '@angular/common';
 import { HlmCalendarComponent } from '@spartan-ng/ui-calendar-helm';
+import { MonthPickerComponent } from './month-picker/month-picker.component';
+import {
+  HlmTabsComponent,
+  HlmTabsContentDirective,
+  HlmTabsListComponent,
+  HlmTabsTriggerDirective,
+} from '@spartan-ng/ui-tabs-helm';
+
 @Component({
   selector: 'date-input',
   imports: [
@@ -17,49 +24,70 @@ import { HlmCalendarComponent } from '@spartan-ng/ui-calendar-helm';
     PopoverComponent,
     PopoverTriggerDirective,
     HlmCalendarComponent,
+    HlmTabsComponent,
+    HlmTabsContentDirective,
+    HlmTabsListComponent,
+    HlmTabsTriggerDirective,
+    MonthPickerComponent,
   ],
   templateUrl: './date-input.component.html',
 })
 export class DateInputComponent {
-  @Input() placeHolder: string = '';
-  @Input() popoverRelativePosition: {
+  @Input() public popoverRelativePosition: {
     additionalTop?: number;
     additionalLeft?: number;
   } = {
     additionalTop: 0,
     additionalLeft: 0,
   };
-  @Input() popoverWidth: string = 'auto';
-  @Input() placeholder: string = 'Add a date';
+  @Input() public popoverWidth: string = 'auto';
+  @Input() public placeholder: string = 'Add a date';
 
-  @Input() nextInputRef?: {
+  @Input() public nextInputRef?: {
     focus: () => void;
   };
 
-  @Input() date: Date | undefined = undefined;
-  @Output() dateChange = new EventEmitter<Date>();
+  @Input() public minDate: Date | undefined = new Date();
+  @Input() public maxDate: Date | undefined = new Date(
+    new Date().setFullYear(new Date().getFullYear() + 1)
+  );
 
-  
-  @Input() minDate: Date | undefined = new Date();
-  @Input() maxDate: Date | undefined = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
-  
-  @ViewChild('popover') popover!: PopoverComponent;
+  @Input() public dateType: 'specific' | 'flexible' = 'specific';
+  @Output() public dateTypeChange = new EventEmitter<'specific' | 'flexible'>();
 
-  focus() {
+  @ViewChild('popover') public popover!: PopoverComponent;
+
+  @Input() public value: Date | undefined = undefined;
+  @Output() public valueChange = new EventEmitter<Date>();
+
+
+  public focus() {
     this.popover.open();
   }
 
-  formatDate(date: Date) {
-    return date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
+  public formatDate(date: Date) {
+    if (this.dateType === 'specific') {
+      return date.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    } else {
+      return date.toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric',
+      });
+    }
   }
 
-  onDateChange(date: Date) {
-    this.date = date;
-    this.dateChange.emit(date);
+  public onDateTypeChange(dateType: 'specific' | 'flexible') {
+    this.dateType = dateType;
+    this.dateTypeChange.emit(dateType);
+  }
+
+  public onValueChange(value: Date) {
+    this.value = value;
+    this.valueChange.emit(this.value);
     this.popover.close();
     if (this.nextInputRef) {
       this.nextInputRef.focus();
