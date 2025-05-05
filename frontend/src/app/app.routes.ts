@@ -6,6 +6,7 @@ import { SearchCityComponent } from '@/app/pages/search/search-city/search-city.
 import { SearchDatesComponent } from '@/app/pages/search/search-dates/search-dates.component';
 import { SearchFlightsComponent } from '@/app/pages/search/search-flights/search-flights.component';
 import { NotFoundComponent } from '@/app/pages/not-found/not-found.component';
+import { SearchParamsGuard, SearchRedirectGuard } from './guards/search-guard';
 
 export const routes: Routes = [
   {
@@ -15,6 +16,9 @@ export const routes: Routes = [
   {
     path: "search",
     component: SearchComponent,
+    canActivate: [SearchRedirectGuard],
+    canActivateChild: [SearchParamsGuard],
+    runGuardsAndResolvers: 'always',
     children: [
       {
         path: 'country',
