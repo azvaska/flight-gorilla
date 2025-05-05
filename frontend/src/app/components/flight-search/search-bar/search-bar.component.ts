@@ -4,6 +4,7 @@ import {
   Input,
   Output,
   ViewChild,
+  OnInit,
 } from '@angular/core';
 import { SearchInputComponent } from '@/app/components/search-input/search-input.component';
 import { DateInputComponent } from '@/app/components/date-input/date-input.component';
@@ -12,7 +13,7 @@ import { DateInputComponent } from '@/app/components/date-input/date-input.compo
   imports: [SearchInputComponent, DateInputComponent],
   templateUrl: './search-bar.component.html',
 })
-export class FlightSearchBarComponent {
+export class FlightSearchBarComponent implements OnInit {
   @ViewChild('firstLocationInput')
   private readonly _firstLocationInput!: SearchInputComponent;
   @ViewChild('secondLocationInput')
@@ -33,6 +34,15 @@ export class FlightSearchBarComponent {
   @Output() public arrivalPlaceChange = new EventEmitter<string>();
   @Output() public departureDateChange = new EventEmitter<Date>();
   @Output() public returnDateChange = new EventEmitter<Date>();
+
+  @Input() public dateType: 'specific' | 'flexible' = 'specific';
+  @Output() public dateTypeChange = new EventEmitter<'specific' | 'flexible'>();
+
+  public departureDateMinDate: Date | undefined = undefined;
+
+  ngOnInit() {
+    this.updateMinDate();
+  }
 
   public get firstLocationInput() {
     if (!this.autoFocus) {
@@ -62,9 +72,22 @@ export class FlightSearchBarComponent {
     return this._secondDateInput;
   }
 
-  // We reset return date when user changes departure
-  public onDepartureDateChange() {
-    this.returnDate = undefined;
+  public onDepartureDateChange(date: Date | undefined) {
+    this.departureDate = date;
+    this.departureDateChange.emit(date);
+    this.updateMinDate();
+    this.onReturnDateChange(undefined);
+  }
+
+  public onReturnDateChange(date: Date | undefined) {
+    this.returnDate = date;
+    this.returnDateChange.emit(date);
+  }
+
+  public onDateTypeChange(dateType: 'specific' | 'flexible') {
+    this.dateType = dateType;
+    this.dateTypeChange.emit(dateType);
+    this.onDepartureDateChange(undefined);
   }
 
   public onSearchClick() {
@@ -89,5 +112,16 @@ export class FlightSearchBarComponent {
     }
 
     this.searchCallback();
+
+  }
+
+  private updateMinDate() {
+    if (this.departureDate == null) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - 1);
+      this.departureDateMinDate = d;
+    } else {
+      this.departureDateMinDate = new Date(this.departureDate);
+    }
   }
 }
