@@ -12,6 +12,10 @@ button:hover {
   --font-sans: "Inter", sans-serif;
 }
 
+body {
+  background-color: #FAFAFA;
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 240 10% 3.9%;

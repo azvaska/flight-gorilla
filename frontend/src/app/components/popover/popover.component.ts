@@ -33,7 +33,7 @@ export class PopoverComponent {
   public popoverStyles!: { top: string; left: string; width: string };
   public showPopover = false;
 
-  private _ignoreOutsideClick = false;
+  private _ignoreOutsideClick = true;
 
   public ngAfterViewInit() {
     if (!this.preventDefaultBehavior) {
@@ -44,6 +44,7 @@ export class PopoverComponent {
   }
 
   public open() {
+    console.log("open")
     if (!this.showPopover) {
       this.updatePosition();
       this.showPopover = true;
@@ -53,10 +54,12 @@ export class PopoverComponent {
   }
 
   public close() {
+    console.log("close")
     this.showPopover = false;
   }
 
   public toggle() {
+    console.log("toggle")
     this.showPopover ? this.close() : this.open();
   }
 
@@ -80,6 +83,7 @@ export class PopoverComponent {
       !this.triggerDir.el.nativeElement.contains(target) &&
       !this.popoverEl?.nativeElement.contains(target)
     ) {
+      console.log("close outside")
       this.close();
     }
   }

@@ -13,7 +13,7 @@ import {
 } from '@spartan-ng/ui-card-helm';
 @Component({
   selector: 'app-landing-page',
-  imports: [RouterModule, SearchInputComponent, DateInputComponent, FlightSearchBarComponent, HlmCardDirective, HlmCardContentDirective, HlmCardHeaderDirective, HlmCardTitleDirective, HlmCardDescriptionDirective, HlmCardFooterDirective],
+  imports: [RouterModule, FlightSearchBarComponent, HlmCardDirective, HlmCardContentDirective],
   templateUrl: './landing-page.component.html',
   host: {
     class: 'block w-full h-full', // oppure qualsiasi combinazione tu voglia
@@ -32,7 +32,9 @@ export class LandingPageComponent {
 
     // TODO: Mock logic.
     const from_type = "city"
-    const to_type = "country"
+    const to_type = "city"
+
+    // /search?from_type=city&to_type=city&from_id=Rome&to_id=Milan&departure_date=2025-05-11&return_date=2025-05-12&date_type=specific
 
     this.router.navigate(['/search'], {
       queryParams: {
