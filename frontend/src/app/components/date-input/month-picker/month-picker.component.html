@@ -1,0 +1,59 @@
+<section hlmCard>
+  <div hlmCardContent>
+    <div class="flex flex-col gap-4 p-6">
+      <div class="space-y-4">
+        <div class="relative flex items-center justify-center pt-1">
+          <div class="text-sm font-medium">
+            {{ currentYear }}
+          </div>
+
+          <div class="flex items-center space-x-1">
+            <button
+              class="ring-offset-background focus-visible:ring-ring border-input hover:bg-accent hover:text-accent-foreground absolute left-1 inline-flex h-7 w-7 items-center justify-center whitespace-nowrap rounded-md border bg-transparent p-0 text-sm font-medium opacity-50 transition-colors hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+              (click)="goToPreviousYear()"
+            >
+              <ng-icon hlm name="lucideChevronLeft" size="sm" />
+            </button>
+
+            <button
+              class="ring-offset-background focus-visible:ring-ring border-input hover:bg-accent hover:text-accent-foreground absolute right-1 inline-flex h-7 w-7 items-center justify-center whitespace-nowrap rounded-md border bg-transparent p-0 text-sm font-medium opacity-50 transition-colors hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+              (click)="goToNextYear()"
+            >
+              <ng-icon hlm name="lucideChevronRight" size="sm" />
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 auto-rows-auto gap-4 w-full max-w-sm">
+        <div
+          class="text-center px-4 py-6 hover:bg-[#F4F4F5] hover:cursor-pointer rounded-lg"
+          [ngClass]="{
+        'text-muted-foreground italic hover:!cursor-not-allowed pointer-events-none': !(!minDate || (currentYear > minDate!.getFullYear() || (currentYear === minDate!.getFullYear() && i >= minDate!.getMonth()))) ||
+        !(!maxDate || (currentYear < maxDate!.getFullYear() || (currentYear === maxDate!.getFullYear() && i <= maxDate!.getMonth()))),
+        'bg-[#18181B] text-white': selectedDate && selectedDate.getFullYear() === currentYear && selectedDate.getMonth() === i
+      }"
+          (click)="onSelectDate(i, currentYear)"
+          *ngFor="
+            let month of [
+              'January',
+              'February',
+              'March',
+              'April',
+              'May',
+              'June',
+              'July',
+              'August',
+              'September',
+              'October',
+              'November',
+              'December'
+            ];
+            let i = index
+          "
+        >
+          {{ month }}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

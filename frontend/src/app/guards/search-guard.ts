@@ -26,60 +26,65 @@ export class SearchRedirectGuard implements CanActivate {
     if (route.firstChild) return true;
 
     // parse & clean params, decide default child
-    const {
-      from_id,
-      from_type,
-      departure_date,
-      return_date,
-      date_type,
-      to_type,
-      to_id,
-    } = parseGenericFlightSearchParams(route.queryParams);
+    try {
+      const {
+        from_id,
+        from_type,
+        departure_date,
+        return_date,
+        date_type,
+        to_type,
+        to_id,
+      } = parseGenericFlightSearchParams(route.queryParams);
 
-    let next: 'country' | 'city' | 'dates' | 'flights';
-    if (to_type === 'anywhere') {
-      return this.router.createUrlTree([`/search/country`], {
-        queryParams: {
-          from_type,
-          from_id,
-          departure_date,
-          return_date,
-          date_type,
-        },
-      });
-    } else if (to_type === 'country') {
-      return this.router.createUrlTree([`/search/city`], {
-        queryParams: {
-          from_type,
-          from_id,
-          to_id,
-          departure_date,
-          return_date,
-          date_type,
-        },
-      });
-    } else if (date_type === 'flexible') {
-      return this.router.createUrlTree([`/search/dates`], {
-        queryParams: {
-          from_type,
-          from_id,
-          to_type,
-          to_id,
-          departure_date,
-          return_date,
-        },
-      });
-    } else {
-      return this.router.createUrlTree([`/search/flights`], {
-        queryParams: {
-          from_type,
-          from_id,
-          to_type,
-          to_id,
-          departure_date,
-          return_date,
-        },
-      });
+      let next: 'country' | 'city' | 'dates' | 'flights';
+      if (to_type === 'anywhere') {
+        return this.router.createUrlTree([`/search/country`], {
+          queryParams: {
+            from_type,
+            from_id,
+            departure_date,
+            return_date,
+            date_type,
+          },
+        });
+      } else if (to_type === 'country') {
+        return this.router.createUrlTree([`/search/city`], {
+          queryParams: {
+            from_type,
+            from_id,
+            to_id,
+            departure_date,
+            return_date,
+            date_type,
+          },
+        });
+      } else if (date_type === 'flexible') {
+        return this.router.createUrlTree([`/search/dates`], {
+          queryParams: {
+            from_type,
+            from_id,
+            to_type,
+            to_id,
+            departure_date,
+            return_date,
+            date_type,
+          },
+        });
+      } else {
+        return this.router.createUrlTree([`/search/flights`], {
+          queryParams: {
+            from_type,
+            from_id,
+            to_type,
+            to_id,
+            departure_date,
+            return_date,
+          },
+        });
+      }
+    } catch {
+      return this.router.createUrlTree(['/404']);
     }
   }
 }
@@ -101,7 +106,8 @@ export class SearchParamsGuard implements CanActivateChild {
       );
 
       return true;
-    } catch {
+    } catch(e) {
+      console.error(e);
       return this.router.createUrlTree(['/404']);
     }
   }

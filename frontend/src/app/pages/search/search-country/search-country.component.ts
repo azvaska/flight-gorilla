@@ -18,7 +18,6 @@ export class SearchCountryComponent {
 
   ngOnInit(): void {
     const params = this.route.queryParams.subscribe((params) => {
-      console.log(this.departurePlace, this.router.url);
       this.departurePlace = params['departurePlace'];
       this.arrivalPlace = params['arrivalPlace'];
       this.departureDate = params['departureDate'];

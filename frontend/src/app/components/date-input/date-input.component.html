@@ -6,22 +6,43 @@
   <button popover-trigger class="text-lg">
     <span
       [ngClass]="{
-        'font-light text-muted-foreground': !date,
-        'font-normal text-zinc-900': date
+        'font-light text-muted-foreground': !value,
+        'font-normal text-zinc-900': value
       }"
-      >{{ date ? formatDate(date) : placeholder }}</span
+      >{{ value ? formatDate(value) : placeholder }}</span
     >
   </button>
   <div popover-content>
-    <div class="flex flex-col">
-      <hlm-calendar
-        [date]="date"
-        (dateChange)="onDateChange($event)"
-        [min]="minDate"
-        [max]="maxDate"
-        [disabled]="false"
-        [weekStartsOn]="1"
-      />
+    <div class="flex flex-col pt-4 px-4">
+      <hlm-tabs [tab]="dateType" class="w-max">
+        <hlm-tabs-list
+          class="w-full grid grid-cols-2"
+          aria-label="tabs example"
+        >
+          <button hlmTabsTrigger="specific" (click)="onDateTypeChange('specific')">Specific</button>
+          <button hlmTabsTrigger="flexible" (click)="onDateTypeChange('flexible')">Flexible</button>
+        </hlm-tabs-list>
+        <div hlmTabsContent="specific" class="flex justify-center items-center py-4">
+          <div class="w-fit">
+            <hlm-calendar
+              [date]="value"
+              (dateChange)="value = $event; onValueChange($event)"
+              [min]="minDate"
+              [max]="maxDate"
+              [disabled]="false"
+              [weekStartsOn]="1"
+            />
+          </div>
+        </div>
+        <div hlmTabsContent="flexible" class="flex justify-center items-center py-4">
+          <month-picker
+            [selectedDate]="value"
+            (selectedDateChange)="value = $event; onValueChange($event)"
+            [minDate]="minDate"
+            [maxDate]="maxDate"
+          />
+        </div>
+      </hlm-tabs>
     </div>
   </div>
 </app-popover>
