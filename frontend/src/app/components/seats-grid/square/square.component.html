@@ -1,0 +1,17 @@
+<div
+  class="
+    w-6 h-6 m-1
+    transition-all duration-300
+    {{squareStyle}}"
+  [ngClass]="{
+    'rounded-sm': (selectedClass == '' || selectedClass == class) && available,
+    'hover:scale-120': (selectedClass == '' || selectedClass == class) && available && !occupied,
+    'hover:scale-90': (selectedClass == '' || selectedClass == class) && available && occupied,
+    'scale-30 rounded-xl hover:scale-50': selectedClass != '' && selectedClass != class && available,
+    'scale-40 rounded-xl hover:scale-60': selectedClass != '' && selectedClass != class && available && occupied,
+    'scale-105': selectedClass == class && available,
+    '!bg-blue-400': isSelected,
+    'shake': shake
+  }"
+  (click)="onclick()"
+></div>

@@ -1,0 +1,48 @@
+<!-- Grid container -->
+<div class="flex flex-col ">
+
+  <!-- Column Headers -->
+  <div class="flex items-center space-x-2 ml-10">
+    <!-- First 3 headers -->
+    <ng-container *ngFor="let col of ['A', 'B', 'C']">
+      <div class="w-6 h-6 text-center text-xs text-gray-700 font-semibold">{{ col }}</div>
+    </ng-container>
+
+    <!-- Spacer -->
+    <div class="w-4"></div>
+
+    <!-- Last 3 headers -->
+    <ng-container *ngFor="let col of ['D', 'E', 'F']">
+      <div class="w-6 h-6 text-center text-xs text-gray-700 font-semibold">{{ col }}</div>
+    </ng-container>
+  </div>
+
+  <!-- Repeat rows -->
+  <ng-container *ngFor="let rowIndex of [].constructor(rows); let i = index">
+    <div class="flex items-center">
+
+      <!-- Row number -->
+      <div class="w-6 text-xs text-gray-700 font-semibold text-right mr-4">{{ i + 1 }}</div>
+
+      <!-- First 3 squares -->
+      <ng-container *ngFor="let columnIndex of [].constructor(6); let j = index">
+        <app-square
+          [row]="i" [column]="j"
+          [isSelected]="selectedSeatRow === i && selectedSeatCol === j"
+          [class]="['economy', 'business', 'first'][seatsMatrix[i][j]]"
+          [selectedClass]="selectedClass"
+          [available]="seatsMatrix[i][j] !== 4"
+          [occupied]="seatsMatrix[i][j] === 3"
+          (selected)="selectedSeat($event)"
+          (selectedOccupied)="selectedOccupied($event)"
+        />
+        <div
+          *ngIf="j === 2"
+          class="w-4"
+        ></div>
+      </ng-container>
+
+    </div>
+  </ng-container>
+</div>
+<hlm-toaster />

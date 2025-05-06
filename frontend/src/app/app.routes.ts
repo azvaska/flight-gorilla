@@ -8,6 +8,9 @@ import { SearchFlightsComponent } from '@/app/pages/search/search-flights/search
 import { NotFoundComponent } from '@/app/pages/not-found/not-found.component';
 import { SearchParamsGuard, SearchRedirectGuard } from './guards/search-guard';
 
+import { BookingComponent } from '@/app/pages/booking/booking.component';
+import {Booking1OverviewComponent} from '@/app/pages/booking/booking1-overview/booking1-overview.component';
+import {Booking2SeatsComponent} from '@/app/pages/booking/booking2-seats/booking2-seats.component';
 export const routes: Routes = [
   {
     path: '',
@@ -42,5 +45,21 @@ export const routes: Routes = [
     path: '404',
     component: NotFoundComponent,
   },
+  {
+    path: 'booking',
+    component: BookingComponent,
+    children: [
+      {
+        path: 'overview',
+        component: Booking1OverviewComponent,
+        data: { selectedNumber: 1 }
+      },
+      {
+        path: 'seats',
+        component: Booking2SeatsComponent,
+        data: { selectedNumber: 2 }
+      }
+    ]
+  }
 ];
 
