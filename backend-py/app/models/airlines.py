@@ -1,18 +1,22 @@
 import uuid
+from typing import List
 
 from app.extensions import db
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.aircraft import Aircraft
+from app.models.user import Nation
 
 
 class Airline(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name: Mapped[str] = mapped_column(db.String(255), nullable=False)
+    name: Mapped[str] = mapped_column(db.String(255), nullable=False,unique=True)
     address: Mapped[str] = mapped_column(db.String(255), nullable=False)  # sede principale
     zip: Mapped[str] = mapped_column(db.String(255), nullable=False)
-    nation: Mapped[str] = mapped_column(db.String(255), nullable=False)  # FK
+    nation_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('nation.id'), nullable=False)
+    nation: Mapped[Nation] = relationship('Nation', backref=db.backref('airline', lazy=True))
+    extras: Mapped[List['Extra']] = relationship('Extra', backref='airline', lazy=True)
     email: Mapped[str] = mapped_column(db.String(255), nullable=False)
     website: Mapped[str] = mapped_column(db.String(255), nullable=False)
     is_approved: Mapped[bool] = mapped_column(db.Boolean, nullable=False, default=False)
@@ -24,10 +28,10 @@ class Airline(db.Model):
 class AirlineAircraft(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     aircraft_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('aircraft.id'), nullable=False)
-    airlines_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey('airline.id'), nullable=False)
-    first_class_seats: Mapped[ARRAY] = mapped_column(ARRAY(db.String), nullable=False)
-    business_class_seats: Mapped[ARRAY] = mapped_column(ARRAY(db.String), nullable=False)
-    economy_class_seats: Mapped[ARRAY] = mapped_column(ARRAY(db.String), nullable=False)
+    airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey('airline.id'), nullable=False)
+    first_class_seats: Mapped[List[str]]  = mapped_column(ARRAY(db.String), nullable=False)
+    business_class_seats: Mapped[List[str]]  = mapped_column(ARRAY(db.String), nullable=False)
+    economy_class_seats: Mapped[List[str]]  = mapped_column(ARRAY(db.String), nullable=False)
     tail_number: Mapped[str] = mapped_column(db.String(255), nullable=False)
 
 

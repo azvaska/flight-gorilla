@@ -8,7 +8,10 @@ from app.extensions import db
 from app.models.base import Base
 from sqlalchemy.dialects.postgresql import UUID
 
-class Role(Base, sqla.FsRoleMixin):
+from app.models.location import Nation
+
+
+class Role(db.Model, sqla.FsRoleMixin):
     __tablename__ = 'role'
 
 class User(sqla.FsUserMixin,db.Model):
@@ -19,8 +22,8 @@ class User(sqla.FsUserMixin,db.Model):
     surname: Mapped[str] = mapped_column(db.String(255), nullable=False)
     address: Mapped[str] = mapped_column(db.String(255), nullable=True)
     zip: Mapped[str] = mapped_column(db.String(255), nullable=True)
-    nation: Mapped[str] = mapped_column(db.String(255), nullable=True)  # FK
-
+    nation_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('nation.id'), nullable=True)
+    airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey('airline.id'), nullable=True)
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -28,7 +31,7 @@ class User(sqla.FsUserMixin,db.Model):
 class DebitCard(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[uuid.UUID] = mapped_column(db.UUID, db.ForeignKey('user.id'), nullable=False)
-    user: Mapped["User"] = relationship('User', backref=db.backref('cards', lazy=True))
+    user: Mapped[User] = relationship('User', backref=db.backref('cards', lazy=True))
     last_4_card: Mapped[str] = mapped_column(db.String(255), nullable=False)
     credit_card_expiration: Mapped[str] = mapped_column(db.String(255), nullable=False)
     circuits: Mapped[str] = mapped_column(db.String(255), nullable=False)

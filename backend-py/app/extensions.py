@@ -1,3 +1,4 @@
+from flask_marshmallow import Marshmallow
 from flask_security import SQLAlchemySessionUserDatastore
 from flask_security.models import sqla
 from flask_sqlalchemy import SQLAlchemy
@@ -12,4 +13,5 @@ db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))
 db = SQLAlchemy(model_class=Base)  # ✅ set at creation
+ma = Marshmallow()
 sqla.FsModels.set_db_info(base_model=Base)

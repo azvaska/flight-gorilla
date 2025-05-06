@@ -15,12 +15,6 @@ class ClassType(enum.Enum):
     ECONOMY_CLASS = "Economy Class"
 
 
-flight_extra_flight = Table(
-    'flight_extra_flight', db.metadata,
-    db.Column('flight_id', db.UUID, db.ForeignKey('flight.id'), primary_key=True),
-    db.Column('extra_id', db.UUID, db.ForeignKey('extra.id'), primary_key=True),
-    db.Column('price', db.Float, nullable=False)
-)
 
 booking_flight_departure = Table(
     'booking_flight_departure', db.metadata,

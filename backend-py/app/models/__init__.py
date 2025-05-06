@@ -1,10 +1,11 @@
 from .aircraft import Aircraft
 from .airlines import Airline, AirlineAircraft, Extra
 from .flight import Flight
-from .user import User,Role,DebitCard
-from .airport import Airport, City
+from .user import User,Role,DebitCard,Nation
+from .airport import Airport
+from .location import City,Nation
 from .booking import Booking
 from .flight import Flight
-from .seat_session import SeatSession,ReservedSeat
+from .seat_session import SeatSession
 
-__all__ = ["User", "Role", "DebitCard", "Airline", "AirlineAircraft", "Extra","SeatSession","ReservedSeat"]
+__all__ = ["User", "Role", "DebitCard", "Airline", "AirlineAircraft", "Extra","SeatSession","City","Nation","Airport","Booking","Flight","SeatSession"]

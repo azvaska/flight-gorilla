@@ -17,7 +17,8 @@ class Config:
     # Flask-Security
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', 'default-salt')
     SECURITY_TOKEN_AUTHENTICATION_HEADER = "Authorization"
-    SECURITY_TOKEN_AUTHENTICATION_KEY = "auth_token"
+    SECURITY_TOKEN_AUTHENTICATION_KEY='token',
+    SECURITY_TOKEN_AUTHENTICATION_BACKEND = 'jwt',
     # SECURITY_PASSWORD_HASH = "bcrypt"  # good default
     SECURITY_REGISTERABLE = False      # disable if using custom registration
     SECURITY_SEND_REGISTER_EMAIL = False
@@ -30,10 +31,12 @@ class Config:
     SECURITY_CHANGEABLE = True            # disable change password
     SECURITY_CONFIRMABLE = False           # disable email confirmation
     SECURITY_TRACKABLE = False
+    RESTX_VALIDATE = True
+    PROPAGATE_EXCEPTIONS = True
 
     # JWT Settings (Flask-JWT-Extended)
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "change-this-jwt-secret")
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=120)  # 2 hours
 
     # Optional for logging/debugging
     DEBUG = os.environ.get("FLASK_DEBUG", "0") == "1"
