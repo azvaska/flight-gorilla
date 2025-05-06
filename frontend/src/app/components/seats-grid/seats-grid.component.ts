@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {NgForOf, NgIf} from "@angular/common";
+import {NgClass, NgForOf, NgIf} from "@angular/common";
 import {SquareComponent} from '@/app/components/seats-grid/square/square.component';
 import {HlmToasterComponent} from '@spartan-ng/ui-sonner-helm';
 import {toast} from 'ngx-sonner';
@@ -10,7 +10,8 @@ import {toast} from 'ngx-sonner';
     NgForOf,
     SquareComponent,
     NgIf,
-    HlmToasterComponent
+    HlmToasterComponent,
+    NgClass
   ],
   templateUrl: './seats-grid.component.html'
 })
