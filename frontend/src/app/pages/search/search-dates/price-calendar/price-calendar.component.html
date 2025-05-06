@@ -1,0 +1,99 @@
+<div
+  brnCalendar
+  [min]="min()"
+  [max]="max()"
+  [disabled]="disabled()"
+  [(date)]="date"
+  [dateDisabled]="dateDisabled()"
+  [weekStartsOn]="weekStartsOn()"
+  [defaultFocusedDate]="defaultFocusedDate()"
+  [class]="_computedCalenderClass() + ' relative'"
+>
+  <div class="inline-flex flex-col space-y-6">
+    <!-- Header -->
+    <div class="space-y-4">
+      <div class="relative flex items-center justify-center pt-2">
+        <div brnCalendarHeader class="text-normal font-medium">
+          {{ heading() }}
+        </div>
+
+        <div class="flex items-center space-x-1">
+          <button
+            brnCalendarPreviousButton
+            class="ring-offset-background focus-visible:ring-ring border-input hover:bg-accent hover:text-accent-foreground absolute left-1 inline-flex h-10 w-10 items-center justify-center whitespace-nowrap rounded-md border bg-transparent p-0 text-normal font-medium opacity-50 transition-colors hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+            (click)="onMonthChange()"
+          >
+            <ng-icon hlm name="lucideChevronLeft" size="1.5rem" />
+          </button>
+
+          <button
+            brnCalendarNextButton
+            class="ring-offset-background focus-visible:ring-ring border-input hover:bg-accent hover:text-accent-foreground absolute right-1 inline-flex h-10 w-10 items-center justify-center whitespace-nowrap rounded-md border bg-transparent p-0 text-normal font-medium opacity-50 transition-colors hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+            (click)="onMonthChange()"
+          >
+            <ng-icon hlm name="lucideChevronRight" size="1.5rem" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div [class.invisible]="isLoading()">
+      <table class="w-full border-collapse space-y-1" brnCalendarGrid>
+        <thead>
+          <tr class="flex">
+            <th
+              *brnCalendarWeekday="let weekday"
+              scope="col"
+              class="text-muted-foreground w-18 rounded-md text-lg font-normal"
+              [attr.aria-label]="i18n.labelWeekday(weekday)"
+            >
+              {{ i18n.formatWeekdayName(weekday) }}
+            </th>
+          </tr>
+        </thead>
+
+        <tbody role="rowgroup">
+          <tr *brnCalendarWeek="let week" class="mt-2 flex w-full">
+            @for (date of week; track dateAdapter.getTime(date)) {
+            <div
+              class="flex flex-col gap-1 h-18 w-18 items-center justify-center"
+            >
+              <td
+                brnCalendarCell
+                class="data-[selected]:data-[outside]:bg-accent/50 data-[selected]:bg-accent relative h-10 w-10 p-0 text-center text-2xl focus-within:relative focus-within:z-20 first:data-[selected]:rounded-l-md last:data-[selected]:rounded-r-md [&:has([aria-selected].day-range-end)]:rounded-r-md"
+              >
+                <button
+                  brnCalendarCellButton
+                  [date]="date"
+                  [class]="btnClass + ' !text-lg  !p-4'"
+                >
+                  {{ dateAdapter.getDate(date) }}
+                </button>
+              </td>
+              <span
+                class="text-sm text-muted-foreground font-semibold"
+                *ngIf="inCurrentMonth(date)"
+                [ngClass]="{
+                  '!text-emerald-700':
+                    getPriceTypeForDate(date) === 'underpriced',
+                  '!text-red-600': getPriceTypeForDate(date) === 'overpriced',
+                  '!text-gray-700': getPriceTypeForDate(date) === 'average'
+                }"
+              >
+                {{ getPriceForDate(date) }}
+              </span>
+            </div>
+
+            }
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div
+      *ngIf="isLoading()"
+      class="absolute inset-0 flex items-center justify-center h-fit w-fit top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+    >
+      <hlm-spinner size="sm" />
+    </div>
+  </div>
+</div>
