@@ -17,45 +17,25 @@
     "module": "ES2022",
     "baseUrl": "./",
     "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "@spartan-ng/ui-button-helm": [
-        "./libs/ui/ui-button-helm/src/index.ts"
-      ],
-      "@spartan-ng/ui-avatar-helm": [
-        "./libs/ui/ui-avatar-helm/src/index.ts"
-      ],
-      "@spartan-ng/ui-menu-helm": [
-        "./libs/ui/ui-menu-helm/src/index.ts"
-      ],
-      "@spartan-ng/ui-icon-helm": [
-        "./libs/ui/ui-icon-helm/src/index.ts"
-      ],
+      "@/*": ["src/*"],
+      "@spartan-ng/ui-button-helm": ["./libs/ui/ui-button-helm/src/index.ts"],
+      "@spartan-ng/ui-avatar-helm": ["./libs/ui/ui-avatar-helm/src/index.ts"],
+      "@spartan-ng/ui-menu-helm": ["./libs/ui/ui-menu-helm/src/index.ts"],
+      "@spartan-ng/ui-icon-helm": ["./libs/ui/ui-icon-helm/src/index.ts"],
       "@spartan-ng/ui-typography-helm": [
         "./libs/ui/ui-typography-helm/src/index.ts"
       ],
-      "@spartan-ng/ui-command-helm": [
-        "./libs/ui/ui-command-helm/src/index.ts"
-      ],
-      "@spartan-ng/ui-popover-helm": [
-        "./libs/ui/ui-popover-helm/src/index.ts"
-      ],
+      "@spartan-ng/ui-command-helm": ["./libs/ui/ui-command-helm/src/index.ts"],
+      "@spartan-ng/ui-popover-helm": ["./libs/ui/ui-popover-helm/src/index.ts"],
       "@spartan-ng/ui-calendar-helm": [
         "./libs/ui/ui-calendar-helm/src/index.ts"
       ],
-      "@spartan-ng/ui-card-helm": [
-        "./libs/ui/ui-card-helm/src/index.ts"
-      ],
-      "@spartan-ng/ui-tabs-helm": [
-        "./libs/ui/ui-tabs-helm/src/index.ts"
-      ],
+      "@spartan-ng/ui-card-helm": ["./libs/ui/ui-card-helm/src/index.ts"],
+      "@spartan-ng/ui-tabs-helm": ["./libs/ui/ui-tabs-helm/src/index.ts"],
       "@spartan-ng/ui-alertdialog-helm": [
-        ".\\libs/ui/ui-alertdialog-helm/src/index.ts"
+        "./libs/ui/ui-alertdialog-helm/src/index.ts"
       ],
-      "@spartan-ng/ui-sonner-helm": [
-        ".\\libs/ui/ui-sonner-helm/src/index.ts"
-      ]
+      "@spartan-ng/ui-sonner-helm": ["./libs/ui/ui-sonner-helm/src/index.ts"]
     }
   },
   "angularCompilerOptions": {
