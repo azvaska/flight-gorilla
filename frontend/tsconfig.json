@@ -49,6 +49,12 @@
       ],
       "@spartan-ng/ui-tabs-helm": [
         "./libs/ui/ui-tabs-helm/src/index.ts"
+      ],
+      "@spartan-ng/ui-alertdialog-helm": [
+        ".\\libs/ui/ui-alertdialog-helm/src/index.ts"
+      ],
+      "@spartan-ng/ui-sonner-helm": [
+        ".\\libs/ui/ui-sonner-helm/src/index.ts"
       ]
     }
   },
