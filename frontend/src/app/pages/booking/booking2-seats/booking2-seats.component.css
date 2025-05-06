@@ -1,0 +1,27 @@
+.first-class-row {
+  background: linear-gradient(329deg, rgba(255, 255, 255, 1) 0%, rgba(120, 120, 120, 1) 50%, rgba(255, 255, 255, 1) 100%) 0 0;
+  background-size: 200% 200%;
+  transition: background-position 0.2s ease, border-width 0.1s ease !important;
+}
+.row {
+  transition: border-width 0.1s ease;
+}
+
+.row:not(.selected):hover, .first-class-row:not(.selected):hover {
+  border-width: 1px;
+  border-color: rgba(124, 124, 124, 0.53);
+}
+
+.first-class-row.selected {
+  background-position: 100% 100%;
+}
+
+.first-class-row:not(.selected):hover {
+  background-position: 30% 30%;
+}
+
+.selected {
+  /*apply class border-2 */
+  border-width: 3px;
+  border-color: black;
+}
