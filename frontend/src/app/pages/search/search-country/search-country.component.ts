@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CountryCardComponent } from './components/country-card/country-card.component';
 import { Router } from '@angular/router';
-import { ActivatedRoute } from '@angular/router';
+import { SearchParamsGuard } from '@/app/guards/search-guard';
 
 @Component({
   selector: 'app-search-country',
@@ -9,39 +9,21 @@ import { ActivatedRoute } from '@angular/router';
   templateUrl: './search-country.component.html',
 })
 export class SearchCountryComponent {
-  departurePlace = '';
-  arrivalPlace: string = '';
-  departureDate: string = '';
-  returnDate: string = '';
-
-  constructor(private route: ActivatedRoute, private router: Router) {}
-
-  ngOnInit(): void {
-    const params = this.route.queryParams.subscribe((params) => {
-      this.departurePlace = params['departurePlace'];
-      this.arrivalPlace = params['arrivalPlace'];
-      this.departureDate = params['departureDate'];
-      this.returnDate = params['returnDate'];
-
-      if (
-        this.departurePlace == '' ||
-        this.arrivalPlace == '' ||
-        this.departureDate == '' ||
-        this.returnDate == ''
-      ) {
-        this.router.navigate(['/404']);
-      }
-    });
-  }
+  constructor(
+    private searchParamsGuard: SearchParamsGuard,
+    private router: Router
+  ) {}
 
   handleCountrySelection(countryId: string) {
-    this.router.navigate(['/search/city'], {
+    this.router.navigate(['/search'], {
       queryParams: {
-        departurePlace: this.departurePlace,
-        arrivalPlace: this.arrivalPlace,
-        departureDate: this.departureDate,
-        returnDate: this.returnDate,
-        countryId: countryId,
+        from_type: this.searchParamsGuard.params.from_type,
+        from_id: this.searchParamsGuard.params.from_id,
+        to_type: 'country',
+        to_id: countryId,
+        departure_date: this.searchParamsGuard.params.departure_date,
+        return_date: this.searchParamsGuard.params.return_date,
+        date_type: this.searchParamsGuard.params.date_type,
       },
     });
   }

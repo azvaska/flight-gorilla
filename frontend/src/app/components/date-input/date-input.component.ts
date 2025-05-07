@@ -16,6 +16,7 @@ import {
   HlmTabsListComponent,
   HlmTabsTriggerDirective,
 } from '@spartan-ng/ui-tabs-helm';
+import { formatDate } from '@/utils/date';
 
 @Component({
   selector: 'date-input',
@@ -60,24 +61,10 @@ export class DateInputComponent {
   @Input() public value: Date | undefined = undefined;
   @Output() public valueChange = new EventEmitter<Date>();
 
+  protected formatDate = formatDate;
 
   public focus() {
     this.popover.open();
-  }
-
-  public formatDate(date: Date) {
-    if (this.dateType === 'specific') {
-      return date.toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    } else {
-      return date.toLocaleDateString('en-US', {
-        month: 'long',
-        year: 'numeric',
-      });
-    }
   }
 
   public onDateTypeChange(dateType: 'specific' | 'flexible') {

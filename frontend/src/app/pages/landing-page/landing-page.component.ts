@@ -11,6 +11,7 @@ import {
   HlmCardHeaderDirective,
   HlmCardTitleDirective,
 } from '@spartan-ng/ui-card-helm';
+import { dateToString } from '@/utils/date';
 @Component({
   selector: 'app-landing-page',
   imports: [
@@ -35,22 +36,10 @@ export class LandingPageComponent {
 
   constructor(private router: Router) {}
 
-  public formatDate(date: Date, dateType: 'specific' | 'flexible') {
-    const dd = date.toLocaleString('en-GB', { day: '2-digit' });
-    const mm = date.toLocaleString('en-GB', { month: '2-digit' });
-    const yyyy = date.getFullYear();
-    if (dateType === 'specific') {
-      return `${dd}-${mm}-${yyyy}`;
-    } else {
-      //Only month and year
-      return `${mm}-${yyyy}`;
-    }
-  }
-
   public submitFlightSearch() {
     // TODO: Mock logic.
     const from_type = 'city';
-    const to_type = 'city';
+    const to_type = 'anywhere';
 
     // /search?from_type=city&to_type=city&from_id=Rome&to_id=Milan&departure_date=2025-05-11&return_date=2025-05-12&date_type=specific
 
@@ -60,8 +49,8 @@ export class LandingPageComponent {
         to_type: to_type,
         from_id: this.departurePlace,
         to_id: this.arrivalPlace,
-        departure_date: this.formatDate(this.departureDate!, this.dateType),
-        return_date: this.formatDate(this.returnDate!, this.dateType),
+        departure_date: dateToString(this.departureDate!, this.dateType),
+        return_date: dateToString(this.returnDate!, this.dateType),
         date_type: this.dateType,
       },
     });
