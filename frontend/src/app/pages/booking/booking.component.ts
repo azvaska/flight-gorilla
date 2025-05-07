@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {ProgressWidgetComponent} from '@/app/components/progress-widget/progress-widget.component';
+import {ProgressWidgetComponent} from '@/app/components/booking/progress-widget/progress-widget.component';
 import {Booking1OverviewComponent} from '@/app/pages/booking/booking1-overview/booking1-overview.component';
 import {ActivatedRoute, NavigationEnd, Router, RouterOutlet} from '@angular/router';
 import { filter } from 'rxjs/operators';

@@ -1,0 +1,64 @@
+<!-- flex-plan.component.html -->
+<div class="flex justify-center">
+  <div class="relative flex justify-between items-start w-full max-w-4xl p-6 bg-white shadow-lg rounded-lg hover:scale-[102%] transition-transform duration-300">
+    <!-- Left: Title -->
+    <div class="flex-shrink-0">
+      <h2 class="text-2xl font-bold text-gray-800">Flex Plan</h2>
+    </div>
+
+    <!-- Center: Two-column benefits text -->
+    <div class="flex-1 mx-20 my-4 grid grid-cols-2 gap-2 text-sm text-gray-700">
+      <ul class="list-disc pl-5 space-y-2">
+        <li>Benefit one description</li>
+        <li>Benefit two description</li>
+        <li>Benefit three description</li>
+      </ul>
+      <ul class="list-disc pl-5 space-y-2">
+        <li>Benefit four description</li>
+        <li>Benefit five description</li>
+        <li>Benefit six description</li>
+      </ul>
+    </div>
+
+    <!-- Right: Pink placeholder for future icon -->
+    <div class="flex-shrink-0">
+      <img ngSrc="/assets/travel-insurance.png"
+           alt="Travel Insurance Icon"
+           class="w-16 h-16 object-contain rounded-md"
+           height="256"
+           width="256"/>
+    </div>
+
+    <!-- Bottom-right: Add to cart button -->
+    <button hlmBtn
+            variant="outline"
+            class="bg-black text-white absolute bottom-4 right-4 scale-90"
+            (click)="flexSelected = !flexSelected">
+      {{!flexSelected ? "Buy for €23,99" : "Added to cart"}}
+    </button>
+  </div>
+</div>
+
+<!-- Extras panel and placeholder side-by-side -->
+<div class="flex justify-center">
+  <div class="flex w-full max-w-4xl mt-6 ">
+    <div class="w-full h-115 bg-white p-4 rounded-lg shadow-lg flex flex-col">
+      <ul class="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+        <app-extra-line
+          *ngFor="let extra of extras"
+          [title]="extra.title"
+          [description]="extra.description"
+          [isStackable]="extra.isStackable"
+          [price]="extra.price"
+          [(quantity)]="extra.quantity"
+          [(selected)]="extra.selected"
+        ></app-extra-line>
+      </ul>
+      <div
+        class="mt-4 border-t pt-2 flex justify-end font-bold text-gray-800 transition-opacity duration-300"
+      >
+        €{{ total }}
+      </div>
+    </div>
+  </div>
+</div>

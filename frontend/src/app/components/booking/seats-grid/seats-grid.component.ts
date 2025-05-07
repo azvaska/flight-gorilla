@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {NgClass, NgForOf, NgIf} from "@angular/common";
-import {SquareComponent} from '@/app/components/seats-grid/square/square.component';
+import {SquareComponent} from '@/app/components/booking/seats-grid/square/square.component';
 import {HlmToasterComponent} from '@spartan-ng/ui-sonner-helm';
 import {toast} from 'ngx-sonner';
 
