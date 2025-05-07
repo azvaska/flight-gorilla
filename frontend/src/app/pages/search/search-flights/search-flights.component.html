@@ -1,1 +1,38 @@
-<p>search-flights works!</p>
+<div class="flex flex-row gap-8">
+  <section hlmCard class="p-6 h-fit w-1/4">
+    <aside hlmCardContent class="flex flex-col p-0 w-full gap-4">
+      <div>
+        <label for="sort" class="block font-medium">Sort by</label>
+        <select id="sort" class="w-full border rounded px-2 py-1">
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="duration-asc">Duration: Short to Long</option>
+          <option value="duration-desc">Duration: Long to Short</option>
+          <option value="departure-asc">Departure: Early to Late</option>
+          <option value="departure-desc">Departure: Late to Early</option>
+        </select>
+      </div>
+      <div>
+        <label for="filter-hour" class="block font-medium"
+          >Filter by hours</label
+        >
+        <input id="filter-hour" type="range" min="0" max="24" class="w-full" />
+      </div>
+      <div>
+        <label for="filter-price" class="block font-medium"
+          >Filter by price</label
+        >
+        <input
+          id="filter-price"
+          type="range"
+          min="0"
+          max="1000"
+          class="w-full"
+        />
+      </div>
+    </aside>
+  </section>
+  <div class="flex-1 flex flex-col space-y-4">
+    <flight-card />
+  </div>
+</div>
