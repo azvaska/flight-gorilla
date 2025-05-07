@@ -1,0 +1,15 @@
+.extra-item {
+  background: linear-gradient(105deg,rgba(255, 255, 255, 1) 30%,
+  rgba(210, 210, 210, 1) 50%, rgba(255, 255, 255, 1) 70%) 100%;
+  background-size: 350%;
+  /*background: linear-gradient(90deg,rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 1) 100%) 250% 100%;*/
+  transition: background-position 0.4s ease, border 0.2s ease
+}
+
+.active {
+  background-position: 0;
+}
+
+.extra-item:hover>.extra-text {
+  transform: translateX(10px);
+}
