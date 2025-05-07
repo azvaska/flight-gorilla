@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 const baseSearchSchema = z.object({
-  from_type: z.enum(['city', 'airport']),
   from_id: z.string(),
+  from_type: z.enum(['city', 'airport']),
   departure_date: z.string(),
   return_date: z.string(),
 });
@@ -51,9 +51,9 @@ const baseValidation = (data: any, ctx: z.RefinementCtx) => {
 
 const genericSearchSchema = baseSearchSchema
   .extend({
-    date_type: z.enum(['flexible', 'specific']),
     to_type: z.enum(['country', 'city', 'airport', 'anywhere']),
     to_id: z.string(),
+    date_type: z.enum(['flexible', 'specific']),
   })
   .superRefine((data, ctx) => {
     if (data.to_type !== 'anywhere' && data.to_id === undefined) {
@@ -73,7 +73,11 @@ const countrySearchSchema = baseSearchSchema
   .superRefine(baseValidation);
 
 const citySearchSchema = baseSearchSchema
-  .extend({ to_id: z.string(), date_type: z.enum(['flexible', 'specific']) })
+  .extend({
+    to_type: z.literal('country'),
+    to_id: z.string(),
+    date_type: z.enum(['flexible', 'specific']),
+  })
   .superRefine(baseValidation);
 
 const dateSearchSchema = baseSearchSchema
@@ -99,14 +103,28 @@ export function parseGenericFlightSearchParams(
   return result.data;
 }
 
-export function parseSpecificFlightSearchParams(
-  params: any,
-  type: 'country' | 'city' | 'dates' | 'flights'
-):
+type Keys<T> = T extends any ? keyof T : never;
+type CommonKeys<T> = {
+  [K in Keys<T>]: [T] extends [{ [P in K]-?: unknown }] ? K : never;
+}[Keys<T>];
+type PropType<T, K extends PropertyKey> = Extract<T, Record<K, unknown>>[K];
+type MergeOptional<T> = {
+  [K in CommonKeys<T>]: PropType<T, K>;
+} & {
+  [K in Exclude<Keys<T>, CommonKeys<T>>]?: PropType<T, K>;
+};
+
+type SearchParams = MergeOptional<
   | z.infer<typeof countrySearchSchema>
   | z.infer<typeof citySearchSchema>
   | z.infer<typeof dateSearchSchema>
-  | z.infer<typeof flightSearchSchema> {
+  | z.infer<typeof flightSearchSchema>
+>;
+
+export function parseSpecificFlightSearchParams(
+  params: any,
+  type: 'country' | 'city' | 'dates' | 'flights'
+): SearchParams {
   let result;
   switch (type) {
     case 'country':

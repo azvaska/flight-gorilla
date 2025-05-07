@@ -2,36 +2,41 @@
   <h1 class="scroll-m-20 text-3xl font-bold tracking-tight lg:text-4xl">
     Choose your dates
   </h1>
-  <div class="flex flex-row gap-4 justify-between">
-    <section hlmCard class="h-fit">
-      <div hlmCardHeader class="flex flex-col gap-2">
-        <h3 hlmCardTitle>Departure</h3>
-      </div>
-      <div hlmCardContent>
-        <price-calendar
-          [onMonthChangeCallback]="onDepartureMonthChange.bind(this)"
-          [min]="departureMinDate"
-          [max]="maxDate"
-          [date]="departureDate"
-          (dateChange)="onDepartureDateChange($event)"
-          [isLoading]="departureLoading"
-        ></price-calendar>
-      </div>
-    </section>
-    <section hlmCard class="h-fit">
-      <div hlmCardHeader class="flex flex-col gap-2">
-        <h3 hlmCardTitle>Arrival</h3>
-      </div>
-      <div hlmCardContent>
-        <price-calendar
-          [onMonthChangeCallback]="onReturnMonthChange.bind(this)"
-          [min]="returnMinDate"
-          [max]="maxDate"
-          [date]="returnDate"
-          (dateChange)="onReturnDateChange($event)"
-          [isLoading]="returnLoading"
-        ></price-calendar>
-      </div>
-    </section>
+  <div class="flex flex-col gap-8">
+    <div class="flex flex-row gap-4 justify-between">
+      <section hlmCard class="h-fit">
+        <div hlmCardHeader class="flex flex-col gap-2">
+          <h3 hlmCardTitle>Departure</h3>
+        </div>
+        <div hlmCardContent>
+          <price-calendar
+            [onMonthChangeCallback]="onDepartureMonthChange.bind(this)"
+            [min]="departureMinDate"
+            [max]="maxDate"
+            [date]="departureDate"
+            (dateChange)="onDepartureDateChange($event)"
+            [isLoading]="departureLoading"
+          ></price-calendar>
+        </div>
+      </section>
+      <section hlmCard class="h-fit">
+        <div hlmCardHeader class="flex flex-col gap-2">
+          <h3 hlmCardTitle>Arrival</h3>
+        </div>
+        <div hlmCardContent>
+          <price-calendar
+            [onMonthChangeCallback]="onReturnMonthChange.bind(this)"
+            [min]="returnMinDate"
+            [max]="maxDate"
+            [date]="returnDate"
+            (dateChange)="onReturnDateChange($event)"
+            [isLoading]="returnLoading"
+          ></price-calendar>
+        </div>
+      </section>
+    </div>
+    <div class="flex w-full justify-end">
+      <button hlmBtn variant="default" [disabled]="!departureDate || !returnDate" (click)="onConfirm()">Confirm</button>
+    </div>
   </div>
 </div>

@@ -12,6 +12,7 @@ import {
   parseSpecificFlightSearchParams,
   parseGenericFlightSearchParams,
 } from '@/utils/parsers/flight-search.parse';
+import { BehaviorSubject, map, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class SearchRedirectGuard implements CanActivate {
@@ -30,19 +31,19 @@ export class SearchRedirectGuard implements CanActivate {
       const {
         from_id,
         from_type,
+        to_type,
+        to_id,
         departure_date,
         return_date,
         date_type,
-        to_type,
-        to_id,
       } = parseGenericFlightSearchParams(route.queryParams);
 
       let next: 'country' | 'city' | 'dates' | 'flights';
       if (to_type === 'anywhere') {
         return this.router.createUrlTree([`/search/country`], {
           queryParams: {
-            from_type,
             from_id,
+            from_type,
             departure_date,
             return_date,
             date_type,
@@ -51,8 +52,9 @@ export class SearchRedirectGuard implements CanActivate {
       } else if (to_type === 'country') {
         return this.router.createUrlTree([`/search/city`], {
           queryParams: {
-            from_type,
             from_id,
+            from_type,
+            to_type,
             to_id,
             departure_date,
             return_date,
@@ -62,8 +64,8 @@ export class SearchRedirectGuard implements CanActivate {
       } else if (date_type === 'flexible') {
         return this.router.createUrlTree([`/search/dates`], {
           queryParams: {
-            from_type,
             from_id,
+            from_type,
             to_type,
             to_id,
             departure_date,
@@ -74,16 +76,18 @@ export class SearchRedirectGuard implements CanActivate {
       } else {
         return this.router.createUrlTree([`/search/flights`], {
           queryParams: {
-            from_type,
             from_id,
+            from_type,
             to_type,
             to_id,
             departure_date,
             return_date,
+            date_type,
           },
         });
       }
-    } catch {
+    } catch (e) {
+      console.error(e);
       return this.router.createUrlTree(['/404']);
     }
   }
@@ -91,24 +95,39 @@ export class SearchRedirectGuard implements CanActivate {
 
 @Injectable({ providedIn: 'root' })
 export class SearchParamsGuard implements CanActivateChild {
+  private _paramsSubject = new BehaviorSubject<ReturnType<typeof parseSpecificFlightSearchParams> | null>(null);
+  public readonly params$: Observable<ReturnType<typeof parseSpecificFlightSearchParams>> =
+  this._paramsSubject.asObservable().pipe(
+    map(value => {
+      if (!value) throw new Error('Params not found');
+      return value;
+    })
+  );
   constructor(private router: Router) {}
 
-  canActivateChild(
-    childRoute: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): boolean | UrlTree {
+  canActivateChild(childRoute: ActivatedRouteSnapshot): boolean | UrlTree {
     try {
       const type = childRoute.routeConfig?.path;
 
-      parseSpecificFlightSearchParams(
+      const params = parseSpecificFlightSearchParams(
         childRoute.queryParams,
         type as 'country' | 'city' | 'dates' | 'flights'
       );
 
+      this._paramsSubject.next(params);
+
       return true;
-    } catch(e) {
+    } catch (e) {
       console.error(e);
       return this.router.createUrlTree(['/404']);
     }
+  }
+
+  public get params() {
+    const value = this._paramsSubject.value;
+    if (!value) {
+      throw new Error('Params not found');
+    }
+    return value;
   }
 }
