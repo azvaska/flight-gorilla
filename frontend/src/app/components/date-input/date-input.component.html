@@ -9,7 +9,7 @@
         'font-light text-muted-foreground': !value,
         'font-normal text-zinc-900': value
       }"
-      >{{ value ? formatDate(value) : placeholder }}</span
+      >{{ value ? formatDate(value, dateType) : placeholder }}</span
     >
   </button>
   <div popover-content>
