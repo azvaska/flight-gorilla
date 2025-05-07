@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {NgClass, NgForOf, NgIf} from '@angular/common';
-import {SeatsGridComponent} from '@/app/components/seats-grid/seats-grid.component';
+import {SeatsGridComponent} from '@/app/components/booking/seats-grid/seats-grid.component';
 
 import { toast } from 'ngx-sonner';
 import {HlmToasterComponent} from '@spartan-ng/ui-sonner-helm';

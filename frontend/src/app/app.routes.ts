@@ -11,6 +11,7 @@ import { SearchParamsGuard, SearchRedirectGuard } from './guards/search-guard';
 import { BookingComponent } from '@/app/pages/booking/booking.component';
 import {Booking1OverviewComponent} from '@/app/pages/booking/booking1-overview/booking1-overview.component';
 import {Booking2SeatsComponent} from '@/app/pages/booking/booking2-seats/booking2-seats.component';
+import {Booking3ExtraComponent} from '@/app/pages/booking/booking3-extra/booking3-extra.component';
 export const routes: Routes = [
   {
     path: '',
@@ -58,6 +59,11 @@ export const routes: Routes = [
         path: 'seats',
         component: Booking2SeatsComponent,
         data: { selectedNumber: 2 }
+      },
+      {
+        path: 'extras',
+        component: Booking3ExtraComponent,
+        data: { selectedNumber: 3 }
       }
     ]
   }

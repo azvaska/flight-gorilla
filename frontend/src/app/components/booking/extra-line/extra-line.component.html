@@ -1,0 +1,47 @@
+<li
+  class="extra-item flex items-center p-2  rounded gap-x-4 border-1"
+  [ngClass]="{
+    'border-[#e4e4e7] active': isActive,
+    'border-transparent': !isActive,
+  }"
+>
+  <!-- title + description -->
+  <div class="extra-text flex-1 flex flex-col transition-transform duration-200">
+    <span class="font-medium text-gray-700">{{ title }}</span>
+    <span class="text-xs text-gray-500">{{ description }}</span>
+  </div>
+
+  <!-- stackable: qty controls -->
+  <div *ngIf="isStackable; else single" class="flex items-center w-28 space-x-1 h-7 justify-center">
+    <button
+      (click)="decrement()"
+      class="w-8 h-full  border border-gray-300 rounded-sm hover:bg-black hover:text-white transition-colors duration-200"
+    >–</button>
+    <input
+      type="text"
+      [value]="quantity"
+      class="w-8 h-full  text-center border border-gray-300 rounded"
+    />
+    <button
+      (click)="increment()"
+      class="w-8 h-full  border border-gray-300 rounded-sm hover:bg-black hover:text-white transition-colors duration-200"
+    >+</button>
+  </div>
+
+  <!-- non-stackable: checkbox -->
+  <ng-template #single>
+    <div class="flex items-center justify-center w-28">
+      <hlm-checkbox
+        [checked]="selected"
+        (checkedChange)="toggleCheckbox()"
+        class="h-5 w-5"
+      />
+
+    </div>
+  </ng-template>
+
+  <div class="w-16 text-right text-gray-900 select-none">
+    €{{  price }}
+    <ng-container *ngIf="isStackable">/n</ng-container>
+  </div>
+</li>
