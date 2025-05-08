@@ -14,8 +14,8 @@
           data: departureLocation
         }"
         (inputValueChange)="
-          departureLocation = $event.data;
-          departureLocationChange.emit($event.data)
+          departureLocation = $event?.data;
+          departureLocationChange.emit($event?.data)
         "
         [nextInputRef]="secondLocationInput"
         [searchList]="mockDepartureList"
@@ -33,7 +33,8 @@
           data: arrivalLocation
         }"
         (inputValueChange)="
-          arrivalLocation = $event.data; arrivalLocationChange.emit($event.data)
+          arrivalLocation = $event?.data;
+          arrivalLocationChange.emit($event?.data)
         "
         [nextInputRef]="firstDateInput"
         [searchList]="mockArrivalList"

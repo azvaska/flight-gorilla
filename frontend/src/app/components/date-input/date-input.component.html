@@ -3,7 +3,10 @@
   [popoverRelativePosition]="popoverRelativePosition"
   [popoverWidth]="popoverWidth"
 >
-  <button popover-trigger class="text-lg">
+  <button
+    popover-trigger
+    class="text-lg flex flex-row justify-between w-full h-full items-center"
+  >
     <span
       [ngClass]="{
         'font-light text-muted-foreground': !value,
@@ -11,6 +14,16 @@
       }"
       >{{ value ? formatDate(value, dateType) : placeholder }}</span
     >
+    @if (isOpen && value !== undefined) {
+    <ng-icon
+      hlm
+      name="lucideCircleX"
+      size="1.2rem"
+      (mousedown)="$event.preventDefault(); $event.stopPropagation(); onClear()"
+      (click)="$event.stopPropagation()"
+      class="cursor-pointer"
+    />
+    }
   </button>
   <div popover-content>
     <div class="flex flex-col pt-4 px-4">
@@ -19,10 +32,23 @@
           class="w-full grid grid-cols-2"
           aria-label="tabs example"
         >
-          <button hlmTabsTrigger="specific" (click)="onDateTypeChange('specific')">Specific</button>
-          <button hlmTabsTrigger="flexible" (click)="onDateTypeChange('flexible')">Flexible</button>
+          <button
+            hlmTabsTrigger="specific"
+            (click)="onDateTypeChange('specific')"
+          >
+            Specific
+          </button>
+          <button
+            hlmTabsTrigger="flexible"
+            (click)="onDateTypeChange('flexible')"
+          >
+            Flexible
+          </button>
         </hlm-tabs-list>
-        <div hlmTabsContent="specific" class="flex justify-center items-center py-4">
+        <div
+          hlmTabsContent="specific"
+          class="flex justify-center items-center py-4"
+        >
           <div class="w-fit">
             <hlm-calendar
               [date]="value"
@@ -34,7 +60,10 @@
             />
           </div>
         </div>
-        <div hlmTabsContent="flexible" class="flex justify-center items-center py-4">
+        <div
+          hlmTabsContent="flexible"
+          class="flex justify-center items-center py-4"
+        >
           <month-picker
             [selectedDate]="value"
             (selectedDateChange)="value = $event; onValueChange($event)"
