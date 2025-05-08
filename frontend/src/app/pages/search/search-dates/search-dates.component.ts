@@ -78,8 +78,6 @@ export class SearchDatesComponent {
     const departureDate = dateToString(this.departureDate, 'specific');
     const returnDate = dateToString(this.returnDate, 'specific');
 
-    console.log(departureDate, returnDate);
-
     this.router.navigate(['/search'], {
       queryParams: {
         from_type: this.searchParamsGuard.params.from_type,

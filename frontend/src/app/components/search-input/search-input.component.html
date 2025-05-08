@@ -9,7 +9,7 @@
     popover-trigger
     class="text-lg font-normal placeholder:font-light placeholder:text-muted-foreground text-zinc-900 focus:outline-none focus:ring-0"
     [placeholder]="placeHolder"
-    [value]="value"
+    [value]="inputValue?.value ?? ''"
     (input)="onInput($event)"
     (click)="onInput($event)"
   />
@@ -23,7 +23,7 @@
           class="px-4 py-1 hover:bg-gray-100 cursor-pointer"
           (click)="onSelect(item)"
         >
-          {{ item }}
+          {{ item.value }}
         </li>
       </ng-container>
       } @else {

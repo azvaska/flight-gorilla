@@ -26,33 +26,4 @@ import { dateToString } from '@/utils/date';
   },
   standalone: true,
 })
-export class LandingPageComponent {
-  public departurePlace: string | undefined = undefined;
-  public arrivalPlace: string | undefined = undefined;
-  public departureDate: Date | undefined = undefined;
-  public returnDate: Date | undefined = undefined;
-
-  public dateType: 'specific' | 'flexible' = 'specific';
-
-  constructor(private router: Router) {}
-
-  public submitFlightSearch() {
-    // TODO: Mock logic.
-    const from_type = 'city';
-    const to_type = 'anywhere';
-
-    // /search?from_type=city&to_type=city&from_id=Rome&to_id=Milan&departure_date=2025-05-11&return_date=2025-05-12&date_type=specific
-
-    this.router.navigate(['/search'], {
-      queryParams: {
-        from_type: from_type,
-        to_type: to_type,
-        from_id: this.departurePlace,
-        to_id: this.arrivalPlace,
-        departure_date: dateToString(this.departureDate!, this.dateType),
-        return_date: dateToString(this.returnDate!, this.dateType),
-        date_type: this.dateType,
-      },
-    });
-  }
-}
+export class LandingPageComponent {}
