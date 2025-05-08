@@ -4,18 +4,28 @@
   [popoverWidth]="popoverWidth"
   [preventDefaultBehavior]="true"
 >
-  <input
-    #input
-    popover-trigger
-    class="text-lg font-normal placeholder:font-light placeholder:text-muted-foreground text-zinc-900 focus:outline-none focus:ring-0"
-    [placeholder]="placeHolder"
-    [value]="inputValue?.value ?? ''"
-    (input)="onInput($event)"
-    (click)="onInput($event)"
-  />
-  <div
-    popover-content
-  >
+  <div popover-trigger class="flex items-center gap-1">
+    <input
+      #input
+      class="flex-1 min-w-0 text-lg font-normal placeholder:font-light placeholder:text-muted-foreground text-zinc-900 focus:outline-none focus:ring-0"
+      [placeholder]="placeHolder"
+      [value]="search"
+      (input)="onInput($event)"
+      (click)="onInput($event)"
+    />
+    <ng-icon
+      hlm
+      [ngClass]="{
+        'invisible': !isOpen || search.length === 0
+      }"
+      name="lucideCircleX"
+      size="1.2rem"
+      (mousedown)="$event.preventDefault(); $event.stopPropagation(); onClear()"
+      class="cursor-pointer"
+    />
+
+  </div>
+  <div popover-content>
     <ul class="py-2">
       @if (filteredList.length > 0) {
       <ng-container *ngFor="let item of filteredList">
@@ -27,7 +37,9 @@
         </li>
       </ng-container>
       } @else {
-      <li class="px-4 py-1 text-muted-foreground italic">{{ noResultsText }}</li>
+      <li class="px-4 py-1 text-muted-foreground italic">
+        {{ noResultsText }}
+      </li>
       }
     </ul>
   </div>

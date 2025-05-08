@@ -17,7 +17,8 @@ import {
   HlmTabsTriggerDirective,
 } from '@spartan-ng/ui-tabs-helm';
 import { formatDate } from '@/utils/date';
-
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideCircleX } from '@ng-icons/lucide';
 @Component({
   selector: 'date-input',
   imports: [
@@ -30,8 +31,10 @@ import { formatDate } from '@/utils/date';
     HlmTabsListComponent,
     HlmTabsTriggerDirective,
     MonthPickerComponent,
+    NgIcon,
   ],
   templateUrl: './date-input.component.html',
+  providers: [provideIcons({ lucideCircleX })],
 })
 export class DateInputComponent {
   @Input() public popoverRelativePosition: {
@@ -67,6 +70,10 @@ export class DateInputComponent {
     this.popover.open();
   }
 
+  protected get isOpen() {
+    return this.popover?.showPopover ?? false;
+  }
+
   public onDateTypeChange(dateType: 'specific' | 'flexible') {
     this.dateType = dateType;
     this.dateTypeChange.emit(dateType);
@@ -75,9 +82,16 @@ export class DateInputComponent {
   public onValueChange(value: Date) {
     this.value = value;
     this.valueChange.emit(this.value);
-    this.popover.close();
+    if (value !== undefined) {
+      this.popover.close();
+    }
     if (this.nextInputRef) {
       this.nextInputRef.focus();
     }
+  }
+
+  protected onClear() {
+    this.value = undefined;
+    this.valueChange.emit(this.value);
   }
 }
