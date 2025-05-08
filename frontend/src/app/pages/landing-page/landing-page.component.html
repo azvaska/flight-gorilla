@@ -1,14 +1,7 @@
 <div class="w-full h-full flex items-center justify-center">
   <section hlmCard>
     <div hlmCardContent class="p-16">
-      <flight-search-bar
-        [(departurePlace)]="departurePlace"
-        [(arrivalPlace)]="arrivalPlace"
-        [(departureDate)]="departureDate"
-        [(returnDate)]="returnDate"
-        [searchCallback]="submitFlightSearch.bind(this)"
-        [(dateType)]="dateType"
-      />
+      <flight-search-bar />
     </div>
   </section>
 </div>

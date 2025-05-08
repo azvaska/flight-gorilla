@@ -27,18 +27,22 @@ export const routes: Routes = [
       {
         path: 'country',
         component: SearchCountryComponent,
+        runGuardsAndResolvers: 'paramsOrQueryParamsChange'
       },
       {
         path: 'city',
         component: SearchCityComponent,
+        runGuardsAndResolvers: 'paramsOrQueryParamsChange'
       },
       {
         path: 'dates',
         component: SearchDatesComponent,
+        runGuardsAndResolvers: 'paramsOrQueryParamsChange'
       },
       {
         path: 'flights',
         component: SearchFlightsComponent,
+        runGuardsAndResolvers: 'paramsOrQueryParamsChange'
       },
     ],
   },
