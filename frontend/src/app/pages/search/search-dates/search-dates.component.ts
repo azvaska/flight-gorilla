@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   HlmCardContentDirective,
   HlmCardDirective,
@@ -9,7 +9,7 @@ import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { PriceCalendarComponent } from './price-calendar/price-calendar.component';
 import { Router } from '@angular/router';
 import { SearchParamsGuard } from '@/app/guards/search-guard';
-import { dateToString, formatDate } from '@/utils/date';
+import { dateToString, formatDate, stringToDate } from '@/utils/date';
 
 @Component({
   selector: 'app-search-dates',
@@ -27,6 +27,10 @@ import { dateToString, formatDate } from '@/utils/date';
   },
 })
 export class SearchDatesComponent {
+
+  @Input() public departureFocusedDate: Date | undefined = undefined;
+  @Input() public returnFocusedDate: Date | undefined = undefined;
+
   protected departureMinDate = new Date();
   protected returnMinDate = new Date();
   protected maxDate = new Date(
@@ -42,15 +46,18 @@ export class SearchDatesComponent {
   constructor(
     private router: Router,
     private searchParamsGuard: SearchParamsGuard
-  ) {}
-
-  protected onDepartureDateChange(date: Date) {
-    this.departureDate = date;
-    this.returnMinDate = date;
-    this.returnDate = undefined;
+  ) {
+    this.departureFocusedDate = stringToDate(this.searchParamsGuard.params.departure_date);
+    this.returnFocusedDate = this.searchParamsGuard.params.return_date ? stringToDate(this.searchParamsGuard.params.return_date) : undefined;
   }
 
-  protected onReturnDateChange(date: Date) {
+  protected onDepartureDateChange(date: Date | undefined) {
+    this.departureDate = date;
+    this.returnDate = undefined;
+    this.returnMinDate = date ?? new Date();
+  }
+
+  protected onReturnDateChange(date: Date | undefined) {
     this.returnDate = date;
   }
 
