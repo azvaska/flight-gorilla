@@ -41,7 +41,6 @@ export class FlightSearchBarComponent implements OnInit {
   @Output() public arrivalLocationChange = new EventEmitter<ILocation>();
   @Output() public departureDateChange = new EventEmitter<Date>();
   @Output() public returnDateChange = new EventEmitter<Date>();
-
   @Input() public dateType: 'specific' | 'flexible' = 'specific';
   @Output() public dateTypeChange = new EventEmitter<'specific' | 'flexible'>();
 
@@ -150,11 +149,6 @@ export class FlightSearchBarComponent implements OnInit {
       return;
     }
 
-    if (this.returnDate == undefined) {
-      this._secondDateInput.focus();
-      return;
-    }
-
     this.searchCallback();
   }
 
@@ -162,8 +156,7 @@ export class FlightSearchBarComponent implements OnInit {
     if (
       this.departureLocation === undefined ||
       this.arrivalLocation === undefined ||
-      this.departureDate === undefined ||
-      this.returnDate === undefined
+      this.departureDate === undefined
     ) {
       console.error('Missing required parameters');
       return;
@@ -175,7 +168,7 @@ export class FlightSearchBarComponent implements OnInit {
       to_type: this.arrivalLocation.type,
       to_id: this.arrivalLocation.id,
       departure_date: dateToString(this.departureDate, this.dateType),
-      return_date: dateToString(this.returnDate, this.dateType),
+      return_date: this.returnDate ? dateToString(this.returnDate, this.dateType) : undefined,
       date_type: this.dateType,
     };
 
