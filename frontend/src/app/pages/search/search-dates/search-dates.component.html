@@ -4,7 +4,7 @@
   </h1>
   <div class="flex flex-col gap-8">
     <div class="flex flex-row gap-4 justify-between">
-      <section hlmCard class="h-fit">
+      <section hlmCard class="h-fit mx-auto">
         <div hlmCardHeader class="flex flex-col gap-2">
           <h3 hlmCardTitle>Departure</h3>
         </div>
@@ -16,9 +16,11 @@
             [date]="departureDate"
             (dateChange)="onDepartureDateChange($event)"
             [isLoading]="departureLoading"
+            [defaultFocusedDate]="departureFocusedDate"
           ></price-calendar>
         </div>
       </section>
+      @if (returnFocusedDate !== undefined) {
       <section hlmCard class="h-fit">
         <div hlmCardHeader class="flex flex-col gap-2">
           <h3 hlmCardTitle>Arrival</h3>
@@ -31,15 +33,17 @@
             [date]="returnDate"
             (dateChange)="onReturnDateChange($event)"
             [isLoading]="returnLoading"
+            [defaultFocusedDate]="returnFocusedDate"
           ></price-calendar>
         </div>
       </section>
+      }
     </div>
     <div class="flex w-full justify-end">
       <button
         hlmBtn
         variant="default"
-        [disabled]="!departureDate || !returnDate"
+        [disabled]="!departureDate || (!returnDate && returnFocusedDate !== undefined)"
         (click)="onConfirm()"
       >
         Confirm

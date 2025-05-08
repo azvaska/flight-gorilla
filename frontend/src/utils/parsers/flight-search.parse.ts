@@ -1,10 +1,10 @@
-import { z } from 'zod';
+import { string, z } from 'zod';
 
 const baseSearchSchema = z.object({
   from_id: z.string(),
   from_type: z.enum(['city', 'airport']),
   departure_date: z.string(),
-  return_date: z.string(),
+  return_date: z.string().optional(),
 });
 
 const baseValidation = (data: any, ctx: z.RefinementCtx) => {
@@ -20,7 +20,7 @@ const baseValidation = (data: any, ctx: z.RefinementCtx) => {
           'departure_date must be in dd-mm-yyyy format when date_type is specific or missing',
       });
     }
-    if (!dateRegex.test(data.return_date)) {
+    if (data.return_date && !dateRegex.test(data.return_date)) {
       ctx.addIssue({
         path: ['return_date'],
         code: z.ZodIssueCode.custom,
@@ -38,7 +38,7 @@ const baseValidation = (data: any, ctx: z.RefinementCtx) => {
           'departure_date must be in mm-yyyy format when date_type is flexible',
       });
     }
-    if (!dateRegex.test(data.return_date)) {
+    if (data.return_date && !dateRegex.test(data.return_date)) {
       ctx.addIssue({
         path: ['return_date'],
         code: z.ZodIssueCode.custom,
@@ -108,7 +108,11 @@ type Keys<T> = T extends any ? keyof T : never;
 type CommonKeys<T> = {
   [K in Keys<T>]: [T] extends [{ [P in K]-?: unknown }] ? K : never;
 }[Keys<T>];
-type PropType<T, K extends PropertyKey> = Extract<T, Record<K, unknown>>[K];
+type PropType<T, K extends PropertyKey> = T extends any
+  ? K extends keyof T
+    ? T[K]
+    : never
+  : never;
 type MergeOptional<T> = {
   [K in CommonKeys<T>]: PropType<T, K>;
 } & {
@@ -121,6 +125,10 @@ type SearchParams = MergeOptional<
   | z.infer<typeof dateSearchSchema>
   | z.infer<typeof flightSearchSchema>
 >;
+
+
+
+
 
 export function parseSpecificFlightSearchParams(
   params: any,

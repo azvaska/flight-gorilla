@@ -35,8 +35,13 @@
                 </p>
                 <p>•</p>
                 <p>
-                  {{ formatDate(state.data!.departureDate, state.data!.dateType) }} -
+                  {{
+                    formatDate(state.data!.departureDate, state.data!.dateType)
+                  }}
+
+                  @if (state.data!.returnDate) { -
                   {{ formatDate(state.data!.returnDate, state.data!.dateType) }}
+                  }
                 </p>
               </div>
             </section>

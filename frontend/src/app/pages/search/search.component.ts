@@ -24,7 +24,7 @@ interface SearchState {
   departureLocation: ILocation;
   arrivalLocation: ILocation;
   departureDate: Date;
-  returnDate: Date;
+  returnDate: Date | undefined;
   dateType: 'specific' | 'flexible';
 }
 
@@ -69,7 +69,7 @@ export class SearchComponent {
             departureLocation: departure,
             arrivalLocation: arrival,
             departureDate: stringToDate(this.params.departure_date),
-            returnDate: stringToDate(this.params.return_date),
+            returnDate: this.params.return_date ? stringToDate(this.params.return_date) : undefined,
             dateType: this.getDateType(this.params),
           },
           error: null,
