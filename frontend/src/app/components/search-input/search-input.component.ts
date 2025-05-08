@@ -5,8 +5,7 @@ import {
   Output,
   EventEmitter,
   ElementRef,
-  Signal,
-  computed,
+  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PopoverComponent } from '@/app/components/popover/popover.component';
@@ -56,6 +55,12 @@ export class SearchInputComponent<T> {
     return this.searchList.filter((item) =>
       item.value.toLowerCase().startsWith(this.search.toLowerCase())
     );
+  }
+
+  constructor() {
+    effect(() => {
+      this.search = this.inputValue?.value ?? '';
+    });
   }
 
   protected get isOpen() {
