@@ -53,7 +53,6 @@ export class ExtraLineComponent {
   }
 
   toggleCheckbox() {
-    console.log("amongas");
     this.selected = !this.selected;
     this.selectedChange.emit(this.selected);
   }

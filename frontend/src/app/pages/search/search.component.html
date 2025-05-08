@@ -30,13 +30,13 @@
                 class="flex flex-row gap-4 justify-center font-light px-16 py-6"
               >
                 <p>
-                  {{ state.data.departureLocation }} -
-                  {{ state.data.arrivalLocation }}
+                  {{ state.data!.departureLocation.name }} -
+                  {{ state.data!.arrivalLocation.name }}
                 </p>
                 <p>•</p>
                 <p>
-                  {{ formatDate(state.data.departureDate, state.data.dateType) }} -
-                  {{ formatDate(state.data.returnDate, state.data.dateType) }}
+                  {{ formatDate(state.data!.departureDate, state.data!.dateType) }} -
+                  {{ formatDate(state.data!.returnDate, state.data!.dateType) }}
                 </p>
               </div>
             </section>
@@ -44,11 +44,11 @@
           <div popover-content class="flex flex-col">
             <div class="p-6">
               <flight-search-bar
-                [departurePlace]="state.data.departureLocation"
-                [arrivalPlace]="state.data.arrivalLocation"
-                [departureDate]="state.data.departureDate"
-                [returnDate]="state.data.returnDate"
-                [dateType]="state.data.dateType"
+                [departureLocation]="state.data!.departureLocation"
+                [arrivalLocation]="state.data!.arrivalLocation"
+                [departureDate]="state.data!.departureDate"
+                [returnDate]="state.data!.returnDate"
+                [dateType]="state.data!.dateType"
               />
             </div>
           </div>

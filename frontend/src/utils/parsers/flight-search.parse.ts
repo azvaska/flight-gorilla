@@ -52,7 +52,7 @@ const baseValidation = (data: any, ctx: z.RefinementCtx) => {
 const genericSearchSchema = baseSearchSchema
   .extend({
     to_type: z.enum(['country', 'city', 'airport', 'anywhere']),
-    to_id: z.string(),
+    to_id: z.string().optional(),
     date_type: z.enum(['flexible', 'specific']),
   })
   .superRefine((data, ctx) => {
@@ -68,6 +68,7 @@ const genericSearchSchema = baseSearchSchema
 
 const countrySearchSchema = baseSearchSchema
   .extend({
+    to_type: z.literal('anywhere'),
     date_type: z.enum(['flexible', 'specific']),
   })
   .superRefine(baseValidation);

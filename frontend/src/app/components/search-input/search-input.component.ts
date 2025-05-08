@@ -10,12 +10,18 @@ import { CommonModule } from '@angular/common';
 import { PopoverComponent } from '@/app/components/popover/popover.component';
 import { PopoverTriggerDirective } from '@/app/components/popover/popover-trigger.directive';
 
+export interface SearchInputValue<T> {
+  value: string;
+  data: T | undefined;
+}
+
+
 @Component({
   selector: 'search-input',
   templateUrl: './search-input.component.html',
   imports: [CommonModule, PopoverComponent, PopoverTriggerDirective],
 })
-export class SearchInputComponent {
+export class SearchInputComponent<T> {
   @Input() public placeHolder: string = '';
   @Input() public popoverRelativePosition: {
     additionalTop?: number;
@@ -27,8 +33,8 @@ export class SearchInputComponent {
   @Input() public popoverWidth: string = 'auto';
   @Input() public noResultsText: string = 'No results found.';
 
-  @Input() public value: string = '';
-  @Output() public valueChange = new EventEmitter<string>();
+  @Input() public inputValue: SearchInputValue<T> | undefined = undefined;
+  @Output() public inputValueChange = new EventEmitter<SearchInputValue<T>>();
 
   @Input() public nextInputRef?: {
     focus: () => void;
@@ -37,10 +43,14 @@ export class SearchInputComponent {
   @ViewChild('popover') popover!: PopoverComponent;
   @ViewChild('input', { static: true }) input!: ElementRef<HTMLInputElement>;
 
-  searchList = ['hello', 'world', 'test', 'pxa', 'heas', 'world1', 'hello1'];
+  @Input() public searchList: SearchInputValue<T>[] = [];
+
+  private _search: string = this.inputValue?.value ?? '';
 
   get filteredList() {
-    return this.searchList.filter((item) => item.startsWith(this.value));
+    return this.searchList.filter((item) =>
+      item.value.toLowerCase().startsWith(this._search.toLowerCase())
+    );
   }
 
   focus() {
@@ -50,18 +60,18 @@ export class SearchInputComponent {
 
   onInput(e: Event) {
     const input = e.target as HTMLInputElement;
-    this.value = input.value;
+    this._search = input.value;
 
-    if (this.value.length === 0) {
+    if (this._search.length === 0) {
       this.popover.close();
       return;
     }
     this.popover.open();
   }
 
-  onSelect(item: string) {
-    this.value = item;
-    this.valueChange.emit(item);
+  onSelect(item: SearchInputValue<T>) {
+    this.inputValue = item;
+    this.inputValueChange.emit(item);
     this.popover.close();
     if (this.nextInputRef) {
       this.nextInputRef.focus();

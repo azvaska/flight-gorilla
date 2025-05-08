@@ -10,13 +10,22 @@ import { parseSpecificFlightSearchParams } from '@/utils/parsers/flight-search.p
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, startWith } from 'rxjs/operators';
 import { SearchFetchService } from '@/app/services/search/search-fetch.service';
-import { stringToDate, formatDate } from '@/utils/date';
+import { stringToDate, formatDate, dateToString } from '@/utils/date';
 import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
+import { ILocation } from '@/types/search/Location';
 
 interface FetchState<T> {
   loading: boolean;
   data: T | null;
   error: string | null;
+}
+
+interface SearchState {
+  departureLocation: ILocation;
+  arrivalLocation: ILocation;
+  departureDate: Date;
+  returnDate: Date;
+  dateType: 'specific' | 'flexible';
 }
 
 @Component({
@@ -38,7 +47,7 @@ interface FetchState<T> {
 export class SearchComponent {
   protected params!: ReturnType<typeof parseSpecificFlightSearchParams>;
 
-  protected state$!: Observable<FetchState<any>>;
+  protected state$!: Observable<FetchState<SearchState>>;
 
   protected formatDate = formatDate;
 
@@ -49,7 +58,7 @@ export class SearchComponent {
   ) {
     this.searchParamsGuard.params$.subscribe((params) => {
       this.params = params;
-      console.log(this.params);
+      console.log('refined params', this.params);
       this.state$ = forkJoin({
         departure: this.getDepartureInfo(this.params),
         arrival: this.getArrivalInfo(this.params),
@@ -57,8 +66,8 @@ export class SearchComponent {
         map(({ departure, arrival }) => ({
           loading: false,
           data: {
-            departureLocation: departure.name,
-            arrivalLocation: arrival.name,
+            departureLocation: departure,
+            arrivalLocation: arrival,
             departureDate: stringToDate(this.params.departure_date),
             returnDate: stringToDate(this.params.return_date),
             dateType: this.getDateType(this.params),
@@ -82,19 +91,29 @@ export class SearchComponent {
     return params.date_type ?? 'specific';
   }
 
-  private getDepartureInfo(params: any): Observable<{ name: string }> {
+  private getDepartureInfo(params: any): Observable<ILocation> {
     if (params.from_type === 'city') {
-      return this.flightSearchService.getCity(params.from_id);
+      return this.flightSearchService
+        .getCity(params.from_id)
+        .pipe(
+          map((city) => ({ id: params.from_id, name: city.name, type: 'city' }))
+        );
     } else if (params.from_type === 'airport') {
-      return this.flightSearchService.getAirport(params.from_id);
+      return this.flightSearchService.getAirport(params.from_id).pipe(
+        map((airport) => ({
+          id: params.from_id,
+          name: airport.name,
+          type: 'airport',
+        }))
+      );
     }
 
     throw new Error('Invalid from_type');
   }
 
-  private getArrivalInfo(params: any): Observable<{ name: string }> {
-    if (params.to_type === undefined) {
-      return of({ name: 'Anywhere' });
+  private getArrivalInfo(params: any): Observable<ILocation> {
+    if (params.to_type === 'anywhere') {
+      return of({ id: undefined, name: 'Anywhere', type: 'anywhere' });
     }
 
     if (params.to_id === undefined) {
@@ -102,11 +121,27 @@ export class SearchComponent {
     }
 
     if (params.to_type === 'city') {
-      return this.flightSearchService.getCity(params.to_id);
+      return this.flightSearchService
+        .getCity(params.to_id)
+        .pipe(
+          map((city) => ({ id: params.to_id, name: city.name, type: 'city' }))
+        );
     } else if (params.to_type === 'airport') {
-      return this.flightSearchService.getAirport(params.to_id);
+      return this.flightSearchService.getAirport(params.to_id).pipe(
+        map((airport) => ({
+          id: params.to_id,
+          name: airport.name,
+          type: 'airport',
+        }))
+      );
     } else if (params.to_type === 'country') {
-      return this.flightSearchService.getCountry(params.to_id);
+      return this.flightSearchService.getCountry(params.to_id).pipe(
+        map((country) => ({
+          id: params.to_id,
+          name: country.name,
+          type: 'country',
+        }))
+      );
     }
 
     throw new Error('Invalid to_type');

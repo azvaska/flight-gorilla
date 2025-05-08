@@ -6,8 +6,15 @@ import {
   ViewChild,
   OnInit,
 } from '@angular/core';
-import { SearchInputComponent } from '@/app/components/search-input/search-input.component';
+import {
+  SearchInputComponent,
+  SearchInputValue,
+} from '@/app/components/search-input/search-input.component';
 import { DateInputComponent } from '@/app/components/date-input/date-input.component';
+import { Router } from '@angular/router';
+import { dateToString } from '@/utils/date';
+import { ILocation } from '@/types/search/Location';
+
 @Component({
   selector: 'flight-search-bar',
   imports: [SearchInputComponent, DateInputComponent],
@@ -15,23 +22,23 @@ import { DateInputComponent } from '@/app/components/date-input/date-input.compo
 })
 export class FlightSearchBarComponent implements OnInit {
   @ViewChild('firstLocationInput')
-  private readonly _firstLocationInput!: SearchInputComponent;
+  private readonly _firstLocationInput!: SearchInputComponent<ILocation>;
   @ViewChild('secondLocationInput')
-  private readonly _secondLocationInput!: SearchInputComponent;
+  private readonly _secondLocationInput!: SearchInputComponent<ILocation>;
   @ViewChild('firstDateInput')
   private readonly _firstDateInput!: DateInputComponent;
   @ViewChild('secondDateInput')
   private readonly _secondDateInput!: DateInputComponent;
 
   @Input() public autoFocus: boolean = true;
-  @Input() public searchCallback!: () => void;
+  @Input() public searchCallback: () => void = this.defaultSearchCallback;
 
-  @Input() public departurePlace: string | undefined = undefined;
-  @Input() public arrivalPlace: string | undefined = undefined;
+  @Input() public departureLocation: ILocation | undefined = undefined;
+  @Input() public arrivalLocation: ILocation | undefined = undefined;
   @Input() public departureDate: Date | undefined = undefined;
   @Input() public returnDate: Date | undefined = undefined;
-  @Output() public departurePlaceChange = new EventEmitter<string>();
-  @Output() public arrivalPlaceChange = new EventEmitter<string>();
+  @Output() public departureLocationChange = new EventEmitter<ILocation>();
+  @Output() public arrivalLocationChange = new EventEmitter<ILocation>();
   @Output() public departureDateChange = new EventEmitter<Date>();
   @Output() public returnDateChange = new EventEmitter<Date>();
 
@@ -40,9 +47,46 @@ export class FlightSearchBarComponent implements OnInit {
 
   public departureDateMinDate: Date | undefined = undefined;
 
+  constructor(private router: Router) {}
+
   ngOnInit() {
     this.updateMinDate();
   }
+
+  protected mockDepartureList: SearchInputValue<ILocation>[] = [
+    {
+      value: 'New York (any)',
+      data: { id: '1', name: 'New York', type: 'city' },
+    },
+    {
+      value: 'Los Angeles (any)',
+      data: { id: '2', name: 'Los Angeles', type: 'city' },
+    },
+    {
+      value: 'Chicago (any)',
+      data: { id: '3', name: 'Chicago', type: 'city' },
+    },
+    { value: 'JFK', data: { id: '1', name: 'JFK', type: 'airport' } },
+    { value: 'LAX', data: { id: '2', name: 'LAX', type: 'airport' } },
+    { value: 'ORD', data: { id: '3', name: 'ORD', type: 'airport' } },
+    { value: 'MIA', data: { id: '4', name: 'MIA', type: 'airport' } },
+  ];
+
+  protected mockArrivalList: SearchInputValue<ILocation>[] =
+    this.mockDepartureList.concat([
+      {
+        value: 'United States',
+        data: { id: '1', name: 'United States', type: 'country' },
+      },
+      {
+        value: 'Italy',
+        data: { id: '4', name: 'Italy', type: 'country' },
+      },
+      {
+        value: 'Anywhere',
+        data: { id: undefined, name: 'Anywhere', type: 'anywhere' },
+      },
+    ]);
 
   public get firstLocationInput() {
     if (!this.autoFocus) {
@@ -91,12 +135,12 @@ export class FlightSearchBarComponent implements OnInit {
   }
 
   public onSearchClick() {
-    if (this.departurePlace == undefined) {
+    if (this.departureLocation == undefined) {
       this._firstLocationInput.focus();
       return;
     }
 
-    if (this.arrivalPlace == undefined) {
+    if (this.arrivalLocation == undefined) {
       this._secondLocationInput.focus();
       return;
     }
@@ -112,7 +156,32 @@ export class FlightSearchBarComponent implements OnInit {
     }
 
     this.searchCallback();
+  }
 
+  private defaultSearchCallback() {
+    if (
+      this.departureLocation === undefined ||
+      this.arrivalLocation === undefined ||
+      this.departureDate === undefined ||
+      this.returnDate === undefined
+    ) {
+      console.error('Missing required parameters');
+      return;
+    }
+
+    const queryParams: any = {
+      from_type: this.departureLocation.type,
+      from_id: this.departureLocation.id,
+      to_type: this.arrivalLocation.type,
+      to_id: this.arrivalLocation.id,
+      departure_date: dateToString(this.departureDate, this.dateType),
+      return_date: dateToString(this.returnDate, this.dateType),
+      date_type: this.dateType,
+    };
+
+    this.router.navigate(['/search'], {
+      queryParams,
+    });
   }
 
   private updateMinDate() {

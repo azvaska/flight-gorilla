@@ -38,12 +38,12 @@ export class SearchRedirectGuard implements CanActivate {
         date_type,
       } = parseGenericFlightSearchParams(route.queryParams);
 
-      let next: 'country' | 'city' | 'dates' | 'flights';
       if (to_type === 'anywhere') {
         return this.router.createUrlTree([`/search/country`], {
           queryParams: {
             from_id,
             from_type,
+            to_type,
             departure_date,
             return_date,
             date_type,
@@ -108,7 +108,6 @@ export class SearchParamsGuard implements CanActivateChild {
   canActivateChild(childRoute: ActivatedRouteSnapshot): boolean | UrlTree {
     try {
       const type = childRoute.routeConfig?.path;
-
       const params = parseSpecificFlightSearchParams(
         childRoute.queryParams,
         type as 'country' | 'city' | 'dates' | 'flights'
