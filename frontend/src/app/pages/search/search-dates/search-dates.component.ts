@@ -78,12 +78,12 @@ export class SearchDatesComponent {
   }
 
   protected onConfirm() {
-    if (!this.departureDate || !this.returnDate) {
+    if (!this.departureDate) {
       return;
     }
 
     const departureDate = dateToString(this.departureDate, 'specific');
-    const returnDate = dateToString(this.returnDate, 'specific');
+    const returnDate = this.returnDate ? dateToString(this.returnDate, 'specific') : undefined;
 
     this.router.navigate(['/search'], {
       queryParams: {
