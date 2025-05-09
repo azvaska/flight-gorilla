@@ -38,11 +38,11 @@ import { lucideCircleX } from '@ng-icons/lucide';
 })
 export class DateInputComponent {
   @Input() public popoverRelativePosition: {
-    additionalTop?: number;
-    additionalLeft?: number;
+    top?: number;
+    left?: number;
   } = {
-    additionalTop: 0,
-    additionalLeft: 0,
+    top: 0,
+    left: 0,
   };
   @Input() public popoverWidth: string = 'auto';
   @Input() public placeholder: string = 'Add a date';

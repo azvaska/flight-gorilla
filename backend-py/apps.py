@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
 from flask_marshmallow import Marshmallow
@@ -19,6 +20,7 @@ from app.apis import api
 from app.models.user import User, Role
 
 app_flask = Flask(__name__)
+CORS(app_flask)
 app_flask.config.from_object(Config)
 login = LoginManager(app_flask)
 from app.extensions import db,ma, db_session

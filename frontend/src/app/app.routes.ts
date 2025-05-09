@@ -14,6 +14,7 @@ import { Booking2SeatsComponent } from '@/app/pages/booking/booking2-seats/booki
 import { Booking3ExtraComponent } from '@/app/pages/booking/booking3-extra/booking3-extra.component';
 import { LoginComponent } from '@/app/pages/auth/login/login.component';
 import { RegisterComponent } from '@/app/pages/auth/register/register.component';
+import { AuthGuard, GuestGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
   {
@@ -22,6 +23,7 @@ export const routes: Routes = [
   },
   {
     path: 'auth',
+    canActivate: [GuestGuard],
     children: [
       {
         path: 'login',
@@ -65,6 +67,7 @@ export const routes: Routes = [
   {
     path: 'booking',
     component: BookingComponent,
+    canActivate: [AuthGuard],
     children: [
       {
         path: 'overview',

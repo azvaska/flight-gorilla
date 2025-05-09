@@ -6,6 +6,7 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
+
 import {
   HlmCardDirective,
   HlmCardHeaderDirective,
@@ -17,6 +18,9 @@ import {
 import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
 import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+import { AuthService } from '@/app/auth/auth.service';
+import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
@@ -32,19 +36,37 @@ import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
     HlmLabelDirective,
     HlmInputDirective,
     HlmButtonDirective,
+    CommonModule,
   ],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
   loginForm = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]),
+    email: new FormControl('', [Validators.required]),
     password: new FormControl('', Validators.required),
-    remember: new FormControl(false),
   });
+
+  constructor(private authService: AuthService, private router: Router) {}
 
   onSubmit() {
     if (this.loginForm.valid) {
-      // handle login
+      this.authService
+        .login({
+          email: this.loginForm.value.email!,
+          password: this.loginForm.value.password!,
+        })
+        .subscribe({
+          next: () => {
+            this.router.navigate(['/']);
+          },
+          error: (err) => {
+            if (err.status === 401) {
+              this.loginForm.setErrors({ error: 'Invalid email or password' });
+            } else {
+              this.loginForm.setErrors({ error: 'Unknown error' });
+            }
+          },
+        });
     }
   }
 }

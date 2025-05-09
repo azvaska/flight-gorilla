@@ -7,7 +7,7 @@
       <search-input
         #firstLocationInput
         [placeHolder]="'Enter a city or country'"
-        [popoverRelativePosition]="{ additionalTop: 20, additionalLeft: -20 }"
+        [popoverRelativePosition]="{ top: 20, left: -20 }"
         [popoverWidth]="'200px'"
         [inputValue]="{
           value: departureLocation?.name ?? '',
@@ -26,7 +26,7 @@
       <search-input
         #secondLocationInput
         [placeHolder]="'Enter a city or country'"
-        [popoverRelativePosition]="{ additionalTop: 20, additionalLeft: -20 }"
+        [popoverRelativePosition]="{ top: 20, left: -20 }"
         [popoverWidth]="'200px'"
         [inputValue]="{
           value: arrivalLocation?.name ?? '',
@@ -44,7 +44,7 @@
       <h1 class="text-sm text-zinc-600 font-bold">Depart</h1>
       <date-input
         #firstDateInput
-        [popoverRelativePosition]="{ additionalTop: 20, additionalLeft: -20 }"
+        [popoverRelativePosition]="{ top: 20, left: -20 }"
         [popoverWidth]="'auto'"
         [(value)]="departureDate"
         (valueChange)="onDepartureDateChange($event)"
@@ -58,7 +58,7 @@
       <h1 class="text-sm text-zinc-600 font-bold">Return</h1>
       <date-input
         #secondDateInput
-        [popoverRelativePosition]="{ additionalTop: 20, additionalLeft: -20 }"
+        [popoverRelativePosition]="{ top: 20, left: -20 }"
         [popoverWidth]="'auto'"
         [(value)]="returnDate"
         (valueChange)="onReturnDateChange($event)"

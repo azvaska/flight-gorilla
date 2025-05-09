@@ -13,7 +13,7 @@ import {
 import { DateInputComponent } from '@/app/components/date-input/date-input.component';
 import { Router } from '@angular/router';
 import { dateToString } from '@/utils/date';
-import { ILocation } from '@/types/search/Location';
+import { ILocation } from '@/types/search/location';
 
 @Component({
   selector: 'flight-search-bar',
