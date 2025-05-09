@@ -30,7 +30,7 @@ class Route(db.Model):
 class Flight(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     route_id: Mapped[int] = mapped_column(db.Integer,db.ForeignKey('route.id'), nullable=False)
-    aircraft_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('aircraft.id'), nullable=False)
+    aircraft_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey('airline_aircraft.id'), nullable=False)
 
     departure_time: Mapped[datetime] = mapped_column(db.DateTime, nullable=False)
     arrival_time: Mapped[datetime] = mapped_column(db.DateTime, nullable=False)
@@ -71,5 +71,7 @@ class Flight(db.Model):
             booked_seats.append(booking.seat_number)
         return booked_seats
 
+    def __str__(self):
+        return f'Flight {self.route.id} {self.route.flight_number}'
     def __repr__(self):
         return f'<"{self.flight_number}"'

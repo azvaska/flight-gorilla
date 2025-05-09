@@ -9,6 +9,7 @@ from .booking import api as BookingNSA
 from .seat_session import api as SeatSessionNSA
 from .flight import api as FlightNSA
 from .user import api as UserNSA
+from .search import api as SearchNSA
 
 authorizations = {
     'JWT': {
@@ -39,3 +40,4 @@ api.add_namespace(BookingNSA)
 api.add_namespace(SeatSessionNSA)
 api.add_namespace(FlightNSA)
 api.add_namespace(UserNSA)
+api.add_namespace(SearchNSA)

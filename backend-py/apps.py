@@ -11,6 +11,7 @@ from flask_security import SQLAlchemySessionUserDatastore, Security
 
 from app.commands.add_aircraft import seed_aircraft
 from app.commands.add_airports import seed_airports
+from app.commands.add_flight import seed_airline_aircraft
 from app.models import Airline
 from config import Config
 from flask_login import LoginManager
@@ -25,6 +26,7 @@ from app.extensions import db,ma, db_session
 db.init_app(app_flask)
 app_flask.cli.add_command(seed_airports)
 app_flask.cli.add_command(seed_aircraft)
+app_flask.cli.add_command(seed_airline_aircraft)
 app_flask.teardown_appcontext(lambda exc: db_session.close())
 app_flask.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", 'pf9Wkove4IKEAXvy-cQkeDPhv9Cb3Ag-wyJILbq_dFw')
 # Generate a good salt for password hashing using: secrets.SystemRandom().getrandbits(128)
