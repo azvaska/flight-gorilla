@@ -1,0 +1,97 @@
+<!-- src/app/pages/auth/register/register.component.html -->
+<section class="flex items-center justify-center w-full h-full">
+  <div hlmCard class="w-lg p-6">
+    <div hlmCardHeader>
+      <h2 hlmCardTitle class="text-2xl font-semibold">Create your account</h2>
+      <p hlmCardDescription class="text-sm text-muted-foreground">
+        Enter your details below
+      </p>
+    </div>
+    <form
+      [formGroup]="registerForm"
+      (ngSubmit)="onSubmit()"
+      hlmCardContent
+      class="space-y-4"
+    >
+      <label hlmLabel class="block">
+        Name
+        <input
+          hlmInput
+          type="text"
+          formControlName="name"
+          placeholder="First name"
+          class="mt-1 w-full"
+        />
+      </label>
+      <label hlmLabel class="block">
+        Surname
+        <input
+          hlmInput
+          type="text"
+          formControlName="surname"
+          placeholder="Last name"
+          class="mt-1 w-full"
+        />
+      </label>
+      <label hlmLabel class="block">
+        Email
+        <input
+          hlmInput
+          type="email"
+          formControlName="email"
+          placeholder="you@example.com"
+          class="mt-1 w-full"
+        />
+      </label>
+      <label hlmLabel class="block">
+        Password
+        <input
+          hlmInput
+          type="password"
+          formControlName="password"
+          placeholder="••••••••"
+          class="mt-1 w-full"
+        />
+      </label>
+      <label hlmLabel class="block">
+        Country
+        <select
+          hlmInput
+          formControlName="country"
+          class="mt-1 w-full"
+          [class.text-muted-foreground]="!registerForm.get('country')?.value"
+          [class.text-foreground]="registerForm.get('country')?.value"
+        >
+          <option value="" disabled class="text-muted-foreground">Select your country</option>
+          <option *ngFor="let c of countries" [value]="c">{{ c }}</option>
+        </select>
+      </label>
+      <label hlmLabel class="block">
+        Address
+        <input
+          hlmInput
+          type="text"
+          formControlName="address"
+          placeholder="Street address"
+          class="mt-1 w-full"
+        />
+      </label>
+      <label hlmLabel class="block">
+        ZIP Code
+        <input
+          hlmInput
+          type="text"
+          formControlName="zipCode"
+          placeholder="Postal code"
+          class="mt-1 w-full"
+        />
+      </label>
+      <button hlmBtn type="submit" class="w-full">Register</button>
+    </form>
+    <div hlmCardFooter class="text-center">
+      <a class="text-sm underline" href="/auth/login"
+        >Already have an account?</a
+      >
+    </div>
+  </div>
+</section>

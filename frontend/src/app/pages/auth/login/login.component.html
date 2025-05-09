@@ -1,0 +1,43 @@
+<section class="flex items-center justify-center w-full h-full">
+  <div hlmCard class="w-md p-6">
+    <div hlmCardHeader>
+      <h2 hlmCardTitle class="text-2xl font-semibold">
+        Sign in to your account
+      </h2>
+      <p hlmCardDescription class="text-sm text-muted-foreground">
+        Enter your credentials below
+      </p>
+    </div>
+    <form
+      [formGroup]="loginForm"
+      (ngSubmit)="onSubmit()"
+      hlmCardContent
+      class="space-y-4"
+    >
+      <label hlmLabel class="block">
+        Emailng
+        <input
+          hlmInput
+          type="email"
+          formControlName="email"
+          placeholder="you@example.com"
+          class="mt-1 w-full"
+        />
+      </label>
+      <label hlmLabel class="block">
+        Password
+        <input
+          hlmInput
+          type="password"
+          formControlName="password"
+          placeholder="••••••••"
+          class="mt-1 w-full"
+        />
+      </label>
+      <button hlmBtn type="submit" class="w-full">Sign In</button>
+    </form>
+    <div hlmCardFooter class="text-center">
+      <a class="text-sm underline" href="/forgot-password">Forgot password?</a>
+    </div>
+  </div>
+</section>

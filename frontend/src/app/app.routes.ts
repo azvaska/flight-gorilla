@@ -12,10 +12,26 @@ import { BookingComponent } from '@/app/pages/booking/booking.component';
 import { Booking1OverviewComponent } from '@/app/pages/booking/booking1-overview/booking1-overview.component';
 import { Booking2SeatsComponent } from '@/app/pages/booking/booking2-seats/booking2-seats.component';
 import { Booking3ExtraComponent } from '@/app/pages/booking/booking3-extra/booking3-extra.component';
+import { LoginComponent } from '@/app/pages/auth/login/login.component';
+import { RegisterComponent } from '@/app/pages/auth/register/register.component';
+
 export const routes: Routes = [
   {
     path: '',
     component: LandingPageComponent,
+  },
+  {
+    path: 'auth',
+    children: [
+      {
+        path: 'login',
+        component: LoginComponent,
+      },
+      {
+        path: 'register',
+        component: RegisterComponent,
+      },
+    ],
   },
   {
     path: 'search',
