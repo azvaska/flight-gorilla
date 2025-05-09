@@ -1,0 +1,31 @@
+<label
+  class="inline-flex items-center cursor-pointer"
+  (click)="setChecked()"
+>
+  <!-- invisible native radio for a11y & ngModel binding -->
+  <input
+    type="radio"
+    [name]="name"
+    [value]="value"
+    [checked]="checked"
+    (change)="setChecked()"
+    class="sr-only peer"
+  />
+
+  <!-- outer ring -->
+  <div
+    class="w-5 h-5 border-2 border-gray-400 rounded-full flex items-center justify-center
+           transition-colors duration-300 ease-in-out
+           peer-checked:border-black peer-checked:border-2"
+  >
+    <!-- inner dot -->
+    <div
+      class="w-3 h-3 bg-black rounded-full transform
+             transition-transform duration-300 ease-in-out"
+      [ngClass]="{
+        'scale-100': checked,
+        'scale-0': !checked
+      }"
+    ></div>
+  </div>
+</label>
