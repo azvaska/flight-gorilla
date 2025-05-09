@@ -88,7 +88,7 @@ export class SearchRedirectGuard implements CanActivate {
       }
     } catch (e) {
       console.error(e);
-      return this.router.createUrlTree(['/404']);
+      return this.router.createUrlTree(['/not-found']);
     }
   }
 }
@@ -118,7 +118,7 @@ export class SearchParamsGuard implements CanActivateChild {
       return true;
     } catch (e) {
       console.error(e);
-      return this.router.createUrlTree(['/404']);
+      return this.router.createUrlTree(['/not-found']);
     }
   }
 
