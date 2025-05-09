@@ -78,7 +78,7 @@ export class SearchComponent {
         })),
         startWith({ loading: true, data: null, error: null }),
         catchError(() => {
-          this.router.navigate(['/404']);
+          this.router.navigate(['/not-found']);
           return of({
             loading: false,
             data: null,

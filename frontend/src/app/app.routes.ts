@@ -9,16 +9,16 @@ import { NotFoundComponent } from '@/app/pages/not-found/not-found.component';
 import { SearchParamsGuard, SearchRedirectGuard } from './guards/search-guard';
 
 import { BookingComponent } from '@/app/pages/booking/booking.component';
-import {Booking1OverviewComponent} from '@/app/pages/booking/booking1-overview/booking1-overview.component';
-import {Booking2SeatsComponent} from '@/app/pages/booking/booking2-seats/booking2-seats.component';
-import {Booking3ExtraComponent} from '@/app/pages/booking/booking3-extra/booking3-extra.component';
+import { Booking1OverviewComponent } from '@/app/pages/booking/booking1-overview/booking1-overview.component';
+import { Booking2SeatsComponent } from '@/app/pages/booking/booking2-seats/booking2-seats.component';
+import { Booking3ExtraComponent } from '@/app/pages/booking/booking3-extra/booking3-extra.component';
 export const routes: Routes = [
   {
     path: '',
     component: LandingPageComponent,
   },
   {
-    path: "search",
+    path: 'search',
     component: SearchComponent,
     canActivate: [SearchRedirectGuard],
     canActivateChild: [SearchParamsGuard],
@@ -27,28 +27,24 @@ export const routes: Routes = [
       {
         path: 'country',
         component: SearchCountryComponent,
-        runGuardsAndResolvers: 'paramsOrQueryParamsChange'
+        runGuardsAndResolvers: 'paramsOrQueryParamsChange',
       },
       {
         path: 'city',
         component: SearchCityComponent,
-        runGuardsAndResolvers: 'paramsOrQueryParamsChange'
+        runGuardsAndResolvers: 'paramsOrQueryParamsChange',
       },
       {
         path: 'dates',
         component: SearchDatesComponent,
-        runGuardsAndResolvers: 'paramsOrQueryParamsChange'
+        runGuardsAndResolvers: 'paramsOrQueryParamsChange',
       },
       {
         path: 'flights',
         component: SearchFlightsComponent,
-        runGuardsAndResolvers: 'paramsOrQueryParamsChange'
+        runGuardsAndResolvers: 'paramsOrQueryParamsChange',
       },
     ],
-  },
-  {
-    path: '404',
-    component: NotFoundComponent,
   },
   {
     path: 'booking',
@@ -57,19 +53,23 @@ export const routes: Routes = [
       {
         path: 'overview',
         component: Booking1OverviewComponent,
-        data: { selectedNumber: 1 }
+        data: { selectedNumber: 1 },
       },
       {
         path: 'seats',
         component: Booking2SeatsComponent,
-        data: { selectedNumber: 2 }
+        data: { selectedNumber: 2 },
       },
       {
         path: 'extras',
         component: Booking3ExtraComponent,
-        data: { selectedNumber: 3 }
-      }
-    ]
-  }
+        data: { selectedNumber: 3 },
+      },
+    ],
+  },
+  {
+    path: 'not-found',
+    component: NotFoundComponent,
+  },
+  { path: '**', redirectTo: 'not-found', pathMatch: 'full' },
 ];
-
