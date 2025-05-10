@@ -1,7 +1,8 @@
 import { Component, Input } from '@angular/core';
-import {NgForOf, NgOptimizedImage} from '@angular/common';
+import {NgClass, NgForOf, NgOptimizedImage} from '@angular/common';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { ExtraLineComponent} from '@/app/components/booking/extra-line/extra-line.component';
+import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-booking3-extra',
@@ -10,7 +11,9 @@ import { ExtraLineComponent} from '@/app/components/booking/extra-line/extra-lin
     NgOptimizedImage,
     HlmButtonDirective,
     ExtraLineComponent,
-    NgForOf
+    NgForOf,
+    NgClass,
+    RouterLink
   ],
   templateUrl: './booking3-extra.component.html',
   styleUrls: ['./booking3-extra.component.css']
@@ -88,7 +91,8 @@ export class Booking3ExtraComponent {
   ];
 
   get total() {
-    return this.extras.reduce((sum, e) => {
+    // @ts-ignore
+    return this.flexSelected*23.99 + this.extras.reduce((sum, e) => {
       return sum + (e.isStackable
         ? e.price * e.quantity
         : (e.selected ? e.price : 0));
