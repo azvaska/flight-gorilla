@@ -15,6 +15,8 @@ import { Booking3ExtraComponent } from '@/app/pages/booking/booking3-extra/booki
 import { LoginComponent } from '@/app/pages/auth/login/login.component';
 import { RegisterComponent } from '@/app/pages/auth/register/register.component';
 import {Booking4PaymentComponent} from '@/app/pages/booking/booking4-payment/booking4-payment.component';
+import {Booking5ConfirmationComponent} from '@/app/pages/booking/booking5-confirmation/booking5-confirmation.component';
+import {Booking5ErrorComponent} from '@/app/pages/booking/booking5-error/booking5-error.component';
 
 export const routes: Routes = [
   {
@@ -86,6 +88,16 @@ export const routes: Routes = [
         path: 'payment',
         component: Booking4PaymentComponent,
         data: { selectedNumber: 4 },
+      },
+      {
+        path: 'confirmed',
+        component: Booking5ConfirmationComponent,
+        data: { selectedNumber: 5 },
+      },
+      {
+        path: 'error',
+        component: Booking5ErrorComponent,
+        data: { selectedNumber: 5 },
       }
     ],
   },

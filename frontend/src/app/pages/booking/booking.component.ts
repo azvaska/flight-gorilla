@@ -3,12 +3,14 @@ import {ProgressWidgetComponent} from '@/app/components/booking/progress-widget/
 import {Booking1OverviewComponent} from '@/app/pages/booking/booking1-overview/booking1-overview.component';
 import {ActivatedRoute, NavigationEnd, Router, RouterOutlet} from '@angular/router';
 import { filter } from 'rxjs/operators';
+import {NgIf} from '@angular/common';
 
 @Component({
   selector: 'app-booking',
   imports: [
     ProgressWidgetComponent,
-    RouterOutlet
+    RouterOutlet,
+    NgIf
   ],
   templateUrl: './booking.component.html',
   host: {

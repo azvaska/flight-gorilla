@@ -1,4 +1,6 @@
 <div class="flex flex-col w-full">
-  <app-progress-widget [selectedNumber]="selectedNumber" [total]="4"/>
+  <ng-container *ngIf="selectedNumber < 5">
+    <app-progress-widget [selectedNumber]="selectedNumber" [total]="4"/>
+  </ng-container>
   <router-outlet/>
 </div>
