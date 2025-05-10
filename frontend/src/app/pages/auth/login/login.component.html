@@ -14,17 +14,28 @@
       hlmCardContent
       class="space-y-4"
     >
-      <label hlmLabel class="block">
-        Emailng
+      <label
+        hlmLabel
+        class="block"
+        [class.text-red-600]="loginForm.hasError('error')"
+      >
+        Email
         <input
           hlmInput
           type="email"
           formControlName="email"
           placeholder="you@example.com"
           class="mt-1 w-full"
+          [class.border-red-600]="loginForm.hasError('error')"
+          [class.focus:border-red-600]="loginForm.hasError('error')"
+          [class.focus:ring-red-600]="loginForm.hasError('error')"
         />
       </label>
-      <label hlmLabel class="block">
+      <label
+        hlmLabel
+        class="block"
+        [class.text-red-600]="loginForm.hasError('error')"
+      >
         Password
         <input
           hlmInput
@@ -32,12 +43,25 @@
           formControlName="password"
           placeholder="••••••••"
           class="mt-1 w-full"
+          [class.border-red-600]="loginForm.hasError('error')"
+          [class.focus:border-red-600]="loginForm.hasError('error')"
+          [class.focus:ring-red-600]="loginForm.hasError('error')"
         />
       </label>
-      <button hlmBtn type="submit" class="w-full">Sign In</button>
+      <button
+        hlmBtn
+        type="submit"
+        class="w-full"
+        [disabled]="loginForm.invalid"
+      >
+        Sign In
+      </button>
     </form>
-    <div hlmCardFooter class="text-center">
+    <div hlmCardFooter class="text-center flex flex-col gap-4 justify-center items-start">
       <a class="text-sm underline" href="/forgot-password">Forgot password?</a>
+      <div *ngIf="loginForm.hasError('error')" class="text-sm text-red-600">
+        {{ loginForm.getError("error") }}
+      </div>
     </div>
   </div>
 </section>

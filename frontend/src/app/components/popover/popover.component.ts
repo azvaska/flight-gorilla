@@ -17,12 +17,10 @@ import { CommonModule } from '@angular/common';
 })
 export class PopoverComponent {
   @Input() public popoverRelativePosition: {
-    additionalTop?: number;
-    additionalLeft?: number;
-  } = {
-    additionalTop: 0,
-    additionalLeft: 0,
-  };
+    top?: number;
+    left?: number;
+    right?: number;
+  } = {}
   @Input() public popoverWidth: string = 'auto';
   @Input() public preventDefaultBehavior: boolean = false;
 
@@ -30,7 +28,12 @@ export class PopoverComponent {
   public readonly triggerDir!: PopoverTriggerDirective;
   @ViewChild('popover') public readonly popoverEl!: ElementRef<HTMLElement>;
 
-  public popoverStyles!: { top: string; left: string; width: string };
+  public popoverStyles!: {
+    top: string;
+    left: string;
+    right: string;
+    width: string;
+  };
   public showPopover = false;
 
   private _ignoreOutsideClick = true;
@@ -64,9 +67,14 @@ export class PopoverComponent {
     const rect = this.triggerDir.el.nativeElement.getBoundingClientRect();
     this.popoverStyles = {
       top: `${
-        rect.height + (this.popoverRelativePosition.additionalTop ?? 0)
+        rect.height + (this.popoverRelativePosition.top ?? 0)
       }px`,
-      left: `${this.popoverRelativePosition.additionalLeft ?? 0}px`,
+      left: this.popoverRelativePosition.left !== undefined
+        ? this.popoverRelativePosition.left + 'px'
+        : '',
+      right: this.popoverRelativePosition.right !== undefined
+        ? this.popoverRelativePosition.right + 'px'
+        : '',
       width: this.popoverWidth,
     };
   }

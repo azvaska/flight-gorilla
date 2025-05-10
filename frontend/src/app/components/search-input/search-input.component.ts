@@ -28,11 +28,11 @@ export interface SearchInputValue<T> {
 export class SearchInputComponent<T> {
   @Input() public placeHolder: string = '';
   @Input() public popoverRelativePosition: {
-    additionalTop?: number;
-    additionalLeft?: number;
+    top?: number;
+    left?: number;
   } = {
-    additionalTop: 0,
-    additionalLeft: 0,
+    top: 0,
+    left: 0,
   };
   @Input() public popoverWidth: string = 'auto';
   @Input() public noResultsText: string = 'No results found.';

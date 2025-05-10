@@ -12,7 +12,7 @@ import { catchError, map, startWith } from 'rxjs/operators';
 import { SearchFetchService } from '@/app/services/search/search-fetch.service';
 import { stringToDate, formatDate, dateToString } from '@/utils/date';
 import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
-import { ILocation } from '@/types/search/Location';
+import { ILocation } from '@/types/search/location';
 
 interface FetchState<T> {
   loading: boolean;

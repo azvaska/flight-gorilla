@@ -21,6 +21,7 @@
     "@ng-icons/core": "^29.10.0",
     "@ng-icons/lucide": ">=29.0.0",
     "@spartan-ng/brain": "0.0.1-alpha.454",
+    "@auth0/angular-jwt": "^5.2.0",
     "@tailwindcss/postcss": "^4.1.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",

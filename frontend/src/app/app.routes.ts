@@ -17,6 +17,7 @@ import { RegisterComponent } from '@/app/pages/auth/register/register.component'
 import {Booking4PaymentComponent} from '@/app/pages/booking/booking4-payment/booking4-payment.component';
 import {Booking5ConfirmationComponent} from '@/app/pages/booking/booking5-confirmation/booking5-confirmation.component';
 import {Booking5ErrorComponent} from '@/app/pages/booking/booking5-error/booking5-error.component';
+import { AuthGuard, GuestGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
   {
@@ -68,6 +69,7 @@ export const routes: Routes = [
   {
     path: 'booking',
     component: BookingComponent,
+    canActivate: [AuthGuard],
     children: [
       {
         path: 'overview',
