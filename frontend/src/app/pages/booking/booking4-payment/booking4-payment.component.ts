@@ -133,26 +133,46 @@ export class Booking4PaymentComponent {
     const last4 = raw.slice(-4);
     const circuit: 'visa' | 'mastercard' = raw.startsWith('4') ? 'visa' : 'mastercard';
 
-    this.cards.push({
-      id: nextId,
-      name: this.newCardData.name || `Card ${nextId}`,
-      last4,
-      circuit,
-      expiry: this.newCardData.expiry,
-      holder: this.newCardData.holder,
-      type: this.newCardData.type,
-    });
+    // dummy loading
+    setTimeout(() => {
+      this.cards.push({
+        id: nextId,
+        name: this.newCardData.name || `Card ${nextId}`,
+        last4,
+        circuit,
+        expiry: this.newCardData.expiry,
+        holder: this.newCardData.holder,
+        type: this.newCardData.type,
+      });
 
-    this.selectedCardId = nextId;
+      this.selectedCardId = nextId;
 
-    // reset form + flags
-    this.newCardData = { name: '', number: '', cvv: '', expiry: '', holder: '', type: 'credit' };
-    this.holderTouched = this.holderDirty = false;
-    this.numberTouched = this.numberDirty = false;
-    this.cvvTouched    = this.cvvDirty    = false;
-    this.expiryTouched = this.expiryDirty = false;
-    this.nameTouched   = this.nameDirty   = false;
+      // reset form + flags
+      this.newCardData = { name: '', number: '', cvv: '', expiry: '', holder: '', type: 'credit' };
+      this.holderTouched = this.holderDirty = false;
+      this.numberTouched = this.numberDirty = false;
+      this.cvvTouched    = this.cvvDirty    = false;
+      this.expiryTouched = this.expiryDirty = false;
+      this.nameTouched   = this.nameDirty   = false;
 
-    this.loadingAddCard = false;
+      this.loadingAddCard = false;
+    }, 2000);
+  }
+
+  dummyFillValues() {
+    this.newCardData = {
+      name: 'Amongas card',
+      number: '378282246310005',
+      cvv: '123',
+      expiry: '12/25',
+      holder: 'John Doe',
+      type: 'credit',
+    };
+
+    this.holderTouched = this.holderDirty = true;
+    this.numberTouched = this.numberDirty = true;
+    this.cvvTouched    = this.cvvDirty    = true;
+    this.expiryTouched = this.expiryDirty = true;
+    this.nameTouched   = this.nameDirty   = true;
   }
 }
