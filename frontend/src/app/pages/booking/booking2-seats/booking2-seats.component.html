@@ -25,7 +25,7 @@
         $299
       </div>
     </div>
-    
+
     <!-- BUSINESS ROW -->
     <div
       class="row group transform flex items-start justify-between p-4 rounded-xl border-2
@@ -77,8 +77,9 @@
     </div>
 
     <button hlmBtn variant='outline' class="bg-black text-white w-[250px] mx-auto mt-8"
-            [routerLink]="['../extras']
-">Continue</button>
+            [routerLink]="['../extras']"
+            [disabled]="selectedSeatRow === -1 || selectedSeatCol === -1"
+>Continue</button>
   </div>
 
   <div
