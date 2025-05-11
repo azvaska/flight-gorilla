@@ -28,6 +28,10 @@ def seed_airports():
                         city = City(name=city_name, nation=nation)
                         db_session.add(city)
 
+                    existing_airport = Airport.query.filter_by(iata_code=iata_code).first()
+                    if existing_airport:
+                        continue
+
                     airport = Airport(name=row['name'], iata_code=iata_code, icao_code=icao_code,
                                       longitude=row['longitude_deg'],
                                       latitude=row['latitude_deg'], city=city)

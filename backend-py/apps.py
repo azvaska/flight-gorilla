@@ -48,7 +48,7 @@ with app_flask.app_context():
     user_datastore = SQLAlchemySessionUserDatastore(db_session, User, Role)
     security = Security(app_flask, user_datastore,register_blueprint=False)
     # Create the database tables
-    db.metadata.create_all(bind=db_session.bind)
+    db.metadata.create_all(bind=db_session.bind, checkfirst=True)
     # Create a user and role to test with
 
     security.datastore.find_or_create_role(
