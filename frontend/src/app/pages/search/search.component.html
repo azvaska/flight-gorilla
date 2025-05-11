@@ -1,0 +1,65 @@
+<div *ngIf="state$ | async as state" class="h-full w-full">
+  <ng-container *ngIf="state.loading; else loaded">
+    <div class="flex h-full w-full items-center justify-center">
+      <hlm-spinner size="lg" />
+    </div>
+  </ng-container>
+
+  <ng-template #loaded>
+    <ng-container *ngIf="state.error; else success">
+      <p>Error: {{ state.error }}</p>
+    </ng-container>
+
+    <ng-template #success>
+      <div class="flex flex-col gap-8 my-20">
+        <app-popover
+          [popoverRelativePosition]="{ top: 20 }"
+          [popoverWidth]="'100%'"
+        >
+          <button popover-trigger class="text-lg w-full">
+            <section
+              hlmCard
+              class="flex flex-col w-full hover:cursor-pointer pt-4"
+            >
+              <div class="flex flex-col gap-2">
+                <p class="text-2xl font-semibold">Travel Overview</p>
+                <hr class="w-full border-t border-gray-200" />
+              </div>
+              <div
+                hlmCardContent
+                class="flex flex-row gap-4 justify-center font-light px-16 py-6"
+              >
+                <p>
+                  {{ state.data!.departureLocation.name }} -
+                  {{ state.data!.arrivalLocation.name }}
+                </p>
+                <p>•</p>
+                <p>
+                  {{
+                    formatDate(state.data!.departureDate, state.data!.dateType)
+                  }}
+
+                  @if (state.data!.returnDate) { -
+                  {{ formatDate(state.data!.returnDate, state.data!.dateType) }}
+                  }
+                </p>
+              </div>
+            </section>
+          </button>
+          <div popover-content class="flex flex-col">
+            <div class="p-6">
+              <flight-search-bar
+                [departureLocation]="state.data!.departureLocation"
+                [arrivalLocation]="state.data!.arrivalLocation"
+                [departureDate]="state.data!.departureDate"
+                [returnDate]="state.data!.returnDate"
+                [dateType]="state.data!.dateType"
+              />
+            </div>
+          </div>
+        </app-popover>
+        <router-outlet />
+      </div>
+    </ng-template>
+  </ng-template>
+</div>

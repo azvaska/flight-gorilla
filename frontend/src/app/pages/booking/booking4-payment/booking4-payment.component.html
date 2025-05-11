@@ -1,0 +1,304 @@
+<div class="flex justify-center">
+  <div class="p-6 bg-white rounded-lg shadow w-full max-w-4xl">
+    <h2 class="text-xl font-semibold mb-6">Choose a payment method</h2>
+
+    <!-- existing cards -->
+    <div
+      *ngFor="let card of cards"
+      (click)="selectCard(card.id)"
+      class="mb-3 border border-gray-200 rounded-lg cursor-pointer transition-colors duration-200"
+      [ngClass]="{
+        'bg-gray-50': selectedCardId === card.id,
+        'hover:bg-gray-50': selectedCardId !== card.id,
+        'border-blue-300': selectedCardId === card.id
+      }"
+    >
+      <!-- header -->
+      <div class="flex items-center justify-between px-4 py-3">
+        <div class="flex items-center space-x-3">
+          <img
+            [src]="card.circuit === 'mastercard' ? '/assets/mastercard.png' : '/assets/visa.png'"
+            alt="{{ card.name }} logo"
+            class="w-6 h-6"
+          />
+          <span class="text-sm font-medium text-gray-700">{{ card.name }}</span>
+          <span
+            class="text-sm font-medium transition-colors"
+            [ngClass]="{
+              'text-gray-700': selectedCardId !== card.id,
+              'text-transparent': selectedCardId === card.id
+            }"
+          >
+            •••••••••••• {{ card.last4 }}
+          </span>
+        </div>
+        <app-animated-radio
+          name="paymentCard"
+          [value]="card.id"
+          [(ngModel)]="selectedCardId"
+        ></app-animated-radio>
+      </div>
+
+      <!-- animated details -->
+      <div
+        class="overflow-hidden transition-[max-height] duration-400 ease-in-out"
+        [ngClass]="{
+          'max-h-0': selectedCardId !== card.id,
+          'max-h-72': selectedCardId === card.id
+        }"
+      >
+        <div class="px-4 pb-4">
+          <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+              <div>
+                <div class="text-xs text-gray-500 uppercase">Cardholder</div>
+                <div class="text-sm font-medium text-gray-700">{{ card.holder }}</div>
+              </div>
+              <div>
+                <div class="text-xs text-gray-500 uppercase">Expiry</div>
+                <div class="text-sm font-medium text-gray-700">{{ card.expiry }}</div>
+              </div>
+              <div>
+                <div class="text-xs text-gray-500 uppercase">Number</div>
+                <div class="text-sm font-medium text-gray-700">
+                  •••••••••••• {{ card.last4 }}
+                </div>
+              </div>
+              <div>
+                <div class="text-xs text-gray-500 uppercase">Type</div>
+                <div class="text-sm font-medium text-gray-700 capitalize">{{ card.type }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add New Card -->
+    <div
+      (click)="selectCard('new')"
+      class="mb-3 border border-gray-200 rounded-lg cursor-pointer transition-colors duration-200"
+      [ngClass]="{
+        'bg-gray-50': selectedCardId === 'new',
+        'hover:bg-gray-50': selectedCardId !== 'new',
+        'border-blue-300': selectedCardId === 'new'
+      }"
+    >
+      <!-- header -->
+      <div class="flex items-center justify-between px-4 py-3">
+        <span class="text-sm font-medium text-gray-700">+ Add new card</span>
+        <app-animated-radio
+          name="paymentCard"
+          [value]="'new'"
+          [(ngModel)]="selectedCardId"
+        ></app-animated-radio>
+      </div>
+
+      <!-- form -->
+      <div
+        class="overflow-hidden transition-[max-height] duration-400 ease-in-out"
+        [ngClass]="{
+          'max-h-0': selectedCardId !== 'new',
+          'max-h-[26rem]': selectedCardId === 'new'
+        }"
+      >
+        <div class="px-4 pb-4">
+          <form (ngSubmit)="addCard()">
+            <div class="bg-white border border-gray-200 rounded-lg p-4 grid grid-cols-2 gap-x-6 gap-y-4">
+
+              <!-- Cardholder -->
+              <div class="relative">
+                <label hlmLabel class="block">
+                  Cardholder
+                  <input
+                    hlmInput
+                    id="cardHolder"
+                    name="holder"
+                    type="text"
+                    [(ngModel)]="newCardData.holder"
+                    (input)="holderDirty = true"
+                    (blur)="holderTouched = true"
+                    class="mt-1 w-full"
+                    [ngClass]="{
+                    '!ring-red-600 border-red-400': holderDirty && holderTouched && !isHolderValid
+                    }"
+                  />
+                </label>
+                <div
+                  *ngIf="holderDirty && holderTouched && !isHolderValid"
+                  class="absolute top-[-10px] right-0 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+                >
+                  Must be non-empty, letters &amp; spaces only.
+                </div>
+              </div>
+
+              <!-- Card Number -->
+              <div class="relative">
+                <label hlmLabel class="block">
+                  Card Number
+                  <input
+                    hlmInput
+                    id="cardNumber"
+                    name="number"
+                    type="text"
+                    maxlength="19"
+                    inputmode="numeric"
+                    [(ngModel)]="newCardData.number"
+                    (input)="numberDirty = true"
+                    (blur)="numberTouched = true"
+                    class="mt-1 w-full"
+                    [ngClass]="{
+                    '!ring-red-600 border-red-400': numberDirty && numberTouched && !isCardNumberValid
+                    }"
+                  />
+                </label>
+                <div
+                  *ngIf="numberDirty && numberTouched && !isCardNumberValid"
+                  class="absolute top-[-10px] right-0 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+                >
+                  Invalid card number.
+                </div>
+              </div>
+
+              <!-- CVV -->
+              <div class="relative">
+                <label hlmLabel class="block">
+                  CVV
+                  <input
+                    hlmInput
+                    id="cardCvv"
+                    name="cvv"
+                    type="text"
+                    maxlength="3"
+                    inputmode="numeric"
+                    [(ngModel)]="newCardData.cvv"
+                    (input)="cvvDirty = true"
+                    (blur)="cvvTouched = true"
+                    class="mt-1 w-full "
+                    [ngClass]="{
+                    '!ring-red-600 border-red-400': cvvDirty && cvvTouched && !isCvvValid
+                    }"
+                  />
+                </label>
+                <div
+                  *ngIf="cvvDirty && cvvTouched && !isCvvValid"
+                  class="absolute top-[-10px] right-0 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+                >
+                  Must be exactly 3 digits.
+                </div>
+              </div>
+
+              <!-- Expiry -->
+              <div class="relative">
+                <label hlmLabel class="block">
+                  Expiry (MM/YY)
+                  <input
+                    hlmInput
+                    id="cardExpiry"
+                    name="expiry"
+                    type="text"
+                    maxlength="5"
+                    placeholder="MM/YY"
+                    [(ngModel)]="newCardData.expiry"
+                    (input)="expiryDirty = true"
+                    (blur)="expiryTouched = true"
+                    class="mt-1 w-full"
+                    [ngClass]="{
+                    '!ring-red-600 border-red-400': expiryDirty && expiryTouched && !isExpiryValid
+                    }"
+                  />
+                </label>
+                <div
+                  *ngIf="expiryDirty && expiryTouched && !isExpiryValid"
+                  class="absolute top-[-10px] right-0 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+                >
+                  Format must be MM/YY.
+                </div>
+              </div>
+
+              <!-- Nickname (no validation) -->
+              <div class="relative col-span-2">
+                <label hlmLabel class="block">
+                  Card nickname
+                  <input
+                    hlmInput
+                    id="cardName"
+                    name="name"
+                    type="text"
+                    [(ngModel)]="newCardData.name"
+                    (input)="nameDirty = true"
+                    (blur)="nameTouched = true"
+                    class="mt-1 w-full"
+                    [ngClass]="{
+                    '!ring-red-600 border-red-400': nameDirty && nameTouched && !isNicknameValid
+                    }"
+                  />
+                </label>
+                <div
+                  *ngIf="nameDirty && nameTouched && !isNicknameValid"
+                  class="absolute top-[-10px] right-0 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+                >
+                  Required, letters &amp; numbers only.
+                </div>
+              </div>
+
+              <!-- Type -->
+              <div class="col-span-2">
+                <div class="text-xs text-gray-500 uppercase mb-1">Type</div>
+                <brn-select
+                  class="inline-block w-full"
+                  placeholder="Select type"
+                  [(ngModel)]="newCardData.type"
+                  name="type"
+                  required
+                >
+                  <hlm-select-trigger class="w-full">
+                    <hlm-select-value />
+                  </hlm-select-trigger>
+                  <hlm-select-content class="w-full">
+                    <hlm-option value="credit">Credit</hlm-option>
+                    <hlm-option value="debit">Debit</hlm-option>
+                    <hlm-option value="prepaid">Prepaid</hlm-option>
+                  </hlm-select-content>
+                </brn-select>
+              </div>
+
+              <!-- Submit -->
+              <div class="col-span-2 mt-4 flex justify-end gap-4">
+                <button
+                  type="button"
+                  hlmBtn
+                  variant="outline"
+                  class="bg-gray-200 text-gray-700 px-4 py-2 ml-2"
+                  (click)="dummyFillValues()"
+                >dummy</button>
+                <button
+                  type="submit"
+                  hlmBtn
+                  variant="outline"
+                  class="bg-black text-white px-4 py-2"
+                  [disabled]="!isFormValid || loadingAddCard"
+                >
+                  <ng-icon
+                    *ngIf="loadingAddCard"
+                    hlm
+                    name="lucideLoaderCircle"
+                    size="sm"
+                    class="mr-2 animate-spin"
+                  ></ng-icon>
+                  Add card
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- end Add New Card -->
+    <div class="w-full max-w-4xl flex justify-end">
+      <button hlmBtn variant='outline' class="bg-black text-white w-[250px] ml-auto mt-4"
+              [routerLink]="['../confirmed']
+              ">Continue</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,68 @@
+# app/apis/aircraft.py
+from flask import request, current_app
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_restx import Namespace, Resource, fields, reqparse
+from marshmallow import validates, ValidationError, validate
+from sqlalchemy.orm import joinedload
+
+from app.core.auth import roles_required
+from app.extensions import db, ma
+from app.models.aircraft import Aircraft
+
+api = Namespace('aircraft', description='Aircraft related operations')
+
+# --- Marshmallow Schemas ---
+class AircraftSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Aircraft
+        load_instance = True
+        fields = ('id', 'name', 'rows', 'columns', 'unavailable_seats')
+
+    # Add validation to specific fields
+    name = ma.String(required=True, validate=validate.Length(min=2, max=100),
+                      error_messages={"required": "Name is required", "invalid": "Invalid name format"})
+    rows = ma.Integer(required=True, validate=validate.Range(min=1),
+                      error_messages={"required": "Rows are required", "invalid": "Rows must be at least 1"})
+    columns = ma.Integer(required=True, validate=validate.Range(min=1),
+                         error_messages={"required": "Columns are required", "invalid": "Columns must be at least 1"})
+
+# Create schema instances
+aircraft_schema = AircraftSchema()
+aircrafts_schema = AircraftSchema(many=True)
+
+# --- RESTx Models ---
+aircraft_model = api.model('Aircraft', {
+    'id': fields.Integer(readonly=True, description='Aircraft ID'),
+    'name': fields.String(required=True, description='Aircraft name/model'),
+    'rows': fields.Integer(required=True, description='Number of rows'),
+    'columns': fields.Integer(required=True, description='Number of columns'),
+    'unavailable_seats': fields.List(fields.String, description='List of unavailable seats')
+})
+
+# --- Request Parsers ---
+aircraft_list_parser = reqparse.RequestParser()
+aircraft_list_parser.add_argument('name', type=str, help='Filter by aircraft name/model (case-insensitive)', location='args')
+
+@api.route('/')
+class AircraftList(Resource):
+    @api.doc(security=None)
+    @api.expect(aircraft_list_parser)
+    def get(self):
+        """List all aircraft with optional filtering"""
+        args = aircraft_list_parser.parse_args()
+        query = Aircraft.query
+
+        if args['name']:
+            query = query.filter(Aircraft.name.ilike(f"%{args['name']}%"))
+
+        return aircrafts_schema.dump(query.all()), 200
+
+@api.route('/<int:aircraft_id>')
+@api.param('aircraft_id', 'The aircraft identifier')
+class AircraftResource(Resource):
+    @api.doc(security=None)
+    def get(self, aircraft_id):
+        """Fetch an aircraft given its identifier"""
+        aircraft = Aircraft.query.get_or_404(aircraft_id)
+        return aircraft_schema.dump(aircraft), 200
+

@@ -1,0 +1,16 @@
+<div class="relative">
+  <ng-content select="[popover-trigger]"></ng-content>
+  <div
+    #popover
+    class="absolute transform origin-top transition-all duration-200 ease-out z-[1000] invisible"
+    [ngClass]="{
+      'scale-100 opacity-100 !visible pointer-events-auto': showPopover,
+      'scale-90 opacity-0 !invisible pointer-events-none': !showPopover
+    }"
+    [ngStyle]="popoverStyles"
+  >
+    <div class="bg-white border border-gray-200 shadow-md rounded-lg">
+      <ng-content select="[popover-content]"></ng-content>
+    </div>
+  </div>
+</div>

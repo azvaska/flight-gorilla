@@ -1,5 +1,8 @@
-<h1 class="text-3xl font-bold underline">Hello world</h1>
-
-<button hlmBtn (click)="onClick()">Button</button>
-
-<router-outlet />
+<div class="flex flex-col items-center h-screen w-screen overflow-x-hidden ">
+  <app-navbar class="w-full border shadow-xs border-grey-500 flex justify-center sticky top-0 bg-white z-50" />
+  <div class="max-w-[1280px] w-full h-full">
+    <div class="flex justify-center mx-auto  w-full h-full">
+      <router-outlet />
+    </div>
+  </div>
+</div>

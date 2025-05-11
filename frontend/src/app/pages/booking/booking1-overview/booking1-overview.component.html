@@ -1,0 +1,80 @@
+<!-- @tailwind base -->
+<!-- tailwindcss -->
+
+<div class="flight-overview space-y-8 ">
+
+  <!-- Outbound Flight -->
+  <div class="flight-section border border-gray-200 rounded-lg p-6 shadow-sm mt-8">
+    <div class="text-xl font-semibold text-gray-700 mb-4">Outbound Flight</div>
+
+    <!-- Segment Loop -->
+    <div class="space-y-4">
+      <div class="flight-segment flex flex-col md:flex-row md:items-center md:justify-between bg-gray-50 p-4 rounded-md">
+        <div class="flight-route flex items-center space-x-2 text-lg font-medium text-gray-800">
+          <span class="airport-code">VCE</span>
+          <span class="text-gray-500">→</span>
+          <span class="airport-code">CDG</span>
+        </div>
+        <div class="flight-times flex items-center space-x-6 text-sm text-gray-600 mt-2 md:mt-0">
+          <div class="departure">
+            <span class="font-medium">Dep:</span> 08:00
+          </div>
+          <div class="arrival">
+            <span class="font-medium">Arr:</span> 10:00
+          </div>
+        </div>
+        <div class="flight-date text-sm text-gray-500 mt-2 md:mt-0">
+          2025-06-01
+        </div>
+      </div>
+
+      <div class="flight-segment flex flex-col md:flex-row md:items-center md:justify-between bg-gray-50 p-4 rounded-md">
+        <div class="flight-route flex items-center space-x-2 text-lg font-medium text-gray-800">
+          <span class="airport-code">CDG</span>
+          <span class="text-gray-500">→</span>
+          <span class="airport-code">DUB</span>
+        </div>
+        <div class="flight-times flex items-center space-x-6 text-sm text-gray-600 mt-2 md:mt-0">
+          <div class="departure">
+            <span class="font-medium">Dep:</span> 12:00
+          </div>
+          <div class="arrival">
+            <span class="font-medium">Arr:</span> 13:30
+          </div>
+        </div>
+        <div class="flight-date text-sm text-gray-500 mt-2 md:mt-0">
+          2025-06-01
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Return Flight -->
+  <div class="flight-section border border-gray-200 rounded-lg p-6 shadow-sm">
+    <div class="text-xl font-semibold text-gray-700 mb-4">Return Flight</div>
+
+    <!-- Segment Loop -->
+    <div class="flight-segment flex flex-col md:flex-row md:items-center md:justify-between bg-gray-50 p-4 rounded-md">
+      <div class="flight-route flex items-center space-x-2 text-lg font-medium text-gray-800">
+        <span class="airport-code">DUB</span>
+        <span class="text-gray-500">→</span>
+        <span class="airport-code">VCE</span>
+      </div>
+      <div class="flight-times flex items-center space-x-6 text-sm text-gray-600 mt-2 md:mt-0">
+        <div class="departure">
+          <span class="font-medium">Dep:</span> 18:00
+        </div>
+        <div class="arrival">
+          <span class="font-medium">Arr:</span> 21:00
+        </div>
+      </div>
+      <div class="flight-date text-sm text-gray-500 mt-2 md:mt-0">
+        2025-06-10
+      </div>
+    </div>
+  </div>
+<!--  align the flex to have all items that starts from right -->
+  <div class="flex justify-end mt-8">
+    <button hlmBtn variant='outline' class="bg-black text-white" [routerLink]="['../seats']">Continue</button>
+  </div>
+</div>

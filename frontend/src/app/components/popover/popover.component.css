@@ -1,0 +1,24 @@
+@layer utilities {
+  @keyframes pop-center {
+    0%   { transform: scale(0);   opacity: 0; }
+    50%  { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1);   opacity: 1; }
+  }
+  .animate-pop-center {
+    animation: pop-center 200ms ease-out forwards;
+  }
+
+  @keyframes popover-reverse {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0);
+    }
+  }
+  .animate-popover-reverse {
+    animation: popover-reverse 200ms ease-out forwards;
+  }
+}

@@ -1,0 +1,81 @@
+<div class="flex flex-col gap-4">
+  <div
+    class="grid grid-cols-4 divide-x-3 divide-zinc-900 border-3 border-zinc-900 rounded-lg"
+  >
+    <div class="flex flex-col p-4">
+      <h1 class="text-sm text-zinc-600 font-bold">From</h1>
+      <search-input
+        #firstLocationInput
+        [placeHolder]="'Enter a city or country'"
+        [popoverRelativePosition]="{ top: 20, left: -20 }"
+        [popoverWidth]="'200px'"
+        [inputValue]="{
+          value: departureLocation?.name ?? '',
+          data: departureLocation
+        }"
+        (inputValueChange)="
+          departureLocation = $event?.data;
+          departureLocationChange.emit($event?.data)
+        "
+        [nextInputRef]="secondLocationInput"
+        [searchList]="mockDepartureList"
+      />
+    </div>
+    <div class="flex flex-col p-4">
+      <h1 class="text-sm text-zinc-600 font-bold">To</h1>
+      <search-input
+        #secondLocationInput
+        [placeHolder]="'Enter a city or country'"
+        [popoverRelativePosition]="{ top: 20, left: -20 }"
+        [popoverWidth]="'200px'"
+        [inputValue]="{
+          value: arrivalLocation?.name ?? '',
+          data: arrivalLocation
+        }"
+        (inputValueChange)="
+          arrivalLocation = $event?.data;
+          arrivalLocationChange.emit($event?.data)
+        "
+        [nextInputRef]="firstDateInput"
+        [searchList]="mockArrivalList"
+      />
+    </div>
+    <div class="flex flex-col p-4">
+      <h1 class="text-sm text-zinc-600 font-bold">Depart</h1>
+      <date-input
+        #firstDateInput
+        [popoverRelativePosition]="{ top: 20, left: -20 }"
+        [popoverWidth]="'auto'"
+        [(value)]="departureDate"
+        (valueChange)="onDepartureDateChange($event)"
+        [placeholder]="'Add a date'"
+        [nextInputRef]="secondDateInput"
+        [dateType]="dateType"
+        (dateTypeChange)="onDateTypeChange($event)"
+      />
+    </div>
+    <div class="flex flex-col p-4">
+      <h1 class="text-sm text-zinc-600 font-bold">Return</h1>
+      <date-input
+        #secondDateInput
+        [popoverRelativePosition]="{ top: 20, left: -20 }"
+        [popoverWidth]="'auto'"
+        [(value)]="returnDate"
+        (valueChange)="onReturnDateChange($event)"
+        [placeholder]="'Add a date'"
+        [dateType]="dateType"
+        (dateTypeChange)="onDateTypeChange($event)"
+        [minDate]="departureDateMinDate"
+      />
+    </div>
+  </div>
+
+  <div class="w-full">
+    <button
+      class="bg-zinc-900 text-white px-4 py-2 rounded-xl h-14 w-full"
+      (click)="onSearchClick()"
+    >
+      Search
+    </button>
+  </div>
+</div>

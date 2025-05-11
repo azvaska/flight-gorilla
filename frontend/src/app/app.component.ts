@@ -1,16 +1,11 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+import { NavbarComponent } from './components/navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, HlmButtonDirective],
+  imports: [RouterOutlet, NavbarComponent],
   templateUrl: './app.component.html',
 })
 export class AppComponent {
-
-  onClick() {
-    console.log('clicked');
-  }
 }

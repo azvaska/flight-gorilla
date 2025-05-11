@@ -1,0 +1,67 @@
+<section class="flex items-center justify-center w-full h-full">
+  <div hlmCard class="w-md p-6">
+    <div hlmCardHeader>
+      <h2 hlmCardTitle class="text-2xl font-semibold">
+        Sign in to your account
+      </h2>
+      <p hlmCardDescription class="text-sm text-muted-foreground">
+        Enter your credentials below
+      </p>
+    </div>
+    <form
+      [formGroup]="loginForm"
+      (ngSubmit)="onSubmit()"
+      hlmCardContent
+      class="space-y-4"
+    >
+      <label
+        hlmLabel
+        class="block"
+        [class.text-red-600]="loginForm.hasError('error')"
+      >
+        Email
+        <input
+          hlmInput
+          type="email"
+          formControlName="email"
+          placeholder="you@example.com"
+          class="mt-1 w-full"
+          [class.border-red-600]="loginForm.hasError('error')"
+          [class.focus:border-red-600]="loginForm.hasError('error')"
+          [class.focus:ring-red-600]="loginForm.hasError('error')"
+        />
+      </label>
+      <label
+        hlmLabel
+        class="block"
+        [class.text-red-600]="loginForm.hasError('error')"
+      >
+        Password
+        <input
+          hlmInput
+          type="password"
+          formControlName="password"
+          placeholder="••••••••"
+          class="mt-1 w-full"
+          [class.border-red-600]="loginForm.hasError('error')"
+          [class.focus:border-red-600]="loginForm.hasError('error')"
+          [class.focus:ring-red-600]="loginForm.hasError('error')"
+        />
+      </label>
+      <button
+        hlmBtn
+        type="submit"
+        class="w-full"
+        [disabled]="loginForm.invalid"
+      >
+        Sign In
+      </button>
+    </form>
+    <div hlmCardFooter class="text-center flex flex-col gap-4 justify-center items-start">
+      <a class="text-sm underline" href="/forgot-password">Forgot password?</a>
+      <div *ngIf="loginForm.hasError('error')" class="text-sm text-red-600">
+        {{ loginForm.getError("error") }}
+      </div>
+    </div>
+  </div>
+</section>
