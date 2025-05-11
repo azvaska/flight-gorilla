@@ -27,16 +27,6 @@ def seed_aircraft():
         ('Airbus A321LR', 36, 6, []),  # Long range variant of A321
     ]
 
-    # Clear existing aircraft
-    existing_count = db_session.query(Aircraft).count()
-    if existing_count > 0:
-        click.echo(f'Found {existing_count} existing aircraft records')
-        if click.confirm('Do you want to continue and add more aircraft?'):
-            pass
-        else:
-            click.echo('Operation cancelled.')
-            return
-
     # Add new aircraft
     added_count = 0
     for name, rows, columns, unavailable_seats in aircraft_data:

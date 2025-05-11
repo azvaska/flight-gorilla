@@ -45,19 +45,6 @@ def seed_airports():
             # print(row)
     db_session.commit()
     db_session.close()
-    # db.session.query(Post).delete()
-    # db.session.query(User).delete()
-    #
-    # user1 = User(username='alice')
-    # user2 = User(username='bob')
-    # db.session.add_all([user1, user2])
-    # db.session.commit()
-    #
-    # post1 = Post(title='Hello World', user_id=user1.id)
-    # post2 = Post(title='Second Post', user_id=user2.id)
-    # db.session.add_all([post1, post2])
-    # db.session.commit()
-    click.echo('Database seeded.')
 
 # Register the command
 def init_app(app):

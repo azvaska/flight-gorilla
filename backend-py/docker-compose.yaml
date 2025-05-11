@@ -8,8 +8,8 @@ services:
       POSTGRES_DB: flight_gorilla
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
-      - ./init/nation.sql:/docker-entrypoint-initdb.d/2-nation.sql
+      # - ./init/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      # - ./init/nation.sql:/docker-entrypoint-initdb.d/2-nation.sql
     ports:
       - "5432:5432"
     healthcheck:
@@ -50,7 +50,14 @@ services:
         echo 'Seeding database...' &&
         FLASK_APP=apps:app_flask
 
-        flask seed-airports &&
+        flask seed-nations || echo 'Skipping seed-nations' &&
+        flask seed-airports || echo 'Skipping seed-airports' &&
+        flask seed-aircraft || echo 'Skipping seed-aircraft' &&
+        flask seed-airlines || echo 'Skipping seed-airlines' &&
+        flask seed-flights || echo 'Skipping seed-flights' &&
+        flask seed-users || echo 'Skipping seed-users' &&
+
+        echo 'Database seeded.' &&
 
         # Start the application
         echo 'Starting application...' &&

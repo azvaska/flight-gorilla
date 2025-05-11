@@ -38,27 +38,16 @@ def generate_tail_number():
     suffix = ''.join(random.choices(string.ascii_uppercase, k=2))
     return f"{prefix}{numbers}{suffix}"
 
-@click.command('seed-airline-aircraft')
+@click.command('seed-flights')
 @with_appcontext
-def seed_airline_aircraft():
-
-
-    airline_id = Airline.query.first().id  # Replace with the actual airline ID you want to use
+def seed_flights():
     """Seeds aircraft and associates them with an airline."""
 
+    airline_id = Airline.query.first().id  # Replace with the actual airline ID you want to use
     airline = db.session.get(Airline, airline_id)
 
-    created_aircraft_objects = [] #Aircraft.query.all()
-    # for name, rows, columns, unavailable in aircraft_data:
-    #     aircraft = Aircraft.query.filter_by(name=name).first()
-    #     if not aircraft:
-    #         aircraft = Aircraft(name=name, rows=rows, columns=columns, unavailable_seats=unavailable)
-    #         db.session.add(aircraft)
-    #         click.echo(f"Created aircraft: {name}")
-    #     else:
-    #         click.echo(f"Aircraft already exists: {name}")
-    #     created_aircraft_objects.append(aircraft)
-    # db.session.commit() # Commit aircraft creation first to get IDs
+    # Retrieve all aircraft models to associate with the airline
+    created_aircraft_objects = db.session.query(Aircraft).all()
 
     click.echo(f"\nAssociating aircraft with airline: {airline.name}")
     for aircraft_model in created_aircraft_objects:
@@ -103,6 +92,8 @@ def seed_airline_aircraft():
         click.echo(f"Associated aircraft {aircraft_model.name} (ID: {aircraft_model.id}) with airline {airline.name} (Tail: {tail_number})")
 
     db.session.commit()
+
+    
     #generate flights for each aircraft
     all_airports = Airport.query.all()
 
@@ -166,10 +157,6 @@ def seed_airline_aircraft():
 
     click.echo("Airline aircraft seeding complete.")
 
-
-# To register this command in your app (e.g., in manage.py or app/__init__.py):
-# from app.commands.add_aircraft import seed_airline_aircraft
-#
-# def register_commands(app):
-#     app.cli.add_command(seed_airline_aircraft)
-#     # ... other commands
+# Register the command with the Flask app
+def init_app(app):
+    app.cli.add_command(seed_flights)
