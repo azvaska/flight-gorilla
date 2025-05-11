@@ -61,7 +61,11 @@ services:
 
         # Start the application
         echo 'Starting application...' &&
-        gunicorn --bind 0.0.0.0:5000 'apps:app_flask' --reload
+        if [ \"$FLASK_ENV\" = 'production' ]; then
+          gunicorn --bind 0.0.0.0:5000 'apps:app_flask'
+        else
+          flask run --host=0.0.0.0 --reload
+        fi
       "
 
 volumes:

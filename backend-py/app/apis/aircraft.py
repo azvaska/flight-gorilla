@@ -8,27 +8,9 @@ from sqlalchemy.orm import joinedload
 from app.core.auth import roles_required
 from app.extensions import db, ma
 from app.models.aircraft import Aircraft
+from app.schemas.aircraft import aircraft_schema, aircrafts_schema
 
 api = Namespace('aircraft', description='Aircraft related operations')
-
-# --- Marshmallow Schemas ---
-class AircraftSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Aircraft
-        load_instance = True
-        fields = ('id', 'name', 'rows', 'columns', 'unavailable_seats')
-
-    # Add validation to specific fields
-    name = ma.String(required=True, validate=validate.Length(min=2, max=100),
-                      error_messages={"required": "Name is required", "invalid": "Invalid name format"})
-    rows = ma.Integer(required=True, validate=validate.Range(min=1),
-                      error_messages={"required": "Rows are required", "invalid": "Rows must be at least 1"})
-    columns = ma.Integer(required=True, validate=validate.Range(min=1),
-                         error_messages={"required": "Columns are required", "invalid": "Columns must be at least 1"})
-
-# Create schema instances
-aircraft_schema = AircraftSchema()
-aircrafts_schema = AircraftSchema(many=True)
 
 # --- RESTx Models ---
 aircraft_model = api.model('Aircraft', {

@@ -11,25 +11,9 @@ from app.models.booking import booking_flight_departure, booking_flight_arrival
 from app.models.seat_session import SeatSession
 from app.models.flight import Flight
 from sqlalchemy.exc import IntegrityError
+from app.schemas.seat_session import SeatSessionSchema, seat_session_schema, seat_sessions_schema
 
 api = Namespace('seat_session', description='Seat reservation session operations')
-
-# --- Marshmallow Schemas ---
-class SeatSessionSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = SeatSession
-        load_instance = True
-        include_fk = True
-
-    id = ma.UUID(dump_only=True)
-    user_id = ma.UUID(required=True)
-    flight_id = ma.UUID(required=True)
-    session_start_time = ma.DateTime(format='iso')
-    session_end_time = ma.DateTime(format='iso')
-
-# Create schema instances
-seat_session_schema = SeatSessionSchema()
-seat_sessions_schema = SeatSessionSchema(many=True)
 
 # --- RESTx Models ---
 seat_session_model = api.model('SeatSession', {

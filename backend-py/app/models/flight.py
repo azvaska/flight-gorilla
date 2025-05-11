@@ -31,6 +31,8 @@ class Route(db.Model):
     departure_airport = relationship('Airport', foreign_keys=[departure_airport_id], lazy='joined')
     arrival_airport = relationship('Airport', foreign_keys=[arrival_airport_id], lazy='joined')
 
+    airline = relationship('Airline', foreign_keys=[airline_id], lazy='joined')
+
 class Flight(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     route_id: Mapped[int] = mapped_column(db.Integer,db.ForeignKey('route.id'), nullable=False)
@@ -68,7 +70,7 @@ class Flight(db.Model):
     )
 
     route = relationship('Route', backref=db.backref('flights', lazy=True), lazy='joined')
-
+    
     @property
     def departure_airport(self):
         return self.route.departure_airport
@@ -76,6 +78,14 @@ class Flight(db.Model):
     @property
     def arrival_airport(self):
         return self.route.arrival_airport
+
+    @property
+    def airline(self):
+        return self.route.airline
+    
+    @property
+    def flight_number(self):
+        return self.route.flight_number
 
     def booked_seats(self):
         booked_seats = []

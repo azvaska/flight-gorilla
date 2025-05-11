@@ -9,33 +9,10 @@ from sqlalchemy.orm import joinedload, noload, InstanceState
 from app.extensions import db, ma
 from app.models import Airport
 from app.models.location import City, Nation
+from app.schemas.location import nations_schema, cities_schema, nation_schema, city_schema
+from app.schemas.airport import airports_schema
 
 api = Namespace('location', description='Location related operations')
-
-
-# --- Marshmallow Schemas ---
-class NationSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Nation
-        load_instance = True
-        fields = ('id', 'name', 'code', 'alpha2')
-
-
-class CitySchema(ma.SQLAlchemyAutoSchema):
-    # Include nested nation information
-    nation = ma.Nested('app.apis.location.NationSchema', only=('id', 'name', 'code', 'alpha2'))
-    class Meta:
-        model = City
-        include_fk = True
-        load_instance = True
-        fields = ('id', 'name', 'nation_id', 'nation')  # Include nested nation
-
-
-class AirportSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Airport
-        load_instance = True
-        fields = ('id', 'name')
 
 
 nation_model = api.model('Nation', {
@@ -48,7 +25,7 @@ nation_model = api.model('Nation', {
 city_model = api.model('City', {
     'id': fields.Integer(readonly=True, description='City ID'),
     'name': fields.String(required=True, description='City name'),
-    'nation_id': fields.Integer(description='Nation ID'),
+    'nation': fields.Nested(nation_model, description='Associated Nation')
 })
 location_model = api.model('Location', {
     'id': fields.Integer(required=True, description='Unique identifier'),
@@ -75,9 +52,6 @@ list_parser.add_argument('include_nation', type=str_to_bool, default="False", he
 
 list_parser.add_argument('nation_id', type=str, help='Filter by nation id',
                          location='args')
-#nation_id
-#add endpoint to get list like {id:1,type:city,name:"Rome"},{id:2,type:nation,name:"Italy"}, {id:4,type:airport,name:"Airport"}
-
 
 @api.route('/all')
 class LocationsList(Resource):
@@ -85,19 +59,19 @@ class LocationsList(Resource):
     @api.marshal_list_with(location_model)
     def get(self):
         """Returns a combined list of cities, nations, and airports."""
-        cities = CitySchema(many=True).dump(
+        cities = cities_schema.dump(
             db.session.query(City).with_entities(City.id, City.name).all()
         )
         for c in cities:
             c['type'] = 'city'
 
-        nations = NationSchema(many=True).dump(
+        nations = nations_schema.dump(
             db.session.query(Nation).with_entities(Nation.id, Nation.name).all()
         )
         for n in nations:
             n['type'] = 'nation'
 
-        airports = AirportSchema(many=True).dump(
+        airports = airports_schema.dump(
             db.session.query(Airport).with_entities(Airport.id, Airport.name).all()
         )
         for a in airports:
@@ -123,7 +97,7 @@ class CityList(Resource):
         if args['nation_id']:
             query = query.filter(City.nation_id == args['nation_id'])
 
-        return CitySchema(many=True).dump(query.order_by('name').all()), 200
+        return cities_schema.dump(query.order_by('name').all()), 200
 
 
 @api.route('/city/<int:city_id>')
@@ -133,7 +107,7 @@ class CityResource(Resource):
     def get(self, city_id):
         """Fetch a city given its identifier"""
         city = City.query.options(joinedload(City.nation)).get_or_404(city_id)
-        return city
+        return city_schema.dump(city)
 
 # --- Request Parsers for Nation ---
 nation_list_parser = reqparse.RequestParser()
@@ -161,7 +135,7 @@ class NationList(Resource):
         if args['alpha2']:
             query = query.filter(Nation.alpha2.ilike(args['alpha2']))
 
-        return NationSchema(many=True).dump(query.order_by('name').all()), 200
+        return nations_schema.dump(query.order_by('name').all()), 200
 
 
 @api.route('/nation/<int:nation_id>')
@@ -171,4 +145,4 @@ class NationResource(Resource):
     def get(self, nation_id):
         """Fetch a nation given its identifier"""
         nation = Nation.query.get_or_404(nation_id)
-        return nation
+        return nation_schema.dump(nation)

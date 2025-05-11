@@ -16,116 +16,89 @@ from app.models.airlines import Airline
 from app.models.airport import Airport
 from app.models.aircraft import Aircraft
 from app.models.airlines import AirlineAircraft
-from app.apis.airport import airport_schema
-
+from app.schemas.flight import FlightSchema, flight_schema
+from app.apis.airport import airport_model
 api = Namespace('flight', description='Flight related operations')
-
-# --- Marshmallow Schemas ---
-class FlightSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Flight
-        load_instance = True
-        include_fk = True
-
-    id = ma.UUID(dump_only=True)
-    airline_id = ma.UUID(required=True)
-    airline_aircraft_id = ma.UUID(required=True)
-    departure_airport_id = ma.Integer(required=True)
-    arrival_airport_id = ma.Integer(required=True)
-    departure_time = ma.DateTime(required=True)
-    arrival_time = ma.DateTime(required=True)
-    price_economy_class = ma.Float(required=True)
-    price_business_class = ma.Float(required=True)
-    price_first_class = ma.Float(required=True)
-    price_insurance = ma.Float()
-    flight_number = ma.String(required=True)
-    departure_airport = ma.Nested('app.apis.airport.AirportSchema', dump_only=True)
-    arrival_airport = ma.Nested('app.apis.airport.AirportSchema', dump_only=True)
-
-    @validates('departure_airport_id')
-    def validate_departure_airport(self, value):
-        if not Airport.query.get(value):
-            raise ValidationError("Departure airport with given ID does not exist.")
-
-    @validates('arrival_airport_id')
-    def validate_arrival_airport(self, value):
-        if not Airport.query.get(value):
-            raise ValidationError("Arrival airport with given ID does not exist.")
-
-    @validates('airline_id')
-    def validate_airline(self, value):
-        if not Airline.query.get(value):
-            raise ValidationError("Airline with given ID does not exist.")
-
-    @validates('airline_aircraft_id')
-    def validate_airline_aircraft(self, value):
-        if not AirlineAircraft.query.get(value):
-            raise ValidationError("Airline aircraft with given ID does not exist.")
-
-    @validates('departure_time')
-    def validate_departure_time(self, value):
-        if value and value < datetime.datetime.now(datetime.UTC):
-            raise ValidationError("Departure time cannot be in the past.")
-
-    @validates('arrival_time')
-    def validate_arrival_time(self, value, data):
-        departure_time = data.get('departure_time')
-        if value and departure_time and value <= departure_time:
-            raise ValidationError("Arrival time must be after departure time.")
-
-# Create schema instances
-flight_schema = FlightSchema()
-flights_schema = FlightSchema(many=True)
 
 # --- RESTx Models ---
 flight_model = api.model('Flight', {
     'id': fields.String(readonly=True, description='Flight ID'),
-    'airline_id': fields.String(required=True, description='Airline ID'),
-    'airline_aircraft_id': fields.String(required=True, description='Airline Aircraft ID'),
-    'departure_airport_id': fields.Integer(required=True, description='Departure Airport ID'),
-    'arrival_airport_id': fields.Integer(required=True, description='Arrival Airport ID'),
+    'route_id': fields.Integer(required=True, description='Route ID'),
+    'aircraft_id': fields.String(required=True, description='Airline Aircraft ID'),
     'departure_time': fields.DateTime(required=True, description='Departure time'),
     'arrival_time': fields.DateTime(required=True, description='Arrival time'),
     'price_economy_class': fields.Float(required=True, description='Economy class price'),
     'price_business_class': fields.Float(required=True, description='Business class price'),
     'price_first_class': fields.Float(required=True, description='First class price'),
     'price_insurance': fields.Float(description='Insurance price'),
-    'flight_number': fields.String(required=True, description='Flight number')
 })
 
-# --- Request Parsers ---
-flight_list_parser = reqparse.RequestParser()
-flight_list_parser.add_argument('airline_id', type=str, help='Filter by airline ID', location='args')
-flight_list_parser.add_argument('departure_airport_id', type=int, help='Filter by departure airport ID', location='args')
-flight_list_parser.add_argument('arrival_airport_id', type=int, help='Filter by arrival airport ID', location='args')
-flight_list_parser.add_argument('departure_date', type=str, help='Filter by departure date (YYYY-MM-DD)', location='args')
-flight_list_parser.add_argument('flight_number', type=str, help='Filter by flight number', location='args')
-flight_list_parser.add_argument('future_only', type=bool, default=True, help='Show only future flights', location='args')
+airline_model = api.model('Airline', {
+    'id': fields.String(readonly=True, description='Airline ID'),
+    'name': fields.String(required=True, description='Airline name'),
+    'first_class_description': fields.String(required=True, description='First class description'),
+    'business_class_description': fields.String(required=True, description='Business class description'),
+    'economy_class_description': fields.String(required=True, description='Economy class description'),
+})
+
+flight_model_output = api.model('FlightOutput', {
+    'id': fields.String(readonly=True, description='Flight ID'),
+    'airline': fields.Nested(airline_model, description='Airline'),
+    'flight_number': fields.String(required=True, description='Flight number'),
+    'aircraft_id': fields.String(required=True, description='Airline Aircraft ID'),
+    'departure_time': fields.DateTime(required=True, description='Departure time'),
+    'arrival_time': fields.DateTime(required=True, description='Arrival time'),
+    'departure_airport': fields.Nested(airport_model, description='Departure Airport'),
+    'arrival_airport': fields.Nested(airport_model, description='Arrival Airport'),
+})
+
+# # --- Request Parsers ---
+# flight_list_parser = reqparse.RequestParser()
+# flight_list_parser.add_argument('airline_id', type=str, help='Filter by airline ID', location='args')
+# flight_list_parser.add_argument('departure_airport_id', type=int, help='Filter by departure airport ID', location='args')
+# flight_list_parser.add_argument('arrival_airport_id', type=int, help='Filter by arrival airport ID', location='args')
+# flight_list_parser.add_argument('departure_date', type=str, help='Filter by departure date (YYYY-MM-DD)', location='args')
+# flight_list_parser.add_argument('flight_number', type=str, help='Filter by flight number', location='args')
+# flight_list_parser.add_argument('future_only', type=bool, default=True, help='Show only future flights', location='args')
 
 
 @api.route('/')
 class FlightList(Resource):
     @api.expect(flight_model)
     @jwt_required()
-    @roles_required('airline-admin')
-    @airline_id_from_user()
-    def post(self, airline_id):
+    # @roles_required('airline-admin')
+    # @airline_id_from_user()
+    # def post(self, airline_id):
+    def post(self):
         """Create a new flight"""
         data = request.json
-        data['airline_id'] = airline_id
+        # data['airline_id'] = airline_id
+        airline_id = "455a0c4f-2f2d-4343-bf3e-6c286ac0a636"
 
         try:
             # Validate data with Marshmallow schema
+            
             new_flight = flight_schema.load(data)
 
             # Set any default values if needed
             if 'price_insurance' not in data:
                 new_flight.price_insurance = 0.0
+                
+            # Calculate default checkin and baording times
+            new_flight.checkin_start_time = new_flight.departure_time - datetime.timedelta(hours=2)
+            new_flight.checkin_end_time = new_flight.departure_time - datetime.timedelta(hours=1)
+            new_flight.boarding_start_time = new_flight.departure_time - datetime.timedelta(hours=1)
+            new_flight.boarding_end_time = new_flight.departure_time
 
             # Validate that the airline aircraft belongs to the airline
-            aircraft = AirlineAircraft.query.get(data['airline_aircraft_id'])
+            aircraft = AirlineAircraft.query.get(data['aircraft_id'])
             if not aircraft or str(aircraft.airline_id) != str(airline_id):
                 return {"error": "The specified aircraft does not belong to your airline", "code": 400}, 400
+            
+            # Validate that the route belongs to the airline
+            route = Route.query.get(data['route_id'])
+            if not route or str(route.airline_id) != str(airline_id):
+                return {"error": "The specified route does not belong to your airline", "code": 400}, 400
 
             db.session.add(new_flight)
             db.session.commit()
@@ -140,15 +113,11 @@ class FlightList(Resource):
 @api.param('flight_id', 'The flight identifier')
 class FlightResource(Resource):
     @api.doc(security=None)
+    @api.marshal_with(flight_model_output)
     def get(self, flight_id):
         """Fetch a flight with nested route and airport/city data"""
         flight = Flight.query.options(
             joinedload(Flight.route)
-                .joinedload(Route.departure_airport)
-                .joinedload(Airport.city),
-            joinedload(Flight.route)
-                .joinedload(Route.arrival_airport)
-                .joinedload(Airport.city)
         ).get_or_404(flight_id)
 
         return flight_schema.dump(flight), 200

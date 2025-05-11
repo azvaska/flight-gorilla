@@ -10,6 +10,7 @@ from app.models import Aircraft
 from app.models.flight import Flight, Route
 from app.models.airport import Airport
 from app.models.airlines import Airline, AirlineAircraft
+from app.schemas.search import FlightSearchResultSchema, flight_search_result_schema
 
 api = Namespace('search', description='Flight search operations')
 
@@ -31,36 +32,6 @@ flight_search_parser.add_argument('departure_time_min', type=str,
                                  help='Minimum departure time (HH:MM)', location='args')
 flight_search_parser.add_argument('departure_time_max', type=str,
                                  help='Maximum departure time (HH:MM)', location='args')
-
-# --- Output Schema ---
-class FlightSearchResultSchema(ma.Schema):
-    class Meta:
-        fields = ('id', 'flight_number', 'airline_name', 'airline_id', 'departure_airport',
-                  'arrival_airport', 'departure_time', 'arrival_time', 'duration_minutes',
-                  'price_economy', 'price_business', 'price_first', 'available_economy_seats',
-                  'available_business_seats', 'available_first_seats', 'aircraft_name',
-                  'gate', 'terminal')
-
-    id = ma.String()
-    flight_number = ma.String()
-    airline_name = ma.String()
-    airline_id = ma.String()
-    departure_airport = ma.String()
-    arrival_airport = ma.String()
-    departure_time = ma.DateTime(format='iso')
-    arrival_time = ma.DateTime(format='iso')
-    duration_minutes = ma.Integer()
-    price_economy = ma.Float()
-    price_business = ma.Float()
-    price_first = ma.Float()
-    available_economy_seats = ma.Integer()
-    available_business_seats = ma.Integer()
-    available_first_seats = ma.Integer()
-    aircraft_name = ma.String()
-    gate = ma.String()
-    terminal = ma.String()
-
-flight_search_result_schema = FlightSearchResultSchema(many=True)
 
 # --- Flight Search Model (for Swagger UI) ---
 flight_search_model = api.model('FlightSearchResults', {
@@ -132,7 +103,9 @@ class FlightSearch(Resource):
         for k_step in results:
             results[k_step].sort(key=lambda x: x['duration_minutes'])
 
-        return {'results':str(results) }, 200 #flight_search_result_schema.dump(results)
+        print(results)
+
+        return {'results':results }, 200 #flight_search_result_schema.dump(results)
 
     def _raptor_search(self, origin_id, destination_id, departure_date,
                        max_transfers, min_transfer_minutes, args):

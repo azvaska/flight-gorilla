@@ -10,23 +10,9 @@ from app.apis.location import city_model
 from app.extensions import db, ma # Import ma from extensions
 from app.models.airport import Airport
 from app.models.location import City, Nation
+from app.schemas.airport import airports_schema, airport_schema
 
 api = Namespace('airports', description='Airport related operations')
-
-
-class AirportSchema(ma.SQLAlchemyAutoSchema):
-    city = ma.Nested('app.apis.location.CitySchema', only=('id', 'name', 'nation'))
-    city_id = ma.Integer()
-
-    class Meta:
-        model = Airport
-        load_instance = True
-        fields = ('id', 'name', 'iata_code', 'icao_code', 'latitude', 'longitude', 'city_id', 'city')
-
-
-# Create schema instances
-airport_schema = AirportSchema()
-airports_schema = AirportSchema(many=True)
 
 airport_model = api.model('Airport', {
     'id': fields.Integer(readonly=True, description='Airport ID'),
@@ -72,9 +58,6 @@ class AirportList(Resource):
                  query = query.join(City)
             query = query.join(Nation).filter(Nation.name.ilike(f"%{args['nation_name']}%"))
 
-
-        # Marshmallow can serialize the output if preferred over marshal_list_with
-        # return airports_schema.dump(paginated_airports.items), 200
         return airports_schema.dump(query.all()), 200
 
 
@@ -88,6 +71,5 @@ class AirportResource(Resource):
         airport = Airport.query.options(
             joinedload(Airport.city).joinedload(City.nation)
         ).get_or_404(airport_id)
-        # Marshmallow can serialize the output if preferred over marshal_with
-        # return airport_schema.dump(airport)
-        return airport
+
+        return airport_schema.dump(airport)

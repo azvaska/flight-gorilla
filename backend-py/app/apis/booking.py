@@ -14,42 +14,9 @@ from app.models.booking import Booking, ClassType
 from app.models.flight import Flight
 from app.models.seat_session import SeatSession
 from app.models.user import User, DebitCard
+from app.schemas.booking import BookingSchema, booking_schema, bookings_schema
 
 api = Namespace('booking', description='Booking related operations')
-
-# --- Marshmallow Schemas ---
-class BookingSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Booking
-        load_instance = True
-        include_fk = True
-
-    id = ma.UUID(dump_only=True)
-    user_id = ma.UUID(required=True)
-    flight_id = ma.UUID(required=True)
-    class_type = ma.String(required=True, validate=validate.OneOf(['FIRST', 'BUSINESS', 'ECONOMY']))
-    seat_number = ma.String(required=True)
-    created_at = ma.DateTime(dump_only=True)
-    total_price = ma.Float(required=True)
-    is_insurance_purchased = ma.Boolean()
-    payment_id = ma.String()
-    extras = ma.List(ma.UUID())
-
-    @validates('flight_id')
-    def validate_flight_id(self, value):
-        flight = Flight.query.get(value)
-        if not flight:
-            raise ValidationError("Flight with given ID does not exist.")
-
-    @validates('seat_number')
-    def validate_seat_number(self, value):
-        if not value or len(value) < 2:
-            raise ValidationError("Seat number must be provided and valid.")
-
-
-# Create schema instances
-booking_schema = BookingSchema()
-bookings_schema = BookingSchema(many=True)
 
 # --- RESTx Models ---
 booking_model = api.model('Booking', {
