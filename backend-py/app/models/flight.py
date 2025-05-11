@@ -8,6 +8,7 @@ from sqlalchemy.dialects.postgresql import UUID, ARRAY
 
 from app.extensions import db
 from app.models import AirlineAircraft
+from app.models.airport import Airport
 
 flight_extras = Table('flight_extras', db.metadata,
     db.Column('flight_id', UUID(as_uuid=True), db.ForeignKey('flight.id'), primary_key=True),
@@ -26,6 +27,9 @@ class Route(db.Model):
 
     period_start: Mapped[datetime] = mapped_column(db.DateTime, nullable=False)
     period_end: Mapped[datetime] = mapped_column(db.DateTime, nullable=False)
+
+    departure_airport = relationship('Airport', foreign_keys=[departure_airport_id], lazy='joined')
+    arrival_airport = relationship('Airport', foreign_keys=[arrival_airport_id], lazy='joined')
 
 class Flight(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -62,6 +66,16 @@ class Flight(db.Model):
         back_populates='arrival_flight'
         # Consider adding lazy='dynamic'
     )
+
+    route = relationship('Route', backref=db.backref('flights', lazy=True), lazy='joined')
+
+    @property
+    def departure_airport(self):
+        return self.route.departure_airport
+
+    @property
+    def arrival_airport(self):
+        return self.route.arrival_airport
 
     def booked_seats(self):
         booked_seats = []

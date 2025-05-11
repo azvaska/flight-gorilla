@@ -22,12 +22,15 @@ class NationSchema(ma.SQLAlchemyAutoSchema):
 
 
 class CitySchema(ma.SQLAlchemyAutoSchema):
-    # nation_id = ma.Integer()
+    # Include nested nation information
+    nation = ma.Nested('app.apis.location.NationSchema', only=('id', 'name', 'code', 'alpha2'))
     class Meta:
         model = City
         include_fk = True
         load_instance = True
-        fields = ('id', 'name', 'nation_id')  # Define fields explicitly
+        fields = ('id', 'name', 'nation_id', 'nation')  # Include nested nation
+
+
 class AirportSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Airport

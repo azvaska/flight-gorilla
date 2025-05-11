@@ -11,11 +11,12 @@ from sqlalchemy import or_, and_
 from app.apis.utils import airline_id_from_user
 from app.core.auth import roles_required
 from app.extensions import db, ma
-from app.models.flight import Flight
+from app.models.flight import Flight, Route
 from app.models.airlines import Airline
 from app.models.airport import Airport
 from app.models.aircraft import Aircraft
 from app.models.airlines import AirlineAircraft
+from app.apis.airport import airport_schema
 
 api = Namespace('flight', description='Flight related operations')
 
@@ -140,10 +141,14 @@ class FlightList(Resource):
 class FlightResource(Resource):
     @api.doc(security=None)
     def get(self, flight_id):
-        """Fetch a flight given its identifier"""
+        """Fetch a flight with nested route and airport/city data"""
         flight = Flight.query.options(
-            joinedload(Flight.departure_airport),
-            joinedload(Flight.arrival_airport)
+            joinedload(Flight.route)
+                .joinedload(Route.departure_airport)
+                .joinedload(Airport.city),
+            joinedload(Flight.route)
+                .joinedload(Route.arrival_airport)
+                .joinedload(Airport.city)
         ).get_or_404(flight_id)
 
         return flight_schema.dump(flight), 200
