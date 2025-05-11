@@ -23,9 +23,6 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the application code
-COPY . .
-
 # Create a non-root user to run the application
 RUN adduser --disabled-password --gecos "" appuser
 RUN chown -R appuser:appuser /app
@@ -33,6 +30,3 @@ USER appuser
 
 # Expose the port the app runs on
 EXPOSE 5000
-
-# Command to run the application
-CMD ["gunicorn", "app:app_flask", "--bind", "0.0.0.0:5000", "--workers", "3"]
