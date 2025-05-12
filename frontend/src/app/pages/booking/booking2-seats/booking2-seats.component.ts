@@ -31,6 +31,8 @@ export class Booking2SeatsComponent {
   toggleSelection(newClass: string): void {
     this.selectedClassInternal =
       this.selectedClassInternal === newClass ? '' : newClass;
+    this.selectedSeatRow = -1;
+    this.selectedSeatCol = -1;
     if(this.gridUpdateTimeout) {
       clearTimeout(this.gridUpdateTimeout);
     }
