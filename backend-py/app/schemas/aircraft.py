@@ -1,4 +1,4 @@
-from marshmallow import validates, ValidationError, validate
+from marshmallow import validate
 from app.extensions import ma
 from app.models.aircraft import Aircraft
 
