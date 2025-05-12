@@ -12,41 +12,55 @@
   </a>
   <div class="flex flex-row gap-2 items-center justify-center">
     @if (isLoggedIn) {
-    <app-popover
-      #popover="appPopover"
-      [popoverWidth]="'auto'"
-      [popoverRelativePosition]="{
+      <span>{{ user!.name }}</span>
+      <app-popover
+        #popover="appPopover"
+        [popoverWidth]="'200px'"
+        [popoverRelativePosition]="{
         top: 8,
         right: 0
       }"
-    >
-      <hlm-avatar variant="medium" popover-trigger class="cursor-pointer">
-          <span class="bg-secondary text-secondary-foreground" hlmAvatarFallback
-          >{{ user!.name.charAt(0).toUpperCase() }}</span
+      >
+
+        <hlm-avatar variant="medium" popover-trigger class="cursor-pointer">
+        <span class="bg-secondary text-secondary-foreground" hlmAvatarFallback
+        >{{ user!.name.charAt(0).toUpperCase() }}</span
         >
-      </hlm-avatar>
-      <div popover-content class="pt-4 pb-1 px-1 flex flex-col gap-1">
-        <div class="flex flex-col border-b pb-3 px-4">
-          <p class="text-lg text-nowrap">
-            {{ user!.name }} {{ user!.surname }}
-          </p>
-          <p class="text-base text-muted-foreground">
-            {{ user!.email }}
-          </p>
+        </hlm-avatar>
+        <div popover-content class="pt-4 pb-1 px-1 flex flex-col gap-1">
+          <div class="flex flex-col border-b pb-3 px-4">
+            <p class="text-lg text-nowrap">
+              {{ user!.name }} {{ user!.surname }}
+            </p>
+            <p class="text-base text-muted-foreground">
+              {{ user!.email }}
+            </p>
+          </div>
+          <ul>
+            <li
+              class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
+
+            >
+              Profile
+            </li>
+            <li
+              class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
+              [routerLink]="['../reservations']"
+            >
+              Reservations
+            </li>
+            <li
+              class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
+              (click)="logout()"
+            >
+              Logout
+            </li>
+          </ul>
         </div>
-        <ul>
-          <li
-            class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
-            (click)="logout()"
-          >
-            Logout
-          </li>
-        </ul>
-      </div>
-    </app-popover>
-    } @else if(!user) {
-    <a hlmBtn variant="outline" href="/auth/login">Login</a>
-    <a hlmBtn variant="default" href="/auth/register">Sign Up</a>
+      </app-popover>
+    } @else if (!user) {
+      <a hlmBtn variant="outline" href="/auth/login">Login</a>
+      <a hlmBtn variant="default" href="/auth/register">Sign Up</a>
     }
   </div>
 </div>
