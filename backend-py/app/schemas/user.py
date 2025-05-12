@@ -1,14 +1,13 @@
 from marshmallow import validates, ValidationError, validate
 from app.extensions import ma, db
-from app.models.user import User, DebitCard
+from app.models.user import User, PayementCard
 from app.models.location import Nation
 
 class DebitCardSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        model = DebitCard
+        model = PayementCard
         load_instance = True
         include_fk = True
-        fields = ('id', 'last_4_card', 'credit_card_expiration', 'circuits')
 
 class UserSchema(ma.SQLAlchemyAutoSchema):
     cards = ma.Nested(DebitCardSchema, many=True)
@@ -17,8 +16,6 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         include_fk = True
         sqla_session = db.session  # This is important
-        # exclude = ('password',)
-        fields = ('id', 'email', 'name', 'surname', 'address', 'zip', 'nation_id', 'airline_id', 'cards', 'active')
 
     # Add validation for fields
     email = ma.Email(required=True,

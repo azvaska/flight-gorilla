@@ -1,16 +1,12 @@
-# app/apis/search.py
-from flask import request
+
 from flask_restx import Namespace, Resource, fields, reqparse
-from marshmallow import validates, ValidationError, validate
-from datetime import datetime, timedelta
+from datetime import datetime
 import uuid
 
-from app.extensions import db, ma
 from app.models import Aircraft
 from app.models.flight import Flight, Route
 from app.models.airport import Airport
 from app.models.airlines import Airline, AirlineAircraft
-from app.schemas.search import FlightSearchResultSchema, flight_search_result_schema
 
 api = Namespace('search', description='Flight search operations')
 

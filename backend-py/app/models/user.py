@@ -1,14 +1,17 @@
 import enum
+from typing import List
 import uuid
-
 from flask_security.models import sqla
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from app.extensions import db
-from app.models.base import Base
+from app.models.airlines import Airline
 from sqlalchemy.dialects.postgresql import UUID
-
 from app.models.location import Nation
+
+class CardType(enum.Enum):
+    DEBIT = "Debit"
+    CREDIT = "Credit"
+    PREPAID = "Prepaid"
 
 
 class Role(db.Model, sqla.FsRoleMixin):
@@ -22,16 +25,20 @@ class User(sqla.FsUserMixin,db.Model):
     surname: Mapped[str] = mapped_column(db.String(255), nullable=False)
     address: Mapped[str] = mapped_column(db.String(255), nullable=True)
     zip: Mapped[str] = mapped_column(db.String(255), nullable=True)
-    nation_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('nation.id'), nullable=True)
-    airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey('airline.id'), nullable=True)
+    nation_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Nation.id), nullable=True)
+    airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id), nullable=True)
 
-    def __repr__(self):
-        return f'<User {self.username}>'
+    nation: Mapped[Nation] = relationship(Nation, foreign_keys=[nation_id], lazy='joined')
+    airline: Mapped[Airline] = relationship(Airline, foreign_keys=[airline_id], lazy='joined')
+    bookings: Mapped[List['Booking']] = relationship('Booking', back_populates='user', cascade='all, delete-orphan')
+    cards: Mapped[List['PayementCard']] = relationship('PayementCard', back_populates='user', cascade='all, delete-orphan')
 
-class DebitCard(db.Model):
+class PayementCard(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(db.UUID, db.ForeignKey('user.id'), nullable=False)
-    user: Mapped[User] = relationship('User', backref=db.backref('cards', lazy=True))
-    last_4_card: Mapped[str] = mapped_column(db.String(255), nullable=False)
-    credit_card_expiration: Mapped[str] = mapped_column(db.String(255), nullable=False)
-    circuits: Mapped[str] = mapped_column(db.String(255), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(db.UUID, db.ForeignKey(User.id), nullable=False)
+    last_4_digits: Mapped[str] = mapped_column(db.String(255), nullable=False)
+    expiration_date: Mapped[str] = mapped_column(db.String(255), nullable=False)
+    circuit: Mapped[str] = mapped_column(db.String(255), nullable=False)
+    card_type: Mapped[CardType] = mapped_column(db.Enum(CardType), nullable=False)
+
+    user: Mapped[User] = relationship(User, back_populates='cards', foreign_keys=[user_id], lazy='joined')

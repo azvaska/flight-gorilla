@@ -1,6 +1,7 @@
 from marshmallow import validates, ValidationError, validate
 from app.extensions import ma, db
-from app.models.airlines import Airline, Extra, AirlineAircraft
+from app.models.airlines import Airline, AirlineAircraft
+from app.models.extra import Extra
 from app.models import Nation
 
 class ExtraSchema(ma.SQLAlchemyAutoSchema):

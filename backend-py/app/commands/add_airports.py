@@ -1,10 +1,10 @@
 import click
 from flask.cli import with_appcontext
 from flask import current_app
-
 from app.models import Nation,Airport,City
 import csv
-@click.command('seed-airports')  # <-- This is required
+
+@click.command('seed-airports')
 @with_appcontext
 def seed_airports():
     db_session = current_app.extensions['sqlalchemy'].session
@@ -36,13 +36,9 @@ def seed_airports():
                                       longitude=row['longitude_deg'],
                                       latitude=row['latitude_deg'], city=city)
                     db_session.add(airport)
-                    print("Added city and airport:", city_name, airport.name)
                 else:
-                    print("City or nation not found for airport:", row['name'],nation)
-
-
-
-            # print(row)
+                    click.echo("City or nation not found for airport:", row['name'],nation)
+        
     db_session.commit()
     db_session.close()
 

@@ -1,17 +1,13 @@
-from flask import request, current_app
+from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, reqparse
 import datetime
-from uuid import UUID
-
 from sqlalchemy import text
-
-from app.extensions import db, ma
-from app.models.booking import booking_flight_departure, booking_flight_arrival
+from app.extensions import db
 from app.models.seat_session import SeatSession
 from app.models.flight import Flight
 from sqlalchemy.exc import IntegrityError
-from app.schemas.seat_session import SeatSessionSchema, seat_session_schema, seat_sessions_schema
+from app.schemas.seat_session import seat_session_schema
 
 api = Namespace('seat_session', description='Seat reservation session operations')
 

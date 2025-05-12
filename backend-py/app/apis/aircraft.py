@@ -1,12 +1,5 @@
 # app/apis/aircraft.py
-from flask import request, current_app
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, reqparse
-from marshmallow import validates, ValidationError, validate
-from sqlalchemy.orm import joinedload
-
-from app.core.auth import roles_required
-from app.extensions import db, ma
 from app.models.aircraft import Aircraft
 from app.schemas.aircraft import aircraft_schema, aircrafts_schema
 

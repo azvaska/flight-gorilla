@@ -54,6 +54,7 @@ services:
         flask seed-airports || echo 'Skipping seed-airports' &&
         flask seed-aircraft || echo 'Skipping seed-aircraft' &&
         flask seed-airlines || echo 'Skipping seed-airlines' &&
+        flask seed-airline-aircrafts || echo 'Skipping seed-airline-aircrafts' &&
         flask seed-flights || echo 'Skipping seed-flights' &&
         flask seed-users || echo 'Skipping seed-users' &&
 

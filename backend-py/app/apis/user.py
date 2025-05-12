@@ -2,14 +2,10 @@
 from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, reqparse
-from marshmallow import validates, ValidationError, validate
-from sqlalchemy.orm import joinedload
-
+from marshmallow import ValidationError
 from app.core.auth import roles_required
-from app.extensions import db, ma
-from app.models.user import User, DebitCard
-from app.models.location import Nation
-from app.schemas.user import UserSchema, DebitCardSchema, user_schema, users_schema, debit_card_schema, debit_cards_schema
+from app.models.user import User, PayementCard
+from app.schemas.user import UserSchema, user_schema, users_schema, debit_card_schema, debit_cards_schema
 
 api = Namespace('user', description='User related operations')
 
@@ -169,7 +165,7 @@ class UserCardsList(Resource):
         user_id = get_jwt_identity()
         data = request.json
 
-        new_card = DebitCard(
+        new_card = PayementCard(
             user_id=user_id,
             last_4_card=data['last_4_card'],
             credit_card_expiration=data['credit_card_expiration'],
@@ -188,14 +184,14 @@ class UserCardResource(Resource):
     def get(self, card_id):
         """Get a specific credit card"""
         user_id = get_jwt_identity()
-        card = DebitCard.query.filter_by(id=card_id, user_id=user_id).first_or_404()
+        card = PayementCard.query.filter_by(id=card_id, user_id=user_id).first_or_404()
         return debit_card_schema.dump(card), 200
 
     @jwt_required()
     def delete(self, card_id):
         """Delete a credit card"""
         user_id = get_jwt_identity()
-        card = DebitCard.query.filter_by(id=card_id, user_id=user_id).first_or_404()
+        card = PayementCard.query.filter_by(id=card_id, user_id=user_id).first_or_404()
 
         db.session.delete(card)
         db.session.commit()

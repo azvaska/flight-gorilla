@@ -1,23 +1,18 @@
 # app/apis/flight.py
-from flask import request, current_app
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_restx import Namespace, Resource, fields, reqparse
-from marshmallow import validates, ValidationError, validate
+from flask import request
+from flask_jwt_extended import jwt_required
+from flask_restx import Namespace, Resource, fields
+from marshmallow import  ValidationError
 from sqlalchemy.orm import joinedload
 import datetime
-import uuid
-from sqlalchemy import or_, and_
-
 from app.apis.utils import airline_id_from_user
 from app.core.auth import roles_required
-from app.extensions import db, ma
+from app.extensions import db
 from app.models.flight import Flight, Route
-from app.models.airlines import Airline
-from app.models.airport import Airport
-from app.models.aircraft import Aircraft
 from app.models.airlines import AirlineAircraft
 from app.schemas.flight import FlightSchema, flight_schema
 from app.apis.airport import airport_model
+
 api = Namespace('flight', description='Flight related operations')
 
 # --- RESTx Models ---

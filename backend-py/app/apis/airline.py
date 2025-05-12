@@ -2,19 +2,16 @@
 from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, reqparse
-from marshmallow import validates, ValidationError, validate
+from marshmallow import ValidationError
 from sqlalchemy.orm import joinedload
-from uuid import UUID
 
-from sqlalchemy.orm.strategies import JoinedLoader
 
 from app.apis.utils import airline_id_from_user
 from app.core.auth import roles_required
-from app.extensions import db, ma
-from app.models import Nation
-from app.models.airlines import Airline, Extra, AirlineAircraft
+from app.extensions import db
+from app.models.airlines import Airline, AirlineAircraft
+from app.models.extra import Extra
 from app.apis.location import nation_model
-from app.models.user import User
 from app.schemas.airline import AirlineSchema, airline_schema, airlines_schema, extra_schema, extras_schema, airline_aircraft_schema, airline_aircrafts_schema
 
 api = Namespace('airline', description='Airline related operations')

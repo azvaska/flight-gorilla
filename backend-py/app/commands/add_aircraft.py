@@ -45,6 +45,7 @@ def seed_aircraft():
         added_count += 1
 
     db_session.commit()
+    db_session.close()
     click.echo(f'Added {added_count} aircraft models to the database.')
 
 def init_app(app):

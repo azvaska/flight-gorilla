@@ -1,13 +1,7 @@
-# app/apis/airport.py
-from flask import request
-from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource, fields, reqparse
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
-from marshmallow import Schema, fields as ma_fields, ValidationError, validates, validates_schema
-
 from app.apis.location import city_model
-from app.extensions import db, ma # Import ma from extensions
 from app.models.airport import Airport
 from app.models.location import City, Nation
 from app.schemas.airport import airports_schema, airport_schema

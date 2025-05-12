@@ -1,12 +1,6 @@
-# app/apis/location.py
-from email.policy import default
-
-from flask import request
-from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource, fields, reqparse
-from sqlalchemy.orm import joinedload, noload, InstanceState
-
-from app.extensions import db, ma
+from sqlalchemy.orm import joinedload, noload
+from app.extensions import db
 from app.models import Airport
 from app.models.location import City, Nation
 from app.schemas.location import nations_schema, cities_schema, nation_schema, city_schema

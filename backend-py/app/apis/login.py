@@ -1,13 +1,9 @@
-# app/apis/login.py
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_restx import Namespace, Resource, fields
 from flask import request,current_app
-from flask_security import hash_password, auth_required, auth_token_required
-
-from app.models.user import User, Role
-from app.extensions import db
-from flask_login import login_user, logout_user, login_required, current_user
-
+from flask_security import hash_password
+from app.models.user import User
+from flask_login import login_user
 
 api = Namespace('auth', description='Login related operations',security=None)
 
