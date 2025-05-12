@@ -10,6 +10,7 @@ import { PopoverComponent } from '@/app/components/popover/popover.component';
 import { PopoverTriggerDirective } from '@/app/components/popover/popover-trigger.directive';
 import { UserFetchService } from '@/app/services/user/user-fetch.service';
 import { IUser } from '@/types/user';
+import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
@@ -20,6 +21,7 @@ import { IUser } from '@/types/user';
     HlmButtonDirective,
     PopoverComponent,
     PopoverTriggerDirective,
+    RouterLink,
   ],
   templateUrl: './navbar.component.html',
 })

@@ -9,8 +9,7 @@ import {NgIf} from '@angular/common';
   selector: 'app-booking',
   imports: [
     ProgressWidgetComponent,
-    RouterOutlet,
-    NgIf
+    RouterOutlet
   ],
   templateUrl: './booking.component.html',
   host: {
