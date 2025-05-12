@@ -84,8 +84,9 @@ class Flight(db.Model):
         return booked_seats
     
 class FlightExtra(db.Model):
-    flight_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Flight.id), primary_key=True)
-    extra_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Extra.id), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    flight_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Flight.id))
+    extra_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Extra.id))
     price: Mapped[float] = mapped_column(db.Float, nullable=False)
 
     flight: Mapped[Flight] = relationship(Flight, back_populates='available_extras')
