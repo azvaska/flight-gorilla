@@ -55,7 +55,7 @@ class SeatSessionList(Resource):
                 if not flight:
                     return {'error': 'Flight not found', 'code': 404}, 404
                 # Check if seat is in flight's booked_seats array
-                if seat_number in flight.booked_seats():
+                if seat_number in flight.booked_seats:
                     return {'error': 'Seat is already booked', 'code': 400}, 400
                 existing_sessions = SeatSession.query.filter_by(
                     flight_id=flight_id,

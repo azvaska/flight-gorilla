@@ -105,7 +105,7 @@ class BookingList(Resource):
         flight = Flight.query.get_or_404(data['flight_id'])
 
         # Check if the seat is available (not already booked)
-        if data['seat_number'] in flight.booked_seats():
+        if data['seat_number'] in flight.booked_seats:
             return {'error': 'Seat is already booked'}, 400
 
         # Check if the user has a valid seat session for this seat

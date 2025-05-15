@@ -1,6 +1,6 @@
 
-from flask_restx import Namespace, Resource, fields, reqparse
-from datetime import datetime
+from flask_restx import Namespace, Resource, fields, reqparse, marshal
+from datetime import datetime, timedelta
 import uuid
 
 from app.models import Aircraft
@@ -17,9 +17,9 @@ flight_search_parser.add_argument('departure_airport', type=int, required=True,
 flight_search_parser.add_argument('arrival_airport', type=int, required=True,
                                  help='Arrival airport id', location='args')
 flight_search_parser.add_argument('departure_date', type=str, required=True,
-                                 help='Departure date (YYYY-MM-DD)', location='args')
-flight_search_parser.add_argument('return_date', type=str, required=False,
-                                 help='Return date (YYYY-MM-DD) for round trips', location='args')
+                                 help='Departure date (DD-MM-YYYY)', location='args')
+flight_search_parser.add_argument('return_date', type=str, required=True,
+                                 help='Return date (DD-MM-YYYY) for round trips', location='args')
 flight_search_parser.add_argument('airline_id', type=str,
                                  help='Filter by specific airline ID', location='args')
 flight_search_parser.add_argument('price_max', type=float,
@@ -30,25 +30,62 @@ flight_search_parser.add_argument('departure_time_max', type=str,
                                  help='Maximum departure time (HH:MM)', location='args')
 
 # --- Flight Search Model (for Swagger UI) ---
-flight_search_model = api.model('FlightSearchResults', {
-    'id': fields.String(description='Flight ID'),
-    'flight_number': fields.String(description='Flight number'),
-    'airline_name': fields.String(description='Airline name'),
-    'airline_id': fields.String(description='Airline ID'),
-    'departure_airport': fields.String(description='Departure airport code'),
-    'arrival_airport': fields.String(description='Arrival airport code'),
-    'departure_time': fields.DateTime(description='Departure time'),
-    'arrival_time': fields.DateTime(description='Arrival time'),
-    'duration_minutes': fields.Integer(description='Flight duration in minutes'),
-    'price_economy': fields.Float(description='Economy class price'),
-    'price_business': fields.Float(description='Business class price'),
-    'price_first': fields.Float(description='First class price'),
-    'available_economy_seats': fields.Integer(description='Available economy seats'),
-    'available_business_seats': fields.Integer(description='Available business seats'),
-    'available_first_seats': fields.Integer(description='Available first class seats'),
-    'aircraft_name': fields.String(description='Aircraft name'),
-    'gate': fields.String(description='Departure gate'),
-    'terminal': fields.String(description='Departure terminal'),
+
+
+segment_model = api.model('FlightSegment', {
+    'id': fields.String(description='Flight segment ID'),
+    'flight_number': fields.String(description='Flight number for this segment'),
+    'airline_name': fields.String(description='Airline name for this segment'),
+    'airline_id': fields.String(description='Airline ID for this segment'),
+    'departure_airport': fields.String(description='Departure airport code for this segment'),
+    'arrival_airport': fields.String(description='Arrival airport code for this segment'),
+    'departure_time': fields.DateTime(description='Departure time for this segment'),
+    'arrival_time': fields.DateTime(description='Arrival time for this segment'),
+    'duration_minutes': fields.Integer(description='Flight duration in minutes for this segment'),
+    'price_economy': fields.Float(description='Economy class price for this segment'),
+    'price_business': fields.Float(description='Business class price for this segment'),
+    'price_first': fields.Float(description='First class price for this segment'),
+    'available_economy_seats': fields.Integer(description='Available economy seats for this segment'),
+    'available_business_seats': fields.Integer(description='Available business seats for this segment'),
+    'available_first_seats': fields.Integer(description='Available first class seats for this segment'),
+    'aircraft_name': fields.String(description='Aircraft name for this segment'),
+    'gate': fields.String(description='Departure gate for this segment', allow_null=True),
+    'terminal': fields.String(description='Departure terminal for this segment', allow_null=True),
+})
+
+layover_model = api.model('Layover', {
+    'airport': fields.String(description='Layover airport code'),
+    'duration_minutes': fields.Integer(description='Layover duration in minutes'),
+})
+
+journey_model = api.model('Journey', {
+    'id': fields.String(description='Journey ID (comma-separated flight IDs)'),
+    'flight_number': fields.String(description='Overall flight number (e.g., AA123 or AA123+)'),
+    'airline_name': fields.String(description='Primary airline name for the journey'),
+    'airline_id': fields.String(description='Primary airline ID for the journey'),
+    'departure_airport': fields.String(description='Origin airport code for the journey'),
+    'arrival_airport': fields.String(description='Destination airport code for the journey'),
+    'departure_time': fields.DateTime(description='Overall departure time for the journey'),
+    'arrival_time': fields.DateTime(description='Overall arrival time for the journey'),
+    'duration_minutes': fields.Integer(description='Total journey duration in minutes'),
+    'price_economy': fields.Float(description='Total economy class price for the journey'),
+    'price_business': fields.Float(description='Total business class price for the journey'),
+    'price_first': fields.Float(description='Total first class price for the journey'),
+    'available_economy_seats': fields.Integer(description='Available economy seats (typically for the first segment)'),
+    'available_business_seats': fields.Integer(description='Available business seats (typically for the first segment)'),
+    'available_first_seats': fields.Integer(description='Available first class seats (typically for the first segment)'),
+    'aircraft_name': fields.String(description='Primary aircraft name for the journey'),
+    'gate': fields.String(description='Departure gate for the first segment', allow_null=True),
+    'terminal': fields.String(description='Departure terminal for the first segment', allow_null=True),
+    'is_direct': fields.Boolean(description='True if the journey is direct, false otherwise'),
+    'stops': fields.Integer(description='Number of stops (layovers)'),
+    'segments': fields.List(fields.Nested(segment_model), description='List of flight segments in the journey'),
+    'layovers': fields.List(fields.Nested(layover_model), description='List of layovers in the journey'),
+})
+
+flight_search_response_model = api.model('FlightSearchResponse', {
+    'departure': fields.List(fields.Nested(journey_model), description='List of departure journey options'),
+    'return': fields.List(fields.Nested(journey_model), description='List of return journey options'),
 })
 
 
@@ -56,15 +93,22 @@ flight_search_model = api.model('FlightSearchResults', {
 class FlightSearch(Resource):
     @api.doc(security=None)
     @api.expect(flight_search_parser)
+    @api.response(200, 'Created', flight_search_response_model)
+
     def get(self):
         """Search for flights based on departure/arrival airports and date using RAPTOR algorithm"""
         args = flight_search_parser.parse_args()
 
         # Parse and validate date
         try:
-            departure_date = datetime.strptime(args['departure_date'], '%Y-%m-%d').date()
+            departure_date = datetime.strptime(args['departure_date'], '%d-%m-%Y').date()
         except ValueError:
-            return {'error': 'Invalid departure date format. Use YYYY-MM-DD', 'code': 400}, 400
+            return {'error': 'Invalid departure date format. Use DD-MM-YYYY', 'code': 400}, 400
+
+        try:
+            return_date = datetime.strptime(args['return_date'], '%d-%m-%Y').date()
+        except ValueError:
+            return {'error': 'Invalid return date format. Use DD-MM-YYYY', 'code': 400}, 400
 
         # Ensure departure date is not in the past
         if departure_date < datetime.now().date():
@@ -86,7 +130,7 @@ class FlightSearch(Resource):
         # Use RAPTOR algorithm to find optimal itineraries
         max_transfers = 3  # Maximum 3 transfers = 4 flight segments
         min_transfer_time = 120  # Minutes
-        results = self._raptor_search(
+        departure_results = self._raptor_search(
             departure_airport.id,
             arrival_airport.id,
             departure_date,
@@ -94,22 +138,39 @@ class FlightSearch(Resource):
             min_transfer_time,
             args
         )
-
+        departure_journeys = []
         # Sort results by total duration
-        for k_step in results:
-            results[k_step].sort(key=lambda x: x['duration_minutes'])
+        for k_step in departure_results:
+            departure_journeys.extend(departure_results[k_step])
 
-        print(results)
+        departure_journeys.sort(key=lambda x: x['duration_minutes'])
 
-        return {'results':results }, 200 #flight_search_result_schema.dump(results)
+        return_results = self._raptor_search(
+            arrival_airport.id,
+            departure_airport.id,
+            return_date,
+            max_transfers,
+            min_transfer_time,
+            args
+        )
+        return_journeys = []
+        # Sort results by total duration
+        for k_step in return_results:
+            return_journeys.extend(return_results[k_step])
+
+        return_journeys.sort(key=lambda x: x['duration_minutes'])
+        print(return_journeys)
+
+        return marshal({'departure':departure_journeys,'return':return_journeys },flight_search_response_model), 200 #flight_search_result_schema.dump(results)
 
     def _raptor_search(self, origin_id, destination_id, departure_date,
                        max_transfers, min_transfer_minutes, args):
         """
         RAPTOR algorithm extended to enumerate *exactly* k-layover itineraries.
         Returns a dict mapping k transfers -> list of journey results (exactly k layovers).
+        Avoids duplicate flight paths unless they have different layovers.
         """
-        from datetime import datetime, timedelta
+
 
         # Prepare date window
         start_of_day = datetime.combine(departure_date, datetime.min.time())
@@ -118,6 +179,9 @@ class FlightSearch(Resource):
 
         # Storage for *all* itineraries by exact #transfers
         all_by_transfers = {k: [] for k in range(max_transfers + 1)}
+
+        # Keep track of processed flight paths to avoid duplicates
+        processed_paths = set()
 
         # We'll use a BFS-like expansion over k transfers
         # frontier_k holds tuples (airport_id, arrival_time, path_so_far) for exactly k transfers
@@ -154,15 +218,24 @@ class FlightSearch(Resource):
 
                     # If this flight reaches the final destination, record it
                     if dest_airport == destination_id:
-                        # only record if exactly k transfers (i.e. len(new_path)-1 == k)
+                        # Only record if exactly k transfers (i.e. len(new_path)-1 == k)
                         if len(new_path) - 1 == k:
-                            result = self._format_journey_result(new_path, origin_id, destination_id)
-                            if result:
-                                all_by_transfers[k].append(result)
-                                continue
+                            # Create a unique identifier for this flight path
+                            flight_ids = tuple(f.id for f in new_path)
 
-                    # Add to next frontier (for another layover) if we haven't exceeded transfer count
+                            # Check if we've already processed this exact combination of flights
+                            if flight_ids not in processed_paths:
+                                processed_paths.add(flight_ids)
+                                result = self._format_journey_result(new_path, origin_id, destination_id)
+                                if result:
+                                    all_by_transfers[k].append(result)
+                                    continue
+
+                    # Check for layover uniqueness
                     if k < max_transfers:
+                        # For non-destination flights, create a unique identifier for the path so far
+                        # This includes the current flight and the layover airport
+                        path_key = (tuple(f.id for f in new_path), dest_airport)
                         next_frontier.append((dest_airport, flight.arrival_time, new_path))
 
             # Move to the next level of transfers
@@ -206,7 +279,7 @@ class FlightSearch(Resource):
         if not aircraft:
             return None
 
-        booked_seats = first_flight.booked_seats()
+        booked_seats = first_flight.booked_seats
         available_economy = len(aircraft_instance.economy_class_seats) - sum(
             1 for seat in booked_seats if seat in aircraft_instance.economy_class_seats)
         available_business = len(aircraft_instance.business_class_seats) - sum(
@@ -302,7 +375,7 @@ class FlightSearch(Resource):
             return None
 
         # Calculate available seats
-        booked_seats = flight.booked_seats()
+        booked_seats = flight.booked_seats
         available_economy = len(aircraft_instance.economy_class_seats) - sum(
             1 for seat in booked_seats if seat in aircraft_instance.economy_class_seats)
         available_business = len(aircraft_instance.business_class_seats) - sum(
