@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import UUID, ARRAY
 
 from app.extensions import db
 from app.models import AirlineAircraft
-from app.models.seat_session import SeatSession
+from app.models.seat_session import SeatSession, Seat
 from app.models.airlines import Airline
 from app.models.airport import Airport
 from app.models.extra import Extra
@@ -20,8 +20,8 @@ class Route(db.Model):
     departure_airport_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Airport.id), nullable=False)
     arrival_airport_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Airport.id), nullable=False)
     airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id), nullable=False)
-    period_start: Mapped[datetime.datetime] = mapped_column(db.DateTime, nullable=False)
-    period_end: Mapped[datetime.datetime] = mapped_column(db.DateTime, nullable=False)
+    period_start: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
+    period_end: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
 
     departure_airport: Mapped[Airport] = relationship(Airport, foreign_keys=[departure_airport_id], lazy='joined')
     arrival_airport: Mapped[Airport] = relationship(Airport, foreign_keys=[arrival_airport_id], lazy='joined')
@@ -33,12 +33,12 @@ class Flight(db.Model):
     route_id: Mapped[int] = mapped_column(db.Integer,db.ForeignKey(Route.id), nullable=False)
     aircraft_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(AirlineAircraft.id), nullable=False)
 
-    departure_time: Mapped[datetime.datetime] = mapped_column(db.DateTime, nullable=False)
-    arrival_time: Mapped[datetime.datetime] = mapped_column(db.DateTime, nullable=False)
-    checkin_start_time: Mapped[datetime.datetime] = mapped_column(db.DateTime, nullable=False)
-    checkin_end_time: Mapped[datetime.datetime] = mapped_column(db.DateTime, nullable=False)
-    boarding_start_time: Mapped[datetime.datetime] = mapped_column(db.DateTime, nullable=False)
-    boarding_end_time: Mapped[datetime.datetime] = mapped_column(db.DateTime, nullable=False)
+    departure_time: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
+    arrival_time: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
+    checkin_start_time: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
+    checkin_end_time: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
+    boarding_start_time: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
+    boarding_end_time: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
 
     gate: Mapped[str] = mapped_column(db.String(255), nullable=True)
     terminal: Mapped[str] = mapped_column(db.String(255), nullable=True)
@@ -47,6 +47,8 @@ class Flight(db.Model):
     price_business_class: Mapped[float] = mapped_column(db.Float, nullable=False)
     price_economy_class: Mapped[float] = mapped_column(db.Float, nullable=False)
     price_insurance: Mapped[float] = mapped_column(db.Float, nullable=False)
+
+    fully_booked: Mapped[bool] = mapped_column(db.Boolean, default=False)
 
     route: Mapped[Route] = relationship(Route, back_populates='flights', foreign_keys=[route_id])
     aircraft: Mapped[AirlineAircraft] = relationship(AirlineAircraft, back_populates='flights', foreign_keys=[aircraft_id])
@@ -82,8 +84,9 @@ class Flight(db.Model):
             booked_seats.append(booking.seat_number)
         for booking in self.return_bookings:
             booked_seats.append(booking.seat_number)
-        session_seats_obj = SeatSession.query.filter(SeatSession.flight_id == self.id,
-                                                     SeatSession.session_end_time > datetime.datetime.now(datetime.UTC)).all()
+
+        session_seats_obj = (Seat.query.join(SeatSession)
+                             .filter(SeatSession.session_end_time > datetime.datetime.now(datetime.UTC),Seat.flight_id == self.id).all())
         session_seats = [seat.seat_number for seat in session_seats_obj]
         return booked_seats + session_seats
     
@@ -92,6 +95,7 @@ class FlightExtra(db.Model):
     flight_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Flight.id))
     extra_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Extra.id))
     price: Mapped[float] = mapped_column(db.Float, nullable=False)
+    limit: Mapped[int] = mapped_column(db.Integer, nullable=False)
 
     flight: Mapped[Flight] = relationship(Flight, back_populates='available_extras')
     extra: Mapped[Extra] = relationship(Extra, back_populates='flight_extras', lazy='joined')

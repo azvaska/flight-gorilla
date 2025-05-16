@@ -45,9 +45,7 @@ segment_model = api.model('FlightSegment', {
     'price_economy': fields.Float(description='Economy class price for this segment'),
     'price_business': fields.Float(description='Business class price for this segment'),
     'price_first': fields.Float(description='First class price for this segment'),
-    'available_economy_seats': fields.Integer(description='Available economy seats for this segment'),
-    'available_business_seats': fields.Integer(description='Available business seats for this segment'),
-    'available_first_seats': fields.Integer(description='Available first class seats for this segment'),
+
     'aircraft_name': fields.String(description='Aircraft name for this segment'),
     'gate': fields.String(description='Departure gate for this segment', allow_null=True),
     'terminal': fields.String(description='Departure terminal for this segment', allow_null=True),
@@ -71,9 +69,6 @@ journey_model = api.model('Journey', {
     'price_economy': fields.Float(description='Total economy class price for the journey'),
     'price_business': fields.Float(description='Total business class price for the journey'),
     'price_first': fields.Float(description='Total first class price for the journey'),
-    'available_economy_seats': fields.Integer(description='Available economy seats (typically for the first segment)'),
-    'available_business_seats': fields.Integer(description='Available business seats (typically for the first segment)'),
-    'available_first_seats': fields.Integer(description='Available first class seats (typically for the first segment)'),
     'aircraft_name': fields.String(description='Primary aircraft name for the journey'),
     'gate': fields.String(description='Departure gate for the first segment', allow_null=True),
     'terminal': fields.String(description='Departure terminal for the first segment', allow_null=True),
@@ -202,7 +197,8 @@ class FlightSearch(Resource):
                     .filter(
                         Route.departure_airport_id == current_airport,
                         Flight.departure_time >= min_dep_time,
-                        Flight.departure_time < date_max
+                        Flight.departure_time < date_max,
+                        Flight.fully_booked == False,
                     )
                 )
                 flights_q = self._apply_filters(flights_q, departure_date, args)
@@ -279,14 +275,6 @@ class FlightSearch(Resource):
         if not aircraft:
             return None
 
-        booked_seats = first_flight.booked_seats
-        available_economy = len(aircraft_instance.economy_class_seats) - sum(
-            1 for seat in booked_seats if seat in aircraft_instance.economy_class_seats)
-        available_business = len(aircraft_instance.business_class_seats) - sum(
-            1 for seat in booked_seats if seat in aircraft_instance.business_class_seats)
-        available_first = len(aircraft_instance.first_class_seats) - sum(
-            1 for seat in booked_seats if seat in aircraft_instance.first_class_seats)
-
         # Calculate total price
         total_economy_price = sum(flight.price_economy_class for flight in flight_path)
         total_business_price = sum(flight.price_business_class for flight in flight_path)
@@ -344,9 +332,6 @@ class FlightSearch(Resource):
             'price_economy': total_economy_price,
             'price_business': total_business_price,
             'price_first': total_first_price,
-            'available_economy_seats': available_economy,
-            'available_business_seats': available_business,
-            'available_first_seats': available_first,
             'aircraft_name': aircraft.name if aircraft else 'Multiple Aircraft',
             'gate': first_flight.gate,
             'terminal': first_flight.terminal,
@@ -374,14 +359,6 @@ class FlightSearch(Resource):
         if not aircraft:
             return None
 
-        # Calculate available seats
-        booked_seats = flight.booked_seats
-        available_economy = len(aircraft_instance.economy_class_seats) - sum(
-            1 for seat in booked_seats if seat in aircraft_instance.economy_class_seats)
-        available_business = len(aircraft_instance.business_class_seats) - sum(
-            1 for seat in booked_seats if seat in aircraft_instance.business_class_seats)
-        available_first = len(aircraft_instance.first_class_seats) - sum(
-            1 for seat in booked_seats if seat in aircraft_instance.first_class_seats)
 
         # Calculate flight duration in minutes
         duration_minutes = int((flight.arrival_time - flight.departure_time).total_seconds() / 60)
@@ -399,9 +376,6 @@ class FlightSearch(Resource):
             'price_economy': flight.price_economy_class,
             'price_business': flight.price_business_class,
             'price_first': flight.price_first_class,
-            'available_economy_seats': available_economy,
-            'available_business_seats': available_business,
-            'available_first_seats': available_first,
             'aircraft_name': aircraft.name if aircraft else 'Unknown Aircraft',
             'gate': flight.gate,
             'terminal': flight.terminal

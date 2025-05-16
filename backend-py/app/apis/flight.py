@@ -7,9 +7,9 @@ import datetime
 from app.apis.utils import airline_id_from_user
 from app.core.auth import roles_required
 from app.extensions import db
-from app.models.flight import Flight, Route
+from app.models.flight import Flight, Route, FlightExtra
 from app.models.airlines import AirlineAircraft
-from app.schemas.flight import FlightSchema, flight_schema
+from app.schemas.flight import FlightSchema, flight_schema, flight_extra_schema, flights_extra_schema
 from app.apis.airport import airport_model
 
 api = Namespace('flight', description='Flight related operations')
@@ -196,6 +196,32 @@ booked_seats_model = api.model('BookedSeats', {
     'flight_id': fields.String(readonly=True, description='Flight ID'),
     'booked_seats': fields.List(fields.String, description='List of booked seats')
 })
+
+extra_flight_model = api.model('FlightExtra', {
+    'id': fields.String(readonly=True, description='Flight Extra ID'),
+    'name': fields.String(required=True, description='Name of the extra'),
+    'description': fields.String(required=True, description='Description of the extra'),
+    'extra_id': fields.String(required=True, description='Extra ID'),
+    'price': fields.Float(required=True, description='Price of the extra'),
+    'limit': fields.Integer(required=True, description='Limit of the extra'),
+    'stackable': fields.Boolean(required=True, description='Is the extra stackable'),
+    'required_on_all_segments': fields.Boolean(required=True, description='Is the extra required on all segments'),
+})
+@api.route('/extra/<uuid:flight_id>')
+@api.param('flight_id', 'The flight identifier')
+class FlightExtraR(Resource):
+    @api.doc(security=None)
+    @api.response(404, 'Not Found')
+    @api.response(500, 'Internal Server Error')
+    @api.response(200, 'OK', extra_flight_model)
+    def get(self, flight_id):
+        """Get all booked seats for a specific flight"""
+        q = FlightExtra.query.filter_by(flight_id=flight_id).all()
+        if not q:
+            return {'error': 'Flight extras not found'}, 404
+
+        return marshal(flights_extra_schema.dump(q), extra_flight_model), 200
+
 
 @api.route('/booked-seats/<uuid:flight_id>')
 @api.param('flight_id', 'The flight identifier')

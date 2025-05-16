@@ -14,9 +14,9 @@ def seed_aircraft():
     # Format: (name, rows, columns, unavailable_seats)
     aircraft_data = [
         # Wide-body aircraft
-        ('Boeing 747-400', 60, 6, ['A1']),  # Jumbo jet with 10-across seating
+        ('Boeing 747-400', 60, 6, ['1A']),  # Jumbo jet with 10-across seating
         ('Boeing 777-300ER', 55, 6, []),  # Long-range wide-body
-        ('Airbus A380-800', 70, 6, ['A1', ]),  # Double-deck super jumbo
+        ('Airbus A380-800', 70, 6, ['1A', ]),  # Double-deck super jumbo
         ('Airbus A350-900', 52, 6, []),  # Latest generation wide-body
         ('Airbus A330-300', 50, 6, []),  # Common medium to long-range wide-body
 

@@ -1,44 +1,53 @@
+import datetime
+
 from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, marshal, reqparse
 from marshmallow import ValidationError
-import datetime
-from app.extensions import db
-from app.models.booking import Booking
-from app.models.flight import Flight
-from app.models.seat_session import SeatSession
-from app.schemas.booking import BookingSchema, booking_schema, bookings_schema
+from sqlalchemy import text
+from sqlalchemy.orm import sessionmaker
+
 from app.apis.flight import flight_model_output
+from app.apis.utils import price_from_flight
+from app.extensions import db
+from app.models.booking import Booking, BookingDepartureFlight, BookingReturnFlight, BookingFlightExtra
+from app.models.common import ClassType
+from app.models.flight import Flight, FlightExtra
+from app.models.seat_session import SeatSession
+from app.schemas.booking import booking_schema, bookings_schema, booking_output_schema, bookings_output_schema
 
 api = Namespace('booking', description='Booking related operations')
 
 # --- RESTx Models ---
-booked_flight_model_input = api.model('BookedFlight', {
-    'id': fields.String(readonly=True, description='Flight ID'),
-    'seat_number': fields.String(required=True, description='Seat number'),
-    'class_type': fields.String(required=True, enum=['FIRST', 'BUSINESS', 'ECONOMY'], description='Class type'),
-    'extras': fields.List(fields.String, description='List of extra service IDs')
-})
+
 
 booking_model_input = api.model('BookingInput', {
-    'departure_flights': fields.List(fields.Nested(booked_flight_model_input), description='Departure flights'),
-    'return_flights': fields.List(fields.Nested(booked_flight_model_input), description='Return flights'),
-    'is_insurance_purchased': fields.Boolean(description='Whether insurance was purchased'),
+    'session_id': fields.String(required=True, description='Session ID'),
+    'departure_flights': fields.List(fields.String, required=True,
+                                     description='Departure flights ID'),
+    'return_flights': fields.List(fields.String, required=True,
+                                  description='Return flights ID'),
+    'extras_id': fields.List(fields.String, required=True, description='List of extra ID selected'),
+    'has_booking_insurance': fields.Boolean(required=True, description='Whether insurance was purchased'),
 })
-
-
 
 booked_flight_extra_model_output = api.model('BookedFlightExtraOutput', {
-    'id': fields.String(readonly=True, description='FlightExtra ID'),
-    'price': fields.Float(required=True, description='Price'),
+    'extra_id': fields.String(readonly=True, description='FlightExtra ID'),
+    'extra_price': fields.Float(required=True, description='Price'),
     'name': fields.String(required=True, description='Name'),
     'description': fields.String(required=True, description='Description'),
-    'stackable': fields.Boolean(required=True, description='Whether the extra can be stacked'),
-    'required_on_all_segments': fields.Boolean(required=True, description='Whether the extra is required on all segments (like luggage)'),
-})
-booked_flight_model_output = api.inherit('BookedFlightOutput', flight_model_output, {
+   })
+
+
+
+booked_flight_model_output = api.model('BookedFlightOutput', {
+    'flight': fields.Nested(flight_model_output, description='Flight'),
+    'seat_number': fields.String(required=True, description='Seat number'),
+    'class_type': fields.String(enum=[e.name for e in ClassType], required=True, description='Class type'),
+    'price': fields.Float(required=True, description='Price'),
     'extras': fields.List(fields.Nested(booked_flight_extra_model_output), description='List of extra service IDs')
 })
+
 booking_model_output = api.model('BookingOutput', {
     'id': fields.String(readonly=True, description='Booking ID'),
     'departure_flights': fields.List(fields.Nested(booked_flight_model_output), description='Departure flights'),
@@ -74,7 +83,9 @@ class BookingList(Resource):
         if not user.has_role('admin') and not user.has_role('airline-admin'):
             # Regular users can only see their own bookings
             query = query.filter(Booking.user_id == user_id)
-        elif user.has_role('airline-admin') and user.airline_id:
+        elif user.has_role('airline-admin'):
+            if not user.airline_id:
+                return {'error': 'Airline ID is required for airline-admin'}, 400
             # Airline admins can see bookings for their flights
             query = query.join(Flight).filter(Flight.airline_id == user.airline_id)
 
@@ -86,7 +97,7 @@ class BookingList(Resource):
         if args['user_id'] and (user.has_role('admin') or user.has_role('airline-admin')):
             query = query.filter(Booking.user_id == args['user_id'])
 
-        return marshal(bookings_schema.dump(query.all()), booking_model_output), 200
+        return marshal(bookings_output_schema.dump(query.all()), booking_model_output), 200
 
     @api.expect(booking_model_input)
     @jwt_required()
@@ -95,66 +106,87 @@ class BookingList(Resource):
     @api.response(404, 'Not Found')
     def post(self):
         """Create a new booking"""
+        # TODO: AGGIUNGERE LOCK TRANZAZIONALE CHE NON VENGA ELIMINATA LA SESSIONEE
+        #CHECK SESSION HIJACKING
+
         user_id = get_jwt_identity()
         data = request.json
 
-        # Ensure the user is booking for themselves
-        data['user_id'] = user_id
+        with db.engine.begin() as connection:
+            connection.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
 
-        # Validate the flight exists
-        flight = Flight.query.get_or_404(data['flight_id'])
+            # Use a new session bound to this connection
+            session = sessionmaker(bind=connection)
+            sql_session = session()
 
-        # Check if the seat is available (not already booked)
-        if data['seat_number'] in flight.booked_seats:
-            return {'error': 'Seat is already booked'}, 400
+            try:
+                validated_data = booking_schema.load(data)
+            except ValidationError as err:
+                return {"errors": err.messages}, 400
 
-        # Check if the user has a valid seat session for this seat
-        valid_session = SeatSession.query.filter(
-            SeatSession.flight_id == data['flight_id'],
-            SeatSession.seat_number == data['seat_number'],
-            SeatSession.user_id == user_id,
-            SeatSession.session_end_time > datetime.datetime.now(datetime.UTC)
-        ).first()
+            seat_session = sql_session.query(SeatSession).filter(SeatSession.id == validated_data['session_id'],
+                                                                 SeatSession.user_id == user_id).first()
+            if seat_session is None:
+                return {'error': 'Seat session does not belong to the user', 'code': 403}, 403
+            all_seats = seat_session.seats
+            booking = Booking(
+                user_id=user_id,
+                payment_confirmed=True,
+                has_booking_insurance=validated_data['has_booking_insurance'],
+            )
+            sql_session.add(booking)
+            sql_session.commit()
 
-        if not valid_session:
-            return {'error': 'No valid seat reservation session for this seat'}, 400
+            departure_flights = validated_data['departure_flights']
+            return_flights = validated_data['return_flights']
+            extras_id = validated_data['extras_id']
 
-        try:
-            # Validate data with Marshmallow schema
-            result = booking_schema.load(data)
+            for flight_id in departure_flights:
+                for seat in all_seats:
+                    if seat.flight_id == flight_id:
+                        flight = sql_session.query(Flight).filter(Flight.id == flight_id).first()
+                        class_type = seat.class_type
+                        flight_price = price_from_flight(flight, class_type)
+                        booking_flight = BookingDepartureFlight(
+                            flight_id=flight_id,
+                            booking_id=booking.id,
+                            seat_number=seat.seat_number,
+                            class_type=class_type,
+                            price=flight_price,
+                        )
+                        sql_session.add(booking_flight)
 
-            # Calculate price based on class type
-            class_type = data['class_type']
-            base_price = 0
-            if class_type == 'FIRST':
-                base_price = flight.price_first_class
-            elif class_type == 'BUSINESS':
-                base_price = flight.price_business_class
-            elif class_type == 'ECONOMY':
-                base_price = flight.price_economy_class
+            for flight_id in departure_flights:
+                for seat in all_seats:
+                    if seat.flight_id == flight_id:
+                        flight = sql_session.query(Flight).filter(Flight.id == flight_id).first()
+                        class_type = seat.class_type
+                        flight_price = price_from_flight(flight, class_type)
+                        booking_flight = BookingReturnFlight(
+                            flight_id=flight_id,
+                            booking_id=booking.id,
+                            seat_number=seat.seat_number,
+                            class_type=class_type,
+                            price=flight_price,
+                        )
+                        sql_session.add(booking_flight)
 
-            # Add insurance if selected
-            if data.get('is_insurance_purchased', False):
-                base_price += flight.price_insurance
+            for extra in extras_id:
+                extra_obj = sql_session.query(FlightExtra).filter(FlightExtra.id == extra).first()
+                if extra_obj:
+                    booking_flight_extra = BookingFlightExtra(
+                        booking_id=booking.id,
+                        flight_id=extra_obj.flight_id,
+                        extra_id=extra_obj.id,
+                        extra_price=extra_obj.price
+                    )
+                    sql_session.add(booking_flight_extra)
+            sql_session.commit()
+            sql_session.delete(seat_session)
+            sql_session.commit()
 
-            # Set total price
-            result.total_price = base_price
 
-            # Set creation timestamp
-            result.created_at = datetime.datetime.now(datetime.UTC)
-
-            # Save booking
-            db.session.add(result)
-            db.session.commit()
-
-            # Delete the seat session as it's no longer needed
-            db.session.delete(valid_session)
-            db.session.commit()
-
-            return marshal(booking_schema.dump(result), booking_model_output), 201
-
-        except ValidationError as err:
-            return {"errors": err.messages}, 400
+            return {"message": "Booking created successfully", "code": 201}, 201
 
 
 @api.route('/<uuid:booking_id>')
@@ -174,8 +206,8 @@ class BookingResource(Resource):
 
         # Check permissions
         if (str(booking.user_id) != user_id and
-            not user.has_role('admin') and
-            not (user.has_role('airline-admin') and user.airline_id)):
+                not user.has_role('admin') and
+                not (user.has_role('airline-admin') and user.airline_id)):
             return {'error': 'You do not have permission to view this booking'}, 403
 
         # For airline admins, check if booking is for their airline's flight
@@ -184,7 +216,8 @@ class BookingResource(Resource):
             if flight.airline_id != user.airline_id:
                 return {'error': 'You do not have permission to view this booking'}, 403
 
-        return booking_schema.dump(booking), 200
+        return marshal(booking_output_schema.dump(booking), booking_model_output), 200
+
 
     @api.expect(booking_model_input)
     @jwt_required()
@@ -213,20 +246,20 @@ class BookingResource(Resource):
         if 'created_at' in data:
             del data['created_at']
 
-        try:
-            # Validate with Marshmallow schema
-            partial_schema = BookingSchema(partial=True)
-            validated_data = partial_schema.load(data)
-
-            # Update booking fields
-            for key, value in data.items():
-                setattr(booking, key, value)
-
-            db.session.commit()
-            return booking_schema.dump(booking), 200
-
-        except ValidationError as err:
-            return {"errors": err.messages}, 400
+        # try:
+        #     # Validate with Marshmallow schema
+        #     partial_schema = BookingSchema(partial=True)
+        #     validated_data = partial_schema.load(data)
+        #
+        #     # Update booking fields
+        #     for key, value in data.items():
+        #         setattr(booking, key, value)
+        #
+        #     db.session.commit()
+        #     return booking_schema.dump(booking), 200
+        #
+        # except ValidationError as err:
+        #     return {"errors": err.messages}, 400
 
     @jwt_required()
     @api.response(200, 'OK')

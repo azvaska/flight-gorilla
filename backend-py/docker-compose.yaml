@@ -56,8 +56,9 @@ services:
         flask seed-airlines || echo 'Skipping seed-airlines' &&
         flask seed-airline-aircrafts || echo 'Skipping seed-airline-aircrafts' &&
         flask seed-flights || echo 'Skipping seed-flights' &&
+        flask seed-extras || echo 'Skipping seed-users' &&
         flask seed-users || echo 'Skipping seed-users' &&
-
+      
         echo 'Database seeded.' &&
 
         # Start the application
