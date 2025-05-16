@@ -1,6 +1,6 @@
 from marshmallow import validates_schema, ValidationError
 from app.extensions import ma
-from app.models.flight import Flight, Route
+from app.models.flight import Flight, Route, FlightExtra
 from app.models.airport import Airport
 from app.models.airlines import Airline, AirlineAircraft
 from app.schemas.airport import AirportSchema
@@ -47,5 +47,25 @@ class FlightSchema(ma.SQLAlchemyAutoSchema):
             raise ValidationError("Airline aircraft with given ID does not exist.", field_name="aircraft_id")
 
 # Create schema instances
+
+class FlightExtraSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = FlightExtra
+        load_instance = True
+        include_fk = True
+        exclude = ("flight_id",)
+
+    name = ma.String(attribute="extra.name")
+    description = ma.String(attribute="extra.description")
+    stackable = ma.Boolean(attribute="extra.stackable")
+    required_on_all_segments = ma.Boolean(attribute="extra.required_on_all_segments")
+
+
+
+
 flight_schema = FlightSchema()
-flights_schema = FlightSchema(many=True) 
+flights_schema = FlightSchema(many=True)
+
+
+flight_extra_schema = FlightExtraSchema()
+flights_extra_schema = FlightExtraSchema(many=True)

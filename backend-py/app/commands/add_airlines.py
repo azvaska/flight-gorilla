@@ -4,7 +4,9 @@ import click
 from flask.cli import with_appcontext
 from app.extensions import db_session
 from app.models.aircraft import Aircraft
-from app.models.airlines import Airline, AirlineAircraft
+from app.models.airlines import Airline, AirlineAircraft, AirlineAircraftSeat
+from app.models.common import ClassType
+
 
 @click.command('seed-airlines')
 @with_appcontext
@@ -21,7 +23,7 @@ def seed_airlines():
 
     # Create new airline
     airline = Airline(
-        name="airline_name",
+        name=f"{airline_name}",
         address="123 Aviation Blvd, New York, NY",
         zip="10001",
         nation_id=1,  # Assuming a valid nation ID exists in the database
@@ -76,18 +78,30 @@ def seed_airline_aircrafts():
             click.echo(f"Aircraft model {aircraft_model.name} (ID: {aircraft_model.id}) is already associated with airline {airline.name} (Tail: {existing_airline_aircraft.tail_number}). Skipping.")
             continue
 
-        all_available_seats = generate_seat_layout(aircraft_model.rows, aircraft_model.columns, aircraft_model.unavailable_seats)
-        random.shuffle(all_available_seats) # Shuffle to randomly assign seats to classes
+        # Generate all available seats in order (row by row)
+        all_available_seats = generate_seat_layout(aircraft_model.rows, aircraft_model.columns,
+                                                   aircraft_model.unavailable_seats)
+        all_available_seats  = [seat for seat in all_available_seats if seat not in aircraft_model.unavailable_seats]
 
-        # Define proportions for seat classes (customize as needed)
-        num_seats = len(all_available_seats)
-        first_class_count = int(num_seats * 0.1)  # 10% first class
-        business_class_count = int(num_seats * 0.2) # 20% business class
-        # Economy gets the rest
+        # No random shuffling, to keep seats ordered by row
 
-        first_class_seats = all_available_seats[:first_class_count]
-        business_class_seats = all_available_seats[first_class_count : first_class_count + business_class_count]
-        economy_class_seats = all_available_seats[first_class_count + business_class_count:]
+        # Define proportions for seat classes based on rows
+        total_rows = aircraft_model.rows
+        first_class_rows = max(1, int(total_rows * 0.1))  # 10% of rows for first class (at least 1 row)
+        business_class_rows = max(1, int(total_rows * 0.2))  # 20% of rows for business class (at least 1 row)
+        # Economy gets the rest of the rows
+
+        # Calculate seat indices for each class
+        first_class_end = first_class_rows * aircraft_model.columns
+        business_class_end = first_class_end + (business_class_rows * aircraft_model.columns)
+
+        # Get seats for each class in order
+        first_class_seats = [seat for seat in all_available_seats if int(seat[:-1]) <= first_class_rows]
+        business_class_seats = [seat for seat in all_available_seats if
+                                first_class_rows < int(seat[:-1]) <= (first_class_rows + business_class_rows)]
+        economy_class_seats = [seat for seat in all_available_seats if
+                               int(seat[:-1]) > (first_class_rows + business_class_rows)]
+
         tail_number = generate_tail_number()
 
         # Ensure tail number is unique for the airline
@@ -95,14 +109,35 @@ def seed_airline_aircrafts():
             tail_number = generate_tail_number()
 
 
+
         airline_aircraft_entry = AirlineAircraft(
             aircraft_id=aircraft_model.id,
             airline_id=airline_id,
-            first_class_seats=first_class_seats,
-            business_class_seats=business_class_seats,
-            economy_class_seats=economy_class_seats,
             tail_number=tail_number
         )
+        db_session.add(airline_aircraft_entry)
+        db_session.commit()
+
+        for seat_number in first_class_seats:
+            db_session.add(AirlineAircraftSeat(
+                airline_aircraft_id=airline_aircraft_entry.id,
+                seat_number=seat_number,
+                class_type=ClassType.FIRST_CLASS
+            ))
+
+        for seat_number in business_class_seats:
+            db_session.add(AirlineAircraftSeat(
+                airline_aircraft_id=airline_aircraft_entry.id,
+                seat_number=seat_number,
+                class_type=ClassType.BUSINESS_CLASS
+            ))
+        for seat_number in economy_class_seats:
+            db_session.add(AirlineAircraftSeat(
+                airline_aircraft_id=airline_aircraft_entry.id,
+                seat_number=seat_number,
+                class_type=ClassType.ECONOMY_CLASS))
+        db_session.commit()
+
         db_session.add(airline_aircraft_entry)
         click.echo(f"Associated aircraft {aircraft_model.name} (ID: {aircraft_model.id}) with airline {airline.name} (Tail: {tail_number})")
 

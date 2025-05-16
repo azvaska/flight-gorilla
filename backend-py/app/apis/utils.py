@@ -1,7 +1,23 @@
 from functools import wraps
+from typing import Type
+
 from flask import current_app
 from flask_jwt_extended import get_jwt_identity
 
+from app.models import Flight
+from app.models.common import ClassType
+
+
+def price_from_flight(flight:Type[Flight] | None,class_type:ClassType):
+    flight_price = 0.0
+    if class_type == ClassType.FIRST_CLASS:
+        flight_price = flight.price_first_class
+    elif class_type == ClassType.BUSINESS_CLASS:
+        flight_price = flight.price_business_class
+    elif class_type == ClassType.ECONOMY_CLASS:
+        flight_price = flight.price_economy_class
+
+    return flight_price
 
 def airline_id_from_user():
     """
@@ -21,10 +37,10 @@ def airline_id_from_user():
             user = datastore.find_user(id=user_id)
 
             if not user:
-                return {'error': 'User not found', 'code': 404}, 404
+                return {'error': 'User not found'}, 404
 
             if not user.airline_id:
-                return {'error': 'User is not associated with an airline', 'code': 403}, 403
+                return {'error': 'User is not associated with an airline'}, 403
 
             # Add the airline_id to the kwargs
             kwargs['airline_id'] = user.airline_id

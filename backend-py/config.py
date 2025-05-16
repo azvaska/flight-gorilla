@@ -13,6 +13,11 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'change-this-in-production')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URI')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "connect_args": {
+            "options": "-c timezone=UTC"
+        }
+    }
 
     # Flask-Security
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', 'default-salt')

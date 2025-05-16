@@ -279,7 +279,7 @@ class ExtraResource(Resource):
 class AirlineAircraftList(Resource):
     @api.doc(security="JWT")
     @jwt_required()
-    @roles_required('airline-admin')
+    @roles_required(['airline-admin'])
     @airline_id_from_user()
     def get(self, airline_id):
         """Get all aircraft for a specific airline"""
