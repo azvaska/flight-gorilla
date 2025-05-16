@@ -26,7 +26,6 @@ login_model_output = api.model('LoginOutput', {
 register_model = api.model('Register', {
     'email': fields.String(required=True, description='Email'),
     'password': fields.String(required=True, description='Password'),
-    'role_id': fields.Integer(required=False, description='Role ID')
 })
 
 @api.route('/login')
@@ -86,7 +85,8 @@ class Register(Resource):
         try:
             security = current_app.extensions['security']
             user = security.datastore.create_user(email=data.get('email'),
-            password=hash_password(data.get('password')), roles=["user"],name='tessts',surname="tesfdst")
+            password=hash_password(data.get('password')), roles=["user"],
+                                                  name='tessts',surname="tesfdst")
             # db.session.add(user)
             security.datastore.db.session.commit()
 

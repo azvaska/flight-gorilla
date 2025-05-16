@@ -1,12 +1,13 @@
 # app/apis/airline.py
 from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_restx import Namespace, Resource, fields, reqparse
+from flask_restx import Namespace, Resource, fields, reqparse, marshal
+from flask_security import hash_password
 from marshmallow import ValidationError
 from sqlalchemy.orm import joinedload
 
 
-from app.apis.utils import airline_id_from_user
+from app.apis.utils import airline_id_from_user, generate_secure_password
 from app.core.auth import roles_required
 from app.extensions import db
 from app.models.airlines import Airline, AirlineAircraft
@@ -51,6 +52,29 @@ airline_model = api.model('Airline', {
     'economy_class_description': fields.String(required=True, description='Economy class description'),
 })
 
+airline_put_model = api.model('AirlinePut', {
+    'name': fields.String(required=True, description='Airline name'),
+    'address': fields.String(required=True, description='Airline address'),
+    'zip': fields.String(required=True, description='ZIP/postal code'),
+    'nation_id': fields.Integer(required=True, description='Nation ID'),
+    'email': fields.String(required=True, description='Email address'),
+    'website': fields.String(required=True, description='Website URL'),
+    'first_class_description': fields.String(required=True, description='First class description'),
+    'business_class_description': fields.String(required=True, description='Business class description'),
+    'economy_class_description': fields.String(required=True, description='Economy class description'),
+})
+
+admin_credentials_model = api.model('AdminCredentials', {
+    'email': fields.String(required=True, description='Airline Admin email'),
+    'password': fields.String(required=True, description='Airline Admin password')
+})
+
+
+new_airline_model = api.model('NewAirline', {
+    "airline": fields.Nested(airline_model),
+    "admin_credentials": fields.Nested(admin_credentials_model)})
+
+
 # --- Request Parsers ---
 airline_list_parser = reqparse.RequestParser()
 airline_list_parser.add_argument('name', type=str, help='Filter by airline name (case-insensitive)', location='args')
@@ -61,6 +85,9 @@ airline_list_parser.add_argument('is_approved', type=bool, help='Filter by appro
 class AirlineList(Resource):
     @api.doc(security=None)
     @api.expect(airline_list_parser)
+    @api.response(200, 'OK', [airline_model])
+    @api.response(500, 'Internal Server Error')
+    @api.response(400, 'Bad Request')
     def get(self):
         """List all airlines with optional filtering"""
         args = airline_list_parser.parse_args()
@@ -73,13 +100,16 @@ class AirlineList(Resource):
             query = query.filter(Airline.name.ilike(f"%{args['name']}%"))
         if args['nation_id']:
             query = query.filter(Airline.nation_id == args['nation_id'])
-        if args['is_approved'] is not None:
-            query = query.filter(Airline.is_approved == args['is_approved'])
 
         return airlines_schema.dump(query.all()), 200
 
-    @api.expect(airline_model)
+    @api.expect(airline_put_model)
     @jwt_required()
+    @roles_required(['admin'])
+    @api.response(201, 'Created', new_airline_model)
+    @api.response(400, 'Bad Request')
+    @api.response(403, 'Unauthorized')
+    @api.response(500, 'Internal Server Error')
     # @roles_required(['u'])
     def post(self):
         """Create a new airline"""
@@ -89,33 +119,42 @@ class AirlineList(Resource):
         if existing_airline:
             return {'error': 'Airline with this name already exists', 'code': 400}, 400
 
+        # Validate the incoming data
+        try:
+            new_airline = airline_schema.load(data)
+        except ValidationError as err:
+            return {"errors": err.messages, "code": 400}, 400
+        
+        new_airline.is_approved = True
+
         # Create new airline instance
-        new_airline = Airline(
-            name=data['name'],
-            address=data['address'],
-            zip=data['zip'],
-            nation_id=data['nation_id'],
-            email=data['email'],
-            website=data['website'],
-            is_approved=False,
-            first_class_description=data['first_class_description'],
-            business_class_description=data['business_class_description'],
-            economy_class_description=data['economy_class_description']
-        )
+        db.session.add(new_airline)
         #create a new airline admin account
         user_id = get_jwt_identity()
         datastore = current_app.extensions['security'].datastore
-        user = datastore.find_user(id=user_id)
+        password_account = generate_secure_password()
+        airline_user = datastore.create_user(email=new_airline.email,
+                                              password=hash_password(password_account), roles=["airline-admin"],
+                                                airline_id=new_airline.id,
+                                              name=new_airline.name, surname=new_airline.name)
 
-        db.session.add(new_airline)
+        datastore.db.session.add(airline_user)
+        datastore.db.session.commit()
         db.session.commit()
 
-        return airline_schema.dump(new_airline), 201
+        return marshal({
+        'airline': airline_schema.dump(new_airline),
+        'admin_credentials': {
+            'email': new_airline.email,
+            'password': password_account
+        }
+    },new_airline_model), 201
 
 @api.route('/<uuid:airline_id>')
 @api.param('airline_id', 'The airline identifier')
 class AirlineResource(Resource):
     @api.doc(security=None)
+
     def get(self, airline_id):
         """Fetch an airline given its identifier"""
         airline = Airline.query.options(
@@ -128,6 +167,8 @@ class AirlineResource(Resource):
     # @api.expect(airline_model)
     @jwt_required()
     @roles_required(['admin', 'airline-admin'])
+    #@api.expect(airline_put_model)
+    @api.response(200, 'OK', airline_model)
     def put(self, airline_id):
         """Update an airline given its identifier"""
         airline = Airline.query.get_or_404(airline_id)
@@ -140,37 +181,31 @@ class AirlineResource(Resource):
         if not (user.has_role('admin') or user.has_role('airline-admin')):
             return {'error': 'Only administrators can update airlines', 'code': 403}, 403
 
+        # Check if the user is an airline admin and if they are trying to update their own airline
+        if user.has_role('airline-admin') and user.airline_id != airline_id:
+            return {'error': 'You do not have permission to update this airline', 'code': 403}, 403
+
 
         partial_schema = AirlineSchema(partial=True)
         try:
             # Validate the incoming data
-            validated_data = partial_schema.load(data)
+            _ = partial_schema.load(data,instance=airline)
         except ValidationError as err:
             return {"errors": err.messages, "code": 400}, 400
 
-        for key, value in validated_data.items():
-            setattr(airline, key, value)
-
         db.session.commit()
-        return airline_schema.dump(airline), 200
+        return marshal(airline_schema.dump(airline),airline_model), 200
 
     @jwt_required()
+    @roles_required('admin')
     def delete(self, airline_id):
         """Delete an airline given its identifier"""
-        # Check permissions
-        user_id = get_jwt_identity()
-        datastore = current_app.extensions['security'].datastore
-        user = datastore.find_user(id=user_id)
-
-        if not user.has_role('admin'):
-            return {'error': 'Only administrators can delete airlines', 'code': 403}, 403
-
         airline = Airline.query.get_or_404(airline_id)
         db.session.delete(airline)
         db.session.commit()
 
         return {'message': 'Airline deleted successfully'}, 200
-
+#TODO CONTINUE TESTING
 @api.route('/extra')
 @api.param('airline_id', 'The airline identifier')
 class AirlineExtrasList(Resource):

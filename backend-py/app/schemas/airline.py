@@ -11,6 +11,7 @@ class ExtraSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         include_fk = True
 
+
 class AirlineAircraftSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = AirlineAircraft
@@ -22,6 +23,7 @@ class AirlineSchema(ma.SQLAlchemyAutoSchema):
     nation_id = ma.Integer()
     extras = ma.Nested(ExtraSchema, many=True)
     aircraft = ma.Nested(AirlineAircraftSchema, many=True)
+    is_approved = ma.Boolean(dump_only=True)
 
     # Add validation to specific fields
     email = ma.Email(required=True,
@@ -32,7 +34,7 @@ class AirlineSchema(ma.SQLAlchemyAutoSchema):
                             error_messages={"required": "Name is required", "invalid": "Invalid name format"})
     class Meta:
         model = Airline
-        # load_instance = True
+        load_instance = True
         include_fk = True
 
     @validates('nation_id')

@@ -156,7 +156,7 @@ class BookingList(Resource):
                         )
                         sql_session.add(booking_flight)
 
-            for flight_id in departure_flights:
+            for flight_id in return_flights:
                 for seat in all_seats:
                     if seat.flight_id == flight_id:
                         flight = sql_session.query(Flight).filter(Flight.id == flight_id).first()
@@ -217,49 +217,6 @@ class BookingResource(Resource):
                 return {'error': 'You do not have permission to view this booking'}, 403
 
         return marshal(booking_output_schema.dump(booking), booking_model_output), 200
-
-
-    @api.expect(booking_model_input)
-    @jwt_required()
-    @api.response(200, 'OK', booking_model_output)
-    @api.response(403, 'Forbidden')
-    @api.response(404, 'Not Found')
-    def put(self, booking_id):
-        """Update a booking given its identifier"""
-        user_id = get_jwt_identity()
-        booking = Booking.query.get_or_404(booking_id)
-
-        # Check permissions
-        if str(booking.user_id) != user_id:
-            datastore = current_app.extensions['security'].datastore
-            user = datastore.find_user(id=user_id)
-            if not user.has_role('admin'):
-                return {'error': 'You do not have permission to update this booking'}, 403
-
-        data = request.json
-
-        # Don't allow changing certain fields
-        if 'user_id' in data:
-            del data['user_id']
-        if 'flight_id' in data:
-            del data['flight_id']
-        if 'created_at' in data:
-            del data['created_at']
-
-        # try:
-        #     # Validate with Marshmallow schema
-        #     partial_schema = BookingSchema(partial=True)
-        #     validated_data = partial_schema.load(data)
-        #
-        #     # Update booking fields
-        #     for key, value in data.items():
-        #         setattr(booking, key, value)
-        #
-        #     db.session.commit()
-        #     return booking_schema.dump(booking), 200
-        #
-        # except ValidationError as err:
-        #     return {"errors": err.messages}, 400
 
     @jwt_required()
     @api.response(200, 'OK')

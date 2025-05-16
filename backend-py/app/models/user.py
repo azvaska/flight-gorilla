@@ -19,7 +19,7 @@ class Role(db.Model, sqla.FsRoleMixin):
 
 class User(sqla.FsUserMixin,db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email: Mapped[str] = mapped_column(db.String(255), nullable=False)
+    email: Mapped[str] = mapped_column(db.String(255), nullable=False,unique=True)
     password: Mapped[str] = mapped_column(db.String(255), nullable=False)
     name: Mapped[str] = mapped_column(db.String(255), nullable=False)
     surname: Mapped[str] = mapped_column(db.String(255), nullable=False)

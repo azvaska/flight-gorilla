@@ -17,6 +17,9 @@ def seed_users():
         name="user", permissions={"user-read", "user-write"}
     )
     user_datastore.find_or_create_role(
+        name="admin", permissions={"admin-read", "admin-write"}
+    )
+    user_datastore.find_or_create_role(
         name="airline-admin", permissions={"airline-admin-read", "airline-admin-write"}
     )
     db_session.commit()
@@ -32,7 +35,16 @@ def seed_users():
         )
         db_session.commit()
         click.echo("Created default user 'a@a.c'.")
-
+    if not user_datastore.find_user(email="admin@a.c"):
+       user_datastore.create_user(
+            email="admin@a.c",
+            password=hash_password("a"),
+            roles=["admin"],
+            name='admin',
+            surname="test",
+        )
+       db_session.commit()
+       click.echo("Created default admin 'a@a.c'.")
     # Create default airline-admin user associated with existing airline
     from app.models.airlines import Airline
     airline = db_session.query(Airline).filter_by(name="Sky High Airlines").first()

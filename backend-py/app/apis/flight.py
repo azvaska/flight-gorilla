@@ -26,7 +26,7 @@ flight_model_input = api.model('Flight', {
     'price_insurance': fields.Float(description='Insurance price'),
 })
 
-airline_model = api.model('Airline', {
+airline_model = api.model('FlightAirline', {
     'id': fields.String(readonly=True, description='Airline ID'),
     'name': fields.String(required=True, description='Airline name'),
     'first_class_description': fields.String(required=True, description='First class description'),
