@@ -22,19 +22,19 @@ extra_model = api.model('Extra', {
     'id': fields.String(readonly=True, description='Extra ID'),
     'name': fields.String(required=True, description='Extra name'),
     'description': fields.String(required=True, description='Extra description'),
-    'airline_id': fields.String(required=True, description='Airline ID'),
-    'all_flights': fields.Boolean(default=False, description='Apply to all flights'),
+    'airline_id': fields.String(readonly=True, description='Airline ID'),
+    'required_on_all_segments': fields.Boolean(default=False, description='Apply to all flights'),
     'stackable': fields.Boolean(default=False, description='Can be stacked with other extras')
 })
 
 airline_aircraft_model = api.model('AirlineAircraft', {
     'id': fields.String(readonly=True, description='Airline Aircraft ID'),
     'aircraft_id': fields.Integer(required=True, description='Aircraft ID'),
-    'airline_id': fields.String(required=True, description='Airline ID'),
+    'airline_id': fields.String(readonly=True, description='Airline ID'),
     'first_class_seats': fields.List(fields.String, description='First class seat numbers'),
     'business_class_seats': fields.List(fields.String, description='Business class seat numbers'),
     'economy_class_seats': fields.List(fields.String, description='Economy class seat numbers'),
-    'tail_number': fields.String(required=True, description='Aircraft tail number')
+    'tail_number': fields.String(required=False, description='Aircraft tail number')
 })
 
 airline_model = api.model('Airline', {
@@ -130,7 +130,6 @@ class AirlineList(Resource):
         # Create new airline instance
         db.session.add(new_airline)
         #create a new airline admin account
-        user_id = get_jwt_identity()
         datastore = current_app.extensions['security'].datastore
         password_account = generate_secure_password()
         airline_user = datastore.create_user(email=new_airline.email,
@@ -154,7 +153,8 @@ class AirlineList(Resource):
 @api.param('airline_id', 'The airline identifier')
 class AirlineResource(Resource):
     @api.doc(security=None)
-
+    @api.response(200, 'OK', airline_model)
+    @api.response(404, 'Not Found')
     def get(self, airline_id):
         """Fetch an airline given its identifier"""
         airline = Airline.query.options(
@@ -162,12 +162,11 @@ class AirlineResource(Resource):
             joinedload(Airline.extras),
        ).get_or_404(airline_id)
 
-        return airline_schema.dump(airline), 200
+        return marshal(airline_schema.dump(airline),airline_model), 200
 
-    # @api.expect(airline_model)
     @jwt_required()
     @roles_required(['admin', 'airline-admin'])
-    #@api.expect(airline_put_model)
+    @api.expect(airline_put_model)
     @api.response(200, 'OK', airline_model)
     def put(self, airline_id):
         """Update an airline given its identifier"""
@@ -178,8 +177,7 @@ class AirlineResource(Resource):
         user_id = get_jwt_identity()
         datastore = current_app.extensions['security'].datastore
         user = datastore.find_user(id=user_id)
-        if not (user.has_role('admin') or user.has_role('airline-admin')):
-            return {'error': 'Only administrators can update airlines', 'code': 403}, 403
+
 
         # Check if the user is an airline admin and if they are trying to update their own airline
         if user.has_role('airline-admin') and user.airline_id != airline_id:
@@ -198,6 +196,8 @@ class AirlineResource(Resource):
 
     @jwt_required()
     @roles_required('admin')
+    @api.response(200, 'OK')
+    @api.response(404, 'Not Found')
     def delete(self, airline_id):
         """Delete an airline given its identifier"""
         airline = Airline.query.get_or_404(airline_id)
@@ -206,47 +206,49 @@ class AirlineResource(Resource):
 
         return {'message': 'Airline deleted successfully'}, 200
 #TODO CONTINUE TESTING
-@api.route('/extra')
+@api.route('/extra/<uuid:airline_id>')
 @api.param('airline_id', 'The airline identifier')
 class AirlineExtrasList(Resource):
     @api.doc(security=None)
     @jwt_required()
-    @roles_required('airline-admin')
-    @airline_id_from_user()
+    @api.response(200, 'OK', [extra_model])
+    @api.response(404, 'Not Found')
+    @api.response(403, 'Unauthorized')
     def get(self, airline_id):
         """Get all extras for a specific airline"""
         # Check if airline exists
         airline = Airline.query.get_or_404(airline_id)
         extras = Extra.query.filter_by(airline_id=airline_id).all()
 
-        return extras_schema.dump(extras), 200
+        return marshal(extras_schema.dump(extras),extra_model), 200
 
     @api.expect(extra_model)
     @jwt_required()
     @roles_required('airline-admin')
-    @airline_id_from_user()
+    @api.response(201, 'Created', extra_model)
+    @api.response(400, 'Bad Request')
+    @api.response(403, 'Unauthorized')
     def post(self, airline_id):
+        #TODO RETEST CON DB AZZERATO
         """Add a new extra for an airline"""
         # Check if airline exists
-        airline = Airline.query.get_or_404(airline_id)
 
         # Check permissions
         user_id = get_jwt_identity()
         datastore = current_app.extensions['security'].datastore
         user = datastore.find_user(id=user_id)
 
-        if not (user.has_role('admin') or user.has_role('airline-admin')):
-            return {'error': 'Only administrators can add airline extras', 'code': 403}, 403
-
         data = request.json
-
-        new_extra = Extra(
-            name=data['name'],
-            description=data['description'],
-            airline_id=airline_id,
-            all_flights=data.get('all_flights', False),
-            stackable=data.get('stackable', False)
-        )
+        # Validate the incoming data
+        try:
+            new_extra = extra_schema.load(data)
+        except ValidationError as err:
+            return {"errors": err.messages, "code": 400}, 400
+        # Check if the user is an airline admin and if they are trying to add an extra to their own airline
+        if user.airline_id != airline_id:
+            return {'error': 'You do not have permission to add extras to this airline', 'code': 403}, 403
+        
+        new_extra.airline_id = airline_id
 
         db.session.add(new_extra)
         db.session.commit()
@@ -257,69 +259,66 @@ class AirlineExtrasList(Resource):
 @api.param('extra_id', 'The extra identifier')
 class ExtraResource(Resource):
     @api.doc(security=None)
-    @jwt_required()
-    @roles_required('airline-admin')
-    @airline_id_from_user()
-
-    def get(self, extra_id,airline_id):
+    @api.response(200, 'OK', extra_model)
+    @api.response(404, 'Not Found')
+    def get(self, extra_id):
         """Get a specific extra"""
-        extra = Extra.query.get_or_404(extra_id,airline_id=airline_id)
-        return extra_schema.dump(extra), 200
+        extra = Extra.query.get_or_404(extra_id)
+        return marshal(extra_schema.dump(extra),extra_model), 200
 
     @api.expect(extra_model)
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
+    @api.response(200, 'OK', extra_model)
+    @api.response(400, 'Bad Request')
+    @api.response(403, 'Unauthorized')
+    @api.response(404, 'Not Found')
     def put(self, extra_id,airline_id):
         """Update an extra"""
-        extra = Extra.query.get_or_404(extra_id,airline_id=airline_id)
+        extra = Extra.query.get_or_404(extra_id)
 
-        # Check permissions
-        user_id = get_jwt_identity()
-        datastore = current_app.extensions['security'].datastore
-        user = datastore.find_user(id=user_id)
 
-        if not (user.has_role('admin') or user.has_role('airline-admin')):
-            return {'error': 'Only administrators can update extras', 'code': 403}, 403
-
-        data = request.json
-
-        if 'name' in data:
-            extra.name = data['name']
-        if 'description' in data:
-            extra.description = data['description']
-        if 'all_flights' in data:
-            extra.all_flights = data['all_flights']
-        if 'stackable' in data:
-            extra.stackable = data['stackable']
+        # Check if the user is an airline admin and if they are trying to update an extra for their own airline
+        if airline_id != extra.airline_id:
+            return {'error': 'You do not have permission to update this extra', 'code': 403}, 403
+        # Validate the incoming data
+        try:
+            data = extra_schema.load(request.json, instance=extra, partial=True)
+        except ValidationError as err:
+            return {"errors": err.messages, "code": 400}, 400
+        # Update the extra instance with the new data
 
         db.session.commit()
         return extra_schema.dump(extra), 200
 
     @jwt_required()
-    @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
+    @api.response(200, 'OK')
+    @api.response(403, 'Unauthorized')
+    @api.response(404, 'Not Found')
     def delete(self, extra_id,airline_id):
         """Delete an extra"""
 
-        extra = Extra.query.get_or_404(extra_id,airline_id=airline_id)
+        extra = Extra.query.get_or_404(extra_id)
+        # Check permissions
+        if extra.airline_id != airline_id:
+            return {'error': 'You do not have permission to delete this extra', 'code': 403}, 403
         db.session.delete(extra)
         db.session.commit()
 
         return {'message': 'Extra deleted successfully'}, 200
 
-@api.route('/aircraft')
-# @api.param('airline_id', 'The airline identifier')
+@api.route('/aircrafts/<uuid:airline_id>')
+@api.param('airline_id', 'The airline identifier')
 class AirlineAircraftList(Resource):
-    @api.doc(security="JWT")
-    @jwt_required()
-    @roles_required(['airline-admin'])
-    @airline_id_from_user()
+    @api.doc(security=None)
+    @api.response(200, 'OK', [airline_aircraft_model])
+    @api.response(404, 'Not Found')
     def get(self, airline_id):
         """Get all aircraft for a specific airline"""
         # Check if airline exists
-        airline = Airline.query.get_or_404(airline_id)
         aircraft = AirlineAircraft.query.filter_by(airline_id=airline_id).all()
 
         return airline_aircrafts_schema.dump(aircraft), 200
@@ -328,46 +327,61 @@ class AirlineAircraftList(Resource):
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
+    @api.response(201, 'Created', airline_aircraft_model)
+    @api.response(400, 'Bad Request')
+    @api.response(403, 'Unauthorized')
+    @api.response(404, 'Not Found')
+    @api.response(500, 'Internal Server Error')
+    @api.response(409, 'Conflict')
     def post(self, airline_id):
         """Add a new aircraft for an airline"""
 
         data = request.json
 
+        # Validate the incoming data
         new_aircraft = AirlineAircraft(
             aircraft_id=data['aircraft_id'],
             airline_id=airline_id,
-            first_class_seats=data.get('first_class_seats', []),
-            business_class_seats=data.get('business_class_seats', []),
-            economy_class_seats=data.get('economy_class_seats', []),
             tail_number=data['tail_number']
         )
 
         db.session.add(new_aircraft)
         db.session.commit()
-
+        # Add seats to the aircraft
+        if 'first_class_seats' in data:
+            new_aircraft.first_class_seats = data['first_class_seats']
+        if 'business_class_seats' in data:
+            new_aircraft.business_class_seats = data['business_class_seats']
+        if 'economy_class_seats' in data:
+            new_aircraft.economy_class_seats = data['economy_class_seats']
+        db.session.commit()
         return airline_aircraft_schema.dump(new_aircraft), 201
-@api.route('/aircraft/<int:aircraft_id>')
-@api.param('aircraft_id', 'The extra identifier')
+    
+@api.route('/aircraft/<uuid:aircraft_id>')
+@api.param('aircraft_id', 'The Aircraft identifier')
 class AirlineAircraftResource(Resource):
-    @api.doc(security="JWT")
-    @jwt_required()
-    @roles_required('airline-admin')
-    @airline_id_from_user()
-    def get(self, airline_id, aircraft_id):
+    @api.doc(security=None)
+    @api.response(200, 'OK', airline_aircraft_model)
+    @api.response(404, 'Not Found')
+    @api.response(403, 'Unauthorized')
+    def get(self, aircraft_id ):
         """Get a specific aircraft for an airline"""
         # Check if airline exists
-        airline = Airline.query.get_or_404(airline_id)
-        aircraft = AirlineAircraft.query.filter_by(id=aircraft_id, airline_id=airline_id).first_or_404()
+        aircraft = AirlineAircraft.query.filter_by(id=aircraft_id).first_or_404()
 
         return airline_aircraft_schema.dump(aircraft), 200
-    @api.expect(airline_aircraft_model)
+    
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
-    def put(self, airline_id, aircraft_id):
+    @api.expect(airline_aircraft_model, validate=False)
+    @api.response(200, 'OK', airline_aircraft_model)
+    @api.response(400, 'Bad Request')
+    @api.response(403, 'Unauthorized')
+    @api.response(404, 'Not Found')
+    def put(self, aircraft_id,airline_id):
         """Update an aircraft for an airline"""
         # Check if airline exists
-        airline = Airline.query.get_or_404(airline_id)
         aircraft = AirlineAircraft.query.filter_by(id=aircraft_id, airline_id=airline_id).first_or_404()
 
         data = request.json
@@ -385,9 +399,13 @@ class AirlineAircraftResource(Resource):
 
         db.session.commit()
         return airline_aircraft_schema.dump(aircraft), 200
+    
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
+    @api.response(200, 'OK')
+    @api.response(403, 'Unauthorized')
+    @api.response(404, 'Not Found')
     def delete(self, airline_id, aircraft_id):
         """Delete an aircraft for an airline"""
         # Check if airline exists

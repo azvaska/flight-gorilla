@@ -1,11 +1,12 @@
 from marshmallow import validates, ValidationError, validate
 from app.extensions import ma, db
-from app.models.airlines import Airline, AirlineAircraft
+from app.models.airlines import Airline, AirlineAircraft, AirlineAircraftSeat
+from app.models.common import ClassType
 from app.models.extra import Extra
 from app.models import Nation
 
 class ExtraSchema(ma.SQLAlchemyAutoSchema):
-    airline_id = ma.UUID()
+    airline_id = ma.UUID(dump_only=True)
     class Meta:
         model = Extra
         load_instance = True
@@ -13,6 +14,10 @@ class ExtraSchema(ma.SQLAlchemyAutoSchema):
 
 
 class AirlineAircraftSchema(ma.SQLAlchemyAutoSchema):
+    airline_id = ma.UUID(dump_only=True)
+    first_class_seats = ma.List(ma.String(), dump_only=True)
+    business_class_seats = ma.List(ma.String(), dump_only=True)
+    economy_class_seats = ma.List(ma.String(), dump_only=True)
     class Meta:
         model = AirlineAircraft
         load_instance = True

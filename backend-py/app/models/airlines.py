@@ -1,3 +1,4 @@
+import re
 import uuid
 from symtable import Class
 from typing import List
@@ -32,23 +33,97 @@ class AirlineAircraft(db.Model):
     airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id), nullable=False)
     seats: Mapped[List['AirlineAircraftSeat']] = relationship('AirlineAircraftSeat', back_populates='airline_aircraft',
                                                               cascade='all, delete-orphan')
-    tail_number: Mapped[str] = mapped_column(db.String(255), nullable=False)
+    tail_number: Mapped[str] = mapped_column(db.String(255), nullable=False, unique=True)
     airline: Mapped[Airline] = relationship(Airline, back_populates='aircrafts', foreign_keys=[airline_id])
     aircraft = relationship('Aircraft', back_populates='airline_aircrafts', foreign_keys=[aircraft_id])
     flights: Mapped[List['Flight']] = relationship('Flight', back_populates='aircraft', cascade='all, delete-orphan')
-
+    
     @property
     def first_class_seats(self) -> List[str]:
-        return AirlineAircraftSeat.query.filter_by(airline_id=self.airline_id,class_type = ClassType.FIRST_CLASS).all()
+        seats = AirlineAircraftSeat.query.filter_by(
+            airline_aircraft_id=self.id,
+            class_type=ClassType.FIRST_CLASS
+        ).all()
+        return [seat.seat_number for seat in seats]
+    
+    @first_class_seats.setter
+    def first_class_seats(self, value: List[str]):
+        if not isinstance(value, list):
+            raise ValueError("first_class_seats must be a list")
+        business_class_seats = self.business_class_seats
+        economy_class_seats = self.economy_class_seats
+        first_class_seats = self.first_class_seats
+        for seat in value:
+            seat = seat.strip().upper()
+            if not re.match(r'^\d+[A-Z]$', seat):
+                raise ValueError(f"Invalid seat number format: {seat}")
+            if seat in business_class_seats or seat in economy_class_seats or seat in first_class_seats:
+                AirlineAircraftSeat.query.filter_by(
+                    airline_aircraft_id=self.id,
+                    seat_number=seat
+                ).delete()
+                db.session.commit()
+            seat_in = AirlineAircraftSeat(airline_aircraft_id=self.id, seat_number=seat, class_type=ClassType.FIRST_CLASS)
+            db.session.add(seat_in)
+        db.session.commit()
 
     @property
     def business_class_seats(self) -> List[str]:
-        return AirlineAircraftSeat.query.filter_by(airline_id=self.airline_id,class_type = ClassType.BUSINESS_CLASS).all()
-
+        seats = AirlineAircraftSeat.query.filter_by(
+            airline_aircraft_id=self.id,
+            class_type=ClassType.BUSINESS_CLASS
+        ).all()
+        return [seat.seat_number for seat in seats]
+    
+    @business_class_seats.setter
+    def business_class_seats(self, value: List[str]):
+        if not isinstance(value, list):
+            raise ValueError("business_class_seats must be a list")
+        business_class_seats = self.business_class_seats
+        economy_class_seats = self.economy_class_seats
+        first_class_seats = self.first_class_seats
+        for seat in value:
+            seat = seat.strip().upper()
+            if not re.match(r'^\d+[A-Z]$', seat):
+                raise ValueError(f"Invalid seat number format: {seat}")
+            if seat in business_class_seats or seat in economy_class_seats or seat in first_class_seats:
+                AirlineAircraftSeat.query.filter_by(
+                    airline_aircraft_id=self.id,
+                    seat_number=seat
+                ).delete()
+                db.session.commit()
+            seat_in = AirlineAircraftSeat(airline_aircraft_id=self.id, seat_number=seat, class_type=ClassType.BUSINESS_CLASS)
+            db.session.add(seat_in)
+        db.session.commit()
     @property
     def economy_class_seats(self) -> List[str]:
-        return AirlineAircraftSeat.query.filter_by(airline_id=self.airline_id,class_type = ClassType.ECONOMY_CLASS).all()
-
+        seats = AirlineAircraftSeat.query.filter_by(
+            airline_aircraft_id=self.id,
+            class_type=ClassType.ECONOMY_CLASS
+        ).all()
+        return [seat.seat_number for seat in seats]
+    
+    
+    @economy_class_seats.setter
+    def economy_class_seats(self, value: List[str]):
+        if not isinstance(value, list):
+            raise ValueError("economy_class_seats must be a list")
+        business_class_seats = self.business_class_seats
+        economy_class_seats = self.economy_class_seats
+        first_class_seats = self.first_class_seats
+        for seat in value:
+            seat = seat.strip().upper()
+            if not re.match(r'^\d+[A-Z]$', seat):
+                raise ValueError(f"Invalid seat number format: {seat}")
+            if seat in business_class_seats or seat in economy_class_seats or seat in first_class_seats:
+                AirlineAircraftSeat.query.filter_by(
+                    airline_aircraft_id=self.id,
+                    seat_number=seat
+                ).delete()
+                db.session.commit()
+            seat_in = AirlineAircraftSeat(airline_aircraft_id=self.id, seat_number=seat, class_type=ClassType.ECONOMY_CLASS)
+            db.session.add(seat_in)
+        db.session.commit()
 
 class AirlineAircraftSeat(db.Model):
     __tablename__ = 'airline_aircraft_seat'
