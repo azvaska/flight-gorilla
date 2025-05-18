@@ -15,6 +15,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         model = User
         load_instance = True
         include_fk = True
+        exclude = ['password', 'roles']
         sqla_session = db.session  # This is important
 
     # Add validation for fields

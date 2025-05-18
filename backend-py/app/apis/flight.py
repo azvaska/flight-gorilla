@@ -66,14 +66,10 @@ class FlightList(Resource):
             if not aircraft or str(aircraft.airline_id) != str(airline_id):
                 return {"error": "The specified aircraft does not belong to your airline"}, 403
             
-            # Validate that the route belongs to the airline
-            route = Route.query.get(data['route_id'])
-            if not route or str(route.airline_id) != str(airline_id):
-                return {"error": "The specified route does not belong to your airline"}, 403
             
             new_flight = flight_schema.load(data)
-
-            # Set any default values if needed
+            
+           
             if 'price_insurance' not in data:
                 new_flight.price_insurance = 0.0
                 
@@ -133,30 +129,9 @@ class FlightResource(Resource):
             del data['airline_id']
 
         try:
-            # If the departure time is changed, check that it's not in the past
-            if 'departure_time' in data:
-                departure_time = datetime.datetime.fromisoformat(data['departure_time'].replace('Z', '+00:00'))
-                if departure_time < datetime.datetime.now(datetime.UTC):
-                    return {"error": "Departure time cannot be in the past"}, 400
-
-            # If the arrival time is changed, check that it's after departure time
-            if 'arrival_time' in data and 'departure_time' not in data:
-                arrival_time = datetime.datetime.fromisoformat(data['arrival_time'].replace('Z', '+00:00'))
-                if arrival_time <= flight.departure_time:
-                    return {"error": "Arrival time must be after departure time"}, 400
-            elif 'arrival_time' in data and 'departure_time' in data:
-                arrival_time = datetime.datetime.fromisoformat(data['arrival_time'].replace('Z', '+00:00'))
-                departure_time = datetime.datetime.fromisoformat(data['departure_time'].replace('Z', '+00:00'))
-                if arrival_time <= departure_time:
-                    return {"error": "Arrival time must be after departure time"}, 400
 
             # Validate data with Marshmallow schema
-            partial_schema = FlightSchema(partial=True)
-            validated_data = partial_schema.load(data)
-
-            # Update flight fields
-            for key, value in validated_data.items():
-                setattr(flight, key, value)
+            validated_data = flight_schema.load(data,partial=True)
 
             db.session.commit()
             return marshal(flight_schema.dump(flight), flight_model_output), 200
@@ -207,6 +182,7 @@ extra_flight_model = api.model('FlightExtra', {
     'stackable': fields.Boolean(required=True, description='Is the extra stackable'),
     'required_on_all_segments': fields.Boolean(required=True, description='Is the extra required on all segments'),
 })
+
 @api.route('/extra/<uuid:flight_id>')
 @api.param('flight_id', 'The flight identifier')
 class FlightExtraR(Resource):
@@ -215,7 +191,7 @@ class FlightExtraR(Resource):
     @api.response(500, 'Internal Server Error')
     @api.response(200, 'OK', extra_flight_model)
     def get(self, flight_id):
-        """Get all booked seats for a specific flight"""
+        """Get all extra for a specific flight"""
         q = FlightExtra.query.filter_by(flight_id=flight_id).all()
         if not q:
             return {'error': 'Flight extras not found'}, 404

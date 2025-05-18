@@ -36,7 +36,7 @@ class Booking(db.Model):
             total += flight.price
             for extra in flight.extras:
                 total += extra.extra_price
-        return total
+        return round(total,2)
 
 class BookingFlightExtra(db.Model):
     booking_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Booking.id), nullable=False, primary_key=True)
@@ -63,6 +63,7 @@ class BookingDepartureFlight(db.Model):
                    "BookingFlightExtra.flight_id==foreign(BookingDepartureFlight.flight_id))",
         viewonly=True,
         uselist=True,
+        lazy='joined',
     )
     booking: Mapped[Booking] = relationship(Booking, back_populates='departure_flights', foreign_keys=[booking_id], lazy='joined')
     flight: Mapped[Flight] = relationship(Flight, back_populates='departure_bookings', foreign_keys=[flight_id], lazy='joined')
@@ -80,6 +81,7 @@ class BookingReturnFlight(db.Model):
                    "BookingFlightExtra.flight_id==foreign(BookingReturnFlight.flight_id))",
         viewonly=True,
         uselist=True,
+        lazy='joined',
     )
 
     booking: Mapped[Booking] = relationship(Booking, back_populates='return_flights', foreign_keys=[booking_id], lazy='joined')

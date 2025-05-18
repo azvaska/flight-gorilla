@@ -1,7 +1,7 @@
 # app/apis/user.py
 from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_restx import Namespace, Resource, fields, reqparse
+from flask_restx import Namespace, Resource, fields, marshal, reqparse
 from marshmallow import ValidationError
 from app.core.auth import roles_required
 from app.models.user import User, PayementCard
@@ -41,6 +41,9 @@ class UserList(Resource):
     @jwt_required()
     @roles_required(['admin'])
     @api.expect(user_list_parser)
+    @api.response(200, 'OK', user_model)
+    @api.response(403, 'Forbidden')
+    @api.response(500, 'Internal Server Error')
     def get(self):
         """List all users with optional filtering (admin only)"""
         args = user_list_parser.parse_args()
@@ -56,7 +59,7 @@ class UserList(Resource):
         if args['role']:
             query = query.join(User.roles).filter(User.roles.any(name=args['role']))
 
-        return users_schema.dump(query.all()), 200
+        return marshal(users_schema.dump(query.all()),user_model), 200
 
 @api.route('/<uuid:user_id>')
 @api.param('user_id', 'The user identifier')
@@ -73,7 +76,7 @@ class UserResource(Resource):
             return {'error': 'You do not have permission to view this user', 'code': 403}, 403
 
         user = User.query.get_or_404(user_id)
-        return user_schema.dump(user), 200
+        return marshal(user_schema.dump(user),user_model), 200
 
     @jwt_required()
     @api.expect(user_model)

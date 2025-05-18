@@ -13,8 +13,8 @@ from app.extensions import db
 from app.models.airlines import Airline, AirlineAircraft
 from app.models.extra import Extra
 from app.apis.location import nation_model
-from app.schemas.airline import AirlineSchema, airline_schema, airlines_schema, extra_schema, extras_schema, airline_aircraft_schema, airline_aircrafts_schema
-
+from app.models.flight import Route
+from app.schemas.airline import AirlineSchema, airline_schema, airlines_schema,route_schema,routes_schema, extra_schema, extras_schema, airline_aircraft_schema, airline_aircrafts_schema
 api = Namespace('airline', description='Airline related operations')
 
 # --- RESTx Models ---
@@ -74,6 +74,15 @@ new_airline_model = api.model('NewAirline', {
     "airline": fields.Nested(airline_model),
     "admin_credentials": fields.Nested(admin_credentials_model)})
 
+route_model = api.model('Route', {
+    'id': fields.String(readonly=True, description='Route ID'),
+    'departure_airport_id': fields.String(required=True, description='Departure airport ID'),
+    'arrival_airport_id': fields.String(required=True, description='Arrival airport ID'),
+    'airline_id': fields.String(readonly=True, description='Airline ID'),
+    'period_start': fields.DateTime(required=True, description='Start of the route period'),
+    'period_end': fields.DateTime(required=True, description='End of the route period'),
+    'flight_number': fields.String(required=True, description='Flight number')
+})
 
 # --- Request Parsers ---
 airline_list_parser = reqparse.RequestParser()
@@ -101,7 +110,7 @@ class AirlineList(Resource):
         if args['nation_id']:
             query = query.filter(Airline.nation_id == args['nation_id'])
 
-        return airlines_schema.dump(query.all()), 200
+        return marshal(airlines_schema.dump(query.all()),airline_model), 200
 
     @api.expect(airline_put_model)
     @jwt_required()
@@ -204,7 +213,7 @@ class AirlineResource(Resource):
         db.session.delete(airline)
         db.session.commit()
 
-        return {'message': 'Airline deleted successfully'}, 200
+        return {'message': 'Ok'}, 200
 #TODO CONTINUE TESTING
 @api.route('/extra/<uuid:airline_id>')
 @api.param('airline_id', 'The airline identifier')
@@ -253,7 +262,7 @@ class AirlineExtrasList(Resource):
         db.session.add(new_extra)
         db.session.commit()
 
-        return extra_schema.dump(new_extra), 201
+        return marshal(extra_schema.dump(new_extra),extra_model), 201
 
 @api.route('/extras/<uuid:extra_id>')
 @api.param('extra_id', 'The extra identifier')
@@ -290,7 +299,7 @@ class ExtraResource(Resource):
         # Update the extra instance with the new data
 
         db.session.commit()
-        return extra_schema.dump(extra), 200
+        return marshal(extra_schema.dump(extra),extra_model), 200
 
     @jwt_required()
     @roles_required('airline-admin')
@@ -321,7 +330,7 @@ class AirlineAircraftList(Resource):
         # Check if airline exists
         aircraft = AirlineAircraft.query.filter_by(airline_id=airline_id).all()
 
-        return airline_aircrafts_schema.dump(aircraft), 200
+        return marshal(airline_aircrafts_schema.dump(aircraft),airline_aircraft_model), 200
 
     @api.expect(airline_aircraft_model)
     @jwt_required()
@@ -355,7 +364,7 @@ class AirlineAircraftList(Resource):
         if 'economy_class_seats' in data:
             new_aircraft.economy_class_seats = data['economy_class_seats']
         db.session.commit()
-        return airline_aircraft_schema.dump(new_aircraft), 201
+        return marshal(airline_aircraft_schema.dump(new_aircraft),airline_aircraft_model), 201
     
 @api.route('/aircraft/<uuid:aircraft_id>')
 @api.param('aircraft_id', 'The Aircraft identifier')
@@ -369,7 +378,7 @@ class AirlineAircraftResource(Resource):
         # Check if airline exists
         aircraft = AirlineAircraft.query.filter_by(id=aircraft_id).first_or_404()
 
-        return airline_aircraft_schema.dump(aircraft), 200
+        return marshal(airline_aircraft_schema.dump(aircraft),airline_aircraft_model), 200
     
     @jwt_required()
     @roles_required('airline-admin')
@@ -398,7 +407,7 @@ class AirlineAircraftResource(Resource):
             aircraft.tail_number = data['tail_number']
 
         db.session.commit()
-        return airline_aircraft_schema.dump(aircraft), 200
+        return marshal(airline_aircraft_schema.dump(aircraft),airline_aircraft_model), 200
     
     @jwt_required()
     @roles_required('airline-admin')
@@ -415,3 +424,78 @@ class AirlineAircraftResource(Resource):
         db.session.commit()
 
         return {'message': 'Aircraft deleted successfully'}, 200
+
+@api.route('/routes/<uuid:airline_id>')
+@api.param('airline_id', 'The airline identifier')
+class AirlineRouteList(Resource):
+    @api.doc(security=None)
+    @api.response(200, 'OK', [route_model])
+    @api.response(404, 'Not Found')
+    def get(self, airline_id):
+        """Get all routes for a specific airline"""
+        # Check if airline exists
+        route = Route.query.filter_by(airline_id=airline_id).all()
+
+        return routes_schema.dump(route), 200
+    
+    @api.expect(route_model)
+    @jwt_required()
+    @roles_required('airline-admin')
+    @airline_id_from_user()
+    @api.response(201, 'Created', route_model)
+    @api.response(400, 'Bad Request')
+    @api.response(403, 'Unauthorized')
+    def post(self, airline_id):
+        """Add a new route for an airline"""
+        # Check if airline exists
+        
+        data = request.json
+
+        # Validate the incoming data
+        try:
+            new_route = route_schema.load(data)
+        except ValidationError as err:
+            return {"errors": err.messages, "code": 400}, 400
+
+        new_route.airline_id = airline_id
+
+        db.session.add(new_route)
+        db.session.commit()
+
+        return marshal(route_schema.dump(new_route),route_model), 201
+@api.route('/route/<int:route_id>')
+@api.param('route_id', 'The route identifier')
+class AirlineRouteResource(Resource):
+    @api.doc(security=None)
+    @api.response(200, 'OK', route_model)
+    @api.response(404, 'Not Found')
+    def get(self, route_id):
+        """Get a specific route for an airline"""
+        # Check if airline exists
+        route = Route.query.filter_by(id=route_id).first_or_404()
+
+        return marshal(route_schema.dump(route),route_model), 200
+    
+    @jwt_required()
+    @roles_required('airline-admin')
+    @airline_id_from_user()
+    @api.expect(route_model, validate=False)
+    @api.response(200, 'OK', route_model)
+    @api.response(400, 'Bad Request')
+    @api.response(403, 'Unauthorized')
+    @api.response(404, 'Not Found')
+    def put(self, route_id,airline_id):
+        """Update a route for an airline"""
+        # Check if airline exists
+        route = Route.query.filter_by(id=route_id, airline_id=airline_id).first_or_404()
+
+        data = request.json
+        # Validate the incoming data
+        try:
+            route = route_schema.load(data, instance=route, partial=True)
+        except ValidationError as err:
+            return {"errors": err.messages, "code": 400}, 400
+        # Update the route instance with the new data
+
+        db.session.commit()
+        return marshal(route_schema.dump(route),route_model), 200

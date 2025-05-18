@@ -7,6 +7,8 @@ from app.schemas.airport import AirportSchema
 from app.schemas.airline import AirlineSchema
 import datetime
 
+
+
 class FlightSchema(ma.SQLAlchemyAutoSchema):
 
     airline = ma.Nested(AirlineSchema, dump_only=True)
@@ -38,9 +40,16 @@ class FlightSchema(ma.SQLAlchemyAutoSchema):
 
         # Validate route_id exists
         route_id = data.get("route_id")
-        if route_id and not Route.query.get(route_id):
+        route = Route.query.get(route_id)
+        if route_id and not route:
             raise ValidationError("Route with given ID does not exist.", field_name="route_id")
-
+        
+        # Validate departure/arrival  route is within the period
+        if departure_time < route.period_start or departure_time > route.period_end:
+            raise ValidationError("Departure times must be within the route period.", field_name="departure_time")
+        if arrival_time > route.period_end or arrival_time > route.period_end:
+            raise ValidationError("Arrival times must be within the route period.", field_name="arrival_time")
+        
         # Validate aircraft_id exists
         aircraft_id = data.get("aircraft_id")
         if aircraft_id and not AirlineAircraft.query.get(aircraft_id):

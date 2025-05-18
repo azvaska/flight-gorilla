@@ -1,5 +1,5 @@
 from flask_jwt_extended import create_access_token, create_refresh_token
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields, marshal
 from flask import request,current_app
 from flask_security import hash_password
 from app.models.user import User
@@ -17,7 +17,6 @@ user_model = api.model('User', {
 })
 
 login_model_output = api.model('LoginOutput', {
-    'message': fields.String(required=True, description='Message'),
     'access_token': fields.String(required=True, description='Access Token'),
     'refresh_token': fields.String(required=True, description='Refresh Token'),
     'user': fields.Nested(user_model, required=True, description='User')
@@ -56,13 +55,13 @@ class LoginResource(Resource):
             token = create_access_token(identity=str(user.id))
             refresh_token = create_refresh_token(identity=str(user.id))
 
-            return {
+            return marshal({
                 "access_token": token,
                 "refresh_token": refresh_token,
                 "user": {
                         "id": str(user.id),
                     }
-                }, 200
+                },login_model_output), 200
         except Exception as e:
             return {"error": str(e)}, 500
 

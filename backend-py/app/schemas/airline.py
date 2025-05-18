@@ -4,6 +4,7 @@ from app.models.airlines import Airline, AirlineAircraft, AirlineAircraftSeat
 from app.models.common import ClassType
 from app.models.extra import Extra
 from app.models import Nation
+from app.models.flight import Route
 
 class ExtraSchema(ma.SQLAlchemyAutoSchema):
     airline_id = ma.UUID(dump_only=True)
@@ -47,10 +48,25 @@ class AirlineSchema(ma.SQLAlchemyAutoSchema):
         if not db.session.get(Nation, value):  # SQLAlchemy 2.0 pattern
             raise ValidationError("Nation with given ID does not exist.")
 
+
+
+class RouteSchema(ma.SQLAlchemyAutoSchema):
+    airline_id = ma.UUID(dump_only=True)
+    class Meta:
+        model = Route
+        load_instance = True
+        include_fk = True
+
 # Create schema instances
 airline_schema = AirlineSchema()
 airlines_schema = AirlineSchema(many=True)
+
 extra_schema = ExtraSchema()
 extras_schema = ExtraSchema(many=True)
+
 airline_aircraft_schema = AirlineAircraftSchema()
 airline_aircrafts_schema = AirlineAircraftSchema(many=True) 
+
+
+route_schema = RouteSchema()
+routes_schema = RouteSchema(many=True)

@@ -46,10 +46,10 @@ class AirlineAircraft(db.Model):
         ).all()
         return [seat.seat_number for seat in seats]
     
-    @first_class_seats.setter
-    def first_class_seats(self, value: List[str]):
+    def add_seats(self, value: List[str],class_type: ClassType):
+        #TODO ADD TRIGGER to check se ci sono troppi posti
         if not isinstance(value, list):
-            raise ValueError("first_class_seats must be a list")
+            raise ValueError("seats must be a list")
         business_class_seats = self.business_class_seats
         economy_class_seats = self.economy_class_seats
         first_class_seats = self.first_class_seats
@@ -63,9 +63,13 @@ class AirlineAircraft(db.Model):
                     seat_number=seat
                 ).delete()
                 db.session.commit()
-            seat_in = AirlineAircraftSeat(airline_aircraft_id=self.id, seat_number=seat, class_type=ClassType.FIRST_CLASS)
+            seat_in = AirlineAircraftSeat(airline_aircraft_id=self.id, seat_number=seat, class_type=class_type)
             db.session.add(seat_in)
         db.session.commit()
+    
+    @first_class_seats.setter
+    def first_class_seats(self, value: List[str]):
+        self.add_seats(value,ClassType.FIRST_CLASS)
 
     @property
     def business_class_seats(self) -> List[str]:
@@ -77,24 +81,7 @@ class AirlineAircraft(db.Model):
     
     @business_class_seats.setter
     def business_class_seats(self, value: List[str]):
-        if not isinstance(value, list):
-            raise ValueError("business_class_seats must be a list")
-        business_class_seats = self.business_class_seats
-        economy_class_seats = self.economy_class_seats
-        first_class_seats = self.first_class_seats
-        for seat in value:
-            seat = seat.strip().upper()
-            if not re.match(r'^\d+[A-Z]$', seat):
-                raise ValueError(f"Invalid seat number format: {seat}")
-            if seat in business_class_seats or seat in economy_class_seats or seat in first_class_seats:
-                AirlineAircraftSeat.query.filter_by(
-                    airline_aircraft_id=self.id,
-                    seat_number=seat
-                ).delete()
-                db.session.commit()
-            seat_in = AirlineAircraftSeat(airline_aircraft_id=self.id, seat_number=seat, class_type=ClassType.BUSINESS_CLASS)
-            db.session.add(seat_in)
-        db.session.commit()
+        self.add_seats(value,ClassType.BUSINESS_CLASS)
     @property
     def economy_class_seats(self) -> List[str]:
         seats = AirlineAircraftSeat.query.filter_by(
@@ -106,24 +93,7 @@ class AirlineAircraft(db.Model):
     
     @economy_class_seats.setter
     def economy_class_seats(self, value: List[str]):
-        if not isinstance(value, list):
-            raise ValueError("economy_class_seats must be a list")
-        business_class_seats = self.business_class_seats
-        economy_class_seats = self.economy_class_seats
-        first_class_seats = self.first_class_seats
-        for seat in value:
-            seat = seat.strip().upper()
-            if not re.match(r'^\d+[A-Z]$', seat):
-                raise ValueError(f"Invalid seat number format: {seat}")
-            if seat in business_class_seats or seat in economy_class_seats or seat in first_class_seats:
-                AirlineAircraftSeat.query.filter_by(
-                    airline_aircraft_id=self.id,
-                    seat_number=seat
-                ).delete()
-                db.session.commit()
-            seat_in = AirlineAircraftSeat(airline_aircraft_id=self.id, seat_number=seat, class_type=ClassType.ECONOMY_CLASS)
-            db.session.add(seat_in)
-        db.session.commit()
+        self.add_seats(value,ClassType.ECONOMY_CLASS)   
 
 class AirlineAircraftSeat(db.Model):
     __tablename__ = 'airline_aircraft_seat'
