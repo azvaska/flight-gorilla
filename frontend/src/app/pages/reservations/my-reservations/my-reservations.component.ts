@@ -26,8 +26,7 @@ interface Reservation {
     NgIf,
     NgForOf,
     HlmButtonDirective,
-    NgTemplateOutlet,
-    NgOptimizedImage
+    NgTemplateOutlet
   ],
   host: {
     class: 'block w-full h-full',
