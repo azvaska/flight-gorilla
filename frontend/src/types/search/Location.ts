@@ -2,7 +2,7 @@ export type ILocation =
   | {
       id: string;
       name: string;
-      type: 'city' | 'airport' | 'country';
+      type: 'city' | 'airport' | 'nation';
     }
   | {
       id: undefined;

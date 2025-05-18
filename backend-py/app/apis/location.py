@@ -1,3 +1,4 @@
+from operator import or_
 from flask_restx import Namespace, Resource, fields, marshal, reqparse
 from sqlalchemy.orm import joinedload, noload
 from app.extensions import db
@@ -28,7 +29,7 @@ city_model = api.inherit('City', no_nation_city_model, {
 location_model = api.model('Location', {
     'id': fields.Integer(required=True, description='Unique identifier'),
     'name': fields.String(required=True, description='Name of the location'),
-    'type': fields.String(required=True, description='Type: city, nation, or airport')
+    'type': fields.String(required=True, description='Type: city, nation, or airport'),
 })
 
 
@@ -51,33 +52,56 @@ list_parser.add_argument('include_nation', type=str_to_bool, default="False", he
 list_parser.add_argument('nation_id', type=str, help='Filter by nation id',
                          location='args')
 
+location_parser = reqparse.RequestParser()
+location_parser.add_argument('name', type=str, help='Filter by location name (case-insensitive, partial match)',
+                         location='args')
+location_parser.add_argument('include_nations', type=str_to_bool, default="False", help='Include nations in the response',
+                         location='args')
+
+
 @api.route('/all')
 class LocationsList(Resource):
+    @api.expect(location_parser)
     @api.doc(security=None)
     @api.response(200, 'OK', [location_model])
     @api.response(500, 'Internal Server Error')
     def get(self):
+        args = location_parser.parse_args()
+
         try:
             """Returns a combined list of cities, nations, and airports."""
-            cities = cities_schema.dump(
-                db.session.query(City).with_entities(City.id, City.name).all()
-            )
+            query = db.session.query(City).with_entities(City.id, City.name)
+            if args['name']:
+                query = query.filter(City.name.ilike(f"%{args['name']}%"))
+            cities = cities_schema.dump(query.all())
             for c in cities:
                 c['type'] = 'city'
 
-            nations = nations_schema.dump(
-                db.session.query(Nation).with_entities(Nation.id, Nation.name).all()
-            )
-            for n in nations:
-                n['type'] = 'nation'
-
-            airports = airports_schema.dump(
-                db.session.query(Airport).with_entities(Airport.id, Airport.name).all()
-            )
+            query = db.session.query(Airport).with_entities(Airport.id, Airport.name, Airport.iata_code)
+            if args['name']:
+                query = query.filter(
+                    or_(
+                        Airport.name.ilike(f"%{args['name']}%"),
+                        Airport.iata_code.ilike(f"%{args['name']}%")
+                    )
+                )
+            airports = airports_schema.dump(query.all())
             for a in airports:
                 a['type'] = 'airport'
+                a['name'] = f"{a['name']} ({a['iata_code']})"
 
-            combined = cities + nations + airports
+            if args['include_nations']:
+                query = db.session.query(Nation).with_entities(Nation.id, Nation.name)
+                if args['name']:
+                    query = query.filter(Nation.name.ilike(f"%{args['name']}%"))
+                nations = nations_schema.dump(query.all())
+                for n in nations:
+                    n['type'] = 'nation'
+
+            combined = cities + airports
+            if args['include_nations']:
+                combined += nations
+            
             return marshal(combined, location_model), 200
         except Exception as e:
             return {'error': str(e)}, 500
