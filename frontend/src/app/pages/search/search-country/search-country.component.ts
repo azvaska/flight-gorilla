@@ -19,7 +19,7 @@ export class SearchCountryComponent {
       queryParams: {
         from_type: this.searchParamsGuard.params.from_type,
         from_id: this.searchParamsGuard.params.from_id,
-        to_type: 'country',
+        to_type: 'nation',
         to_id: countryId,
         departure_date: this.searchParamsGuard.params.departure_date,
         return_date: this.searchParamsGuard.params.return_date,

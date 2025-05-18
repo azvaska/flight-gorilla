@@ -136,12 +136,12 @@ export class SearchComponent {
           type: 'airport',
         }))
       );
-    } else if (params.to_type === 'country') {
-      return this.flightSearchService.getCountry(params.to_id).pipe(
-        map((country) => ({
+    } else if (params.to_type === 'nation') {
+      return this.flightSearchService.getNation(params.to_id).pipe(
+        map((nation) => ({
           id: params.to_id,
-          name: country.name,
-          type: 'country',
+          name: nation.name,
+          type: 'nation',
         }))
       );
     }
