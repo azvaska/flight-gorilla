@@ -20,6 +20,8 @@ import {Booking5ErrorComponent} from '@/app/pages/booking/booking5-error/booking
 import { AuthGuard, GuestGuard } from './auth/auth.guard';
 import {MyReservationsComponent} from '@/app/pages/reservations/my-reservations/my-reservations.component';
 import {CancelReservationComponent} from '@/app/pages/reservations/cancel-reservation/cancel-reservation.component';
+import {MyProfileComponent} from '@/app/pages/my-profile/my-profile.component';
+import {CreditCardListComponent} from '@/app/components/credit-card-list/credit-card-list.component';
 
 export const routes: Routes = [
   {
@@ -109,6 +111,10 @@ export const routes: Routes = [
     path: 'reservations',
     canActivate: [AuthGuard],
     component: MyReservationsComponent
+  },
+  {
+    path: 'profile',
+    component: MyProfileComponent,
   },
   {
     path: 'cancel-reservation',
