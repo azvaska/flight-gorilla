@@ -1,3 +1,4 @@
+import { ICity } from '@/types/search/location';
 import { Component, Input } from '@angular/core';
 import {
   HlmCardDescriptionDirective,
@@ -12,13 +13,12 @@ import {
   templateUrl: './city-card.component.html'
 })
 export class CityCardComponent {
-  @Input() cityName: string = "Rome";
-  @Input() cityId: string = "1";
+  @Input() city!: ICity;
   @Input() startingPrice: string = "23";
   @Input() handleCitySelection: (cityId: string) => void = () => {};
 
 
   handleClick() {
-    this.handleCitySelection(this.cityId);
+    this.handleCitySelection(this.city.id);
   }
 }

@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CityCardComponent } from './components/city-card/city-card.component';
 import { SearchParamsGuard } from '@/app/guards/search-guard';
 import { Router } from '@angular/router';
+import { SearchFetchService } from '@/app/services/search/search-fetch.service';
+import { ICity } from '@/types/search/location';
 
 @Component({
   selector: 'app-search-city',
@@ -9,10 +11,18 @@ import { Router } from '@angular/router';
   templateUrl: './search-city.component.html',
 })
 export class SearchCityComponent {
+
+  protected cities: ICity[] = []
+
   constructor(
     private searchParamsGuard: SearchParamsGuard,
-    private router: Router
-  ) {}
+    private router: Router,
+    private searchFetchService: SearchFetchService
+  ) {
+    this.searchFetchService.getCitiesByNation(this.searchParamsGuard.params.to_id as string).subscribe((cities) => {
+      this.cities = cities;
+    });
+  }
 
   handleCitySelection(cityId: string) {
     this.router.navigate(['/search'], {
