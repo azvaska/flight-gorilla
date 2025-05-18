@@ -6,6 +6,7 @@ import {
   HlmCardTitleDirective,
 } from '@spartan-ng/ui-card-helm';
 import { Router } from '@angular/router';
+import { INation } from '@/types/search/location';
 
 @Component({
   selector: 'country-card',
@@ -18,14 +19,13 @@ import { Router } from '@angular/router';
   templateUrl: './country-card.component.html',
 })
 export class CountryCardComponent {
-  @Input() countryName: string = 'Italy';
-  @Input() countryId: string = '1';
+  @Input() nation!: INation;
   @Input() startingPrice: string = '23';
   @Input() handleCountrySelection: (countryId: string) => void = () => {};
 
   constructor(private router: Router) {}
 
   handleClick() {
-    this.handleCountrySelection(this.countryId);
+    this.handleCountrySelection(this.nation.id);
   }
 }

@@ -9,3 +9,17 @@ export type ILocation =
       name: 'Anywhere';
       type: 'anywhere';
     };
+
+
+export interface INation {
+  id: string;
+  name: string;
+  code: string;
+  alpha2: string;
+}
+
+export interface ICity {
+  id: string;
+  name: string;
+  nation: INation;
+}

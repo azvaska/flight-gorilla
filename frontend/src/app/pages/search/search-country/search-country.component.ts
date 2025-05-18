@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CountryCardComponent } from './components/country-card/country-card.component';
 import { Router } from '@angular/router';
 import { SearchParamsGuard } from '@/app/guards/search-guard';
+import { INation } from '@/types/search/location';
+import { SearchFetchService } from '@/app/services/search/search-fetch.service';
 
 @Component({
   selector: 'app-search-country',
@@ -9,10 +11,18 @@ import { SearchParamsGuard } from '@/app/guards/search-guard';
   templateUrl: './search-country.component.html',
 })
 export class SearchCountryComponent {
+
+  protected nations: INation[] = []
+
   constructor(
     private searchParamsGuard: SearchParamsGuard,
-    private router: Router
-  ) {}
+    private router: Router,
+    private searchFetchService: SearchFetchService
+  ) {
+    this.searchFetchService.getNations().subscribe((nations) => {
+      this.nations = nations;
+    });
+  }
 
   handleCountrySelection(countryId: string) {
     this.router.navigate(['/search'], {

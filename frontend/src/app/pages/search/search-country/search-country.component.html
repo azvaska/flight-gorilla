@@ -4,20 +4,11 @@
   </h1>
 
   <div class="flex flex-row flex-wrap gap-4">
+    @for (nation of nations; track nation.id) { 
     <country-card
       [handleCountrySelection]="handleCountrySelection.bind(this)"
+      [nation]="nation"
     ></country-card>
-    <country-card
-      [handleCountrySelection]="handleCountrySelection.bind(this)"
-    ></country-card>
-    <country-card
-      [handleCountrySelection]="handleCountrySelection.bind(this)"
-    ></country-card>
-    <country-card
-      [handleCountrySelection]="handleCountrySelection.bind(this)"
-    ></country-card>
-    <country-card
-      [handleCountrySelection]="handleCountrySelection.bind(this)"
-    ></country-card>
+    }
   </div>
 </div>
