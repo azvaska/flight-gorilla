@@ -61,7 +61,7 @@
           type="submit"
           hlmBtn
           variant="outline"
-          class=" px-10 py-2 w-fit"
+          class="bg-white px-10 py-2 w-fit"
           (click)="loadMoreFlights()"
           *ngIf="!lastPage"
         >
@@ -69,7 +69,8 @@
             *ngIf="morePagesLoading"
             hlm
             name="lucideLoaderCircle"
-            size="sm"
+            size=""
+            color="black"
             class="mr-2 animate-spin"
           ></ng-icon>
           Load more

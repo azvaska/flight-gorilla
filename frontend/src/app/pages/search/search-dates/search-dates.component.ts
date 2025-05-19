@@ -10,6 +10,7 @@ import { PriceCalendarComponent } from './price-calendar/price-calendar.componen
 import { Router } from '@angular/router';
 import { SearchParamsGuard } from '@/app/guards/search-guard';
 import { dateToString, formatDate, stringToDate } from '@/utils/date';
+import { SearchFetchService } from '@/app/services/search/search-fetch.service';
 
 @Component({
   selector: 'app-search-dates',
@@ -27,8 +28,7 @@ import { dateToString, formatDate, stringToDate } from '@/utils/date';
   },
 })
 export class SearchDatesComponent {
-
-  protected departureFocusedDate: Date | undefined = undefined;
+  protected departureFocusedDate: Date;
   protected returnFocusedDate: Date | undefined = undefined;
 
   protected departureMinDate = new Date();
@@ -43,18 +43,40 @@ export class SearchDatesComponent {
   protected departureLoading = false;
   protected returnLoading = false;
 
+  protected departurePrices: (number | null)[] = [];
+  protected returnPrices: (number | null)[] = [];
+
   constructor(
     private router: Router,
-    private searchParamsGuard: SearchParamsGuard
+    private searchParamsGuard: SearchParamsGuard,
+    private searchFetchService: SearchFetchService
   ) {
-    this.departureFocusedDate = stringToDate(this.searchParamsGuard.params.departure_date);
-    this.returnFocusedDate = this.searchParamsGuard.params.return_date ? stringToDate(this.searchParamsGuard.params.return_date) : undefined;
+    this.departureFocusedDate = stringToDate(
+      this.searchParamsGuard.params.departure_date
+    );
+    this.returnFocusedDate = this.searchParamsGuard.params.return_date
+      ? stringToDate(this.searchParamsGuard.params.return_date)
+      : undefined;
+
+    this.onDepartureMonthChange(
+      this.departureFocusedDate.getMonth() + 1,
+      this.departureFocusedDate.getFullYear()
+    );
+
+    if (this.returnFocusedDate) {
+      this.onReturnMonthChange(
+        this.returnFocusedDate.getMonth() + 1,
+        this.returnFocusedDate.getFullYear()
+      );
+    }
   }
 
   protected onDepartureDateChange(date: Date | undefined) {
+    console.log('departure date', date);
     this.departureDate = date;
     this.returnDate = undefined;
     this.returnMinDate = date ?? new Date();
+    console.log('return min date', this.returnMinDate);
   }
 
   protected onReturnDateChange(date: Date | undefined) {
@@ -62,19 +84,41 @@ export class SearchDatesComponent {
   }
 
   protected onDepartureMonthChange(month: number, year: number) {
-    // TODO: Placehodler
     this.departureLoading = true;
-    setTimeout(() => {
-      this.departureLoading = false;
-    }, 2000);
+
+    this.searchFetchService
+      .getFlexibleDates({
+        departureId: this.searchParamsGuard.params.from_id,
+        departureType: this.searchParamsGuard.params.from_type,
+        arrivalId: this.searchParamsGuard.params.to_id as string,
+        arrivalType: this.searchParamsGuard.params.to_type as
+          | 'city'
+          | 'airport',
+        departureDate: `${month.toString().padStart(2, '0')}-${year}`,
+      })
+      .subscribe((prices) => {
+        this.departurePrices = prices;
+        console.log('departure prices', this.departurePrices);
+        this.departureLoading = false;
+      });
   }
 
   protected onReturnMonthChange(month: number, year: number) {
-    // TODO: Placehodler
     this.returnLoading = true;
-    setTimeout(() => {
-      this.returnLoading = false;
-    }, 2000);
+
+    this.searchFetchService
+      .getFlexibleDates({
+        departureId: this.searchParamsGuard.params.to_id as string,
+        departureType: this.searchParamsGuard.params.to_type as 'city' | 'airport',
+        arrivalId: this.searchParamsGuard.params.from_id,
+        arrivalType: this.searchParamsGuard.params.from_type as 'city' | 'airport',
+        departureDate: `${month.toString().padStart(2, '0')}-${year}`,
+      })
+      .subscribe((prices) => {
+        this.returnPrices = prices;
+        console.log('return prices', this.returnPrices);
+        this.returnLoading = false;
+      });
   }
 
   protected onConfirm() {
@@ -83,7 +127,9 @@ export class SearchDatesComponent {
     }
 
     const departureDate = dateToString(this.departureDate, 'specific');
-    const returnDate = this.returnDate ? dateToString(this.returnDate, 'specific') : undefined;
+    const returnDate = this.returnDate
+      ? dateToString(this.returnDate, 'specific')
+      : undefined;
 
     this.router.navigate(['/search'], {
       queryParams: {
@@ -93,7 +139,7 @@ export class SearchDatesComponent {
         to_id: this.searchParamsGuard.params.to_id,
         departure_date: departureDate,
         return_date: returnDate,
-        date_type: "specific",
+        date_type: 'specific',
       },
     });
   }

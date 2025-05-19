@@ -1,11 +1,11 @@
-<div *ngIf="state$ | async as state" class="h-full w-full">
+<div *ngIf="state$ | async as state">
   <ng-container *ngIf="state.error; else success">
     <p>Error: {{ state.error }}</p>
   </ng-container>
 
   <ng-template #success>
     <ng-container *ngIf="state.data">
-      <div class="flex flex-col gap-8 my-20">
+      <div class="flex flex-col gap-8 mt-20">
         <app-popover
           [popoverRelativePosition]="{ top: 20 }"
           [popoverWidth]="'100%'"

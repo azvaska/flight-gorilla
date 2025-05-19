@@ -1,6 +1,7 @@
 import { BooleanInput, NumberInput } from '@angular/cdk/coercion';
 import {
   Component,
+  Input,
   booleanAttribute,
   computed,
   input,
@@ -59,7 +60,7 @@ export class PriceCalendarComponent<T> {
   );
 
   /** Array of strings for each day of the current month */
-  public readonly prices = input<number[]>(
+  public readonly prices = input<(number | null)[]>(
     Array.from({ length: 31 }, () => Math.floor(Math.random() * 171) + 31)
   );
 
@@ -94,7 +95,7 @@ export class PriceCalendarComponent<T> {
   });
 
   /** The default focused date. */
-  public readonly defaultFocusedDate = input<T>();
+  @Input() public defaultFocusedDate!: T;
 
   /** Access the calendar directive */
   private readonly _calendar = viewChild.required(BrnCalendarDirective);
@@ -114,7 +115,7 @@ export class PriceCalendarComponent<T> {
   );
 
   protected readonly categorizedPrices = computed<
-    { value: number; type: string }[]
+    ({ value: number; type: string } | null)[]
   >(() => {
     return this.categorizePrices(this.prices());
   });
@@ -128,7 +129,6 @@ export class PriceCalendarComponent<T> {
     'data-[disabled]:text-muted-foreground data-[disabled]:opacity-50'
   );
 
-  /** Check if a date is in the currently focused month */
   protected inCurrentMonth(cellDate: T): boolean {
     return (
       this.dateAdapter.getMonth(cellDate) ===
@@ -138,15 +138,43 @@ export class PriceCalendarComponent<T> {
     );
   }
 
-  protected categorizePrices(prices: number[]) {
-    const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
+  /** Check if a date is in the currently focused month */
+  protected isAfterCurrentDate(cellDate: T): boolean {
+
+    const focusedDate = new Date()
+
+    const currentDay = focusedDate.getDate();
+    const currentMonth = focusedDate.getMonth() + 1;
+    const currentYear = focusedDate.getFullYear();
+
+    const cellDay = this.dateAdapter.getDate(cellDate);
+    const cellMonth = this.dateAdapter.getMonth(cellDate) + 1;
+    const cellYear = this.dateAdapter.getYear(cellDate);
+
+    return (
+      cellYear > currentYear ||
+      (cellYear === currentYear && cellMonth > currentMonth) ||
+      (cellYear === currentYear && cellMonth === currentMonth && cellDay >= currentDay)
+    );
+  }
+
+  protected categorizePrices(prices: (number | null)[]) {
+
+    const nonNullPrices = prices.filter((price) => price !== null);
+
+    const mean = nonNullPrices.reduce((a, b) => a + b, 0) / nonNullPrices.length;
     const stdDev = Math.sqrt(
-      prices.reduce((sum, price) => sum + Math.pow(price - mean, 2), 0) /
-        prices.length
+      nonNullPrices.reduce((sum, price) => sum + Math.pow(price - mean, 2), 0) /
+        nonNullPrices.length
     );
     const margin = 0.5 * stdDev;
 
     return prices.map((price) => {
+
+      if (price === null) {
+        return null;
+      }
+
       let type;
       if (price < mean - margin) {
         type = 'underpriced';
@@ -162,10 +190,10 @@ export class PriceCalendarComponent<T> {
   /** Get the string entry for a given date */
   protected getPriceForDate(cellDate: T): string {
     if (!this.inCurrentMonth(cellDate)) {
-      return '';
+      return '&nbsp;';
     }
     const dayIndex = this.dateAdapter.getDate(cellDate) - 1;
-    return this.prices()[dayIndex] ? this.prices()[dayIndex] + '€' : '';
+    return this.prices()[dayIndex] ? this.prices()[dayIndex] + '€' : '&nbsp;';
   }
 
   protected getPriceTypeForDate(cellDate: T): string {
@@ -176,5 +204,6 @@ export class PriceCalendarComponent<T> {
   protected onMonthChange() {
     const currentDate = new Date(this._calendar().focusedDate());
     this.onMonthChangeCallback()(currentDate.getMonth() + 1, currentDate.getFullYear());
+    this.defaultFocusedDate = this._calendar().focusedDate();
   }
 }

@@ -6,7 +6,7 @@
   [(date)]="date"
   [dateDisabled]="dateDisabled()"
   [weekStartsOn]="weekStartsOn()"
-  [defaultFocusedDate]="defaultFocusedDate()"
+  [defaultFocusedDate]="defaultFocusedDate"
   [class]="_computedCalenderClass() + ' relative'"
 >
   <div class="inline-flex flex-col space-y-6">
@@ -66,21 +66,22 @@
                   brnCalendarCellButton
                   [date]="date"
                   [class]="btnClass + ' !text-lg  !p-4'"
+                  
                 >
                   {{ dateAdapter.getDate(date) }}
                 </button>
               </td>
               <span
                 class="text-sm text-muted-foreground font-semibold"
-                *ngIf="inCurrentMonth(date)"
+                *ngIf="isAfterCurrentDate(date)"
                 [ngClass]="{
                   '!text-emerald-700':
                     getPriceTypeForDate(date) === 'underpriced',
                   '!text-red-600': getPriceTypeForDate(date) === 'overpriced',
                   '!text-gray-700': getPriceTypeForDate(date) === 'average'
                 }"
+                [innerHTML]="getPriceForDate(date)"
               >
-                {{ getPriceForDate(date) }}
               </span>
             </div>
 

@@ -11,7 +11,6 @@ export class LoadingService {
 
   startLoadingTask(): void {
     this.loadingCount++;
-    console.log('startLoadingTask', this.loadingCount);
     if (this.loadingCount === 1) {
       this.loadingSubject.next(true);
     }
@@ -22,7 +21,6 @@ export class LoadingService {
       this.loadingCount--;
       if (this.loadingCount === 0) {
         this.loadingSubject.next(false);
-        console.log('endLoadingTask', this.loadingCount);
       }
     }
   }

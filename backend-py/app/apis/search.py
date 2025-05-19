@@ -9,7 +9,7 @@ from app.models.airport import Airport
 from app.models.airlines import Airline, AirlineAircraft
 
 api = Namespace('search', description='Flight search operations')
-
+import math
 
 def str_to_bool(value: str) -> bool:
     if isinstance(value, bool):
@@ -66,6 +66,70 @@ flight_search_parser.add_argument('page_number', type=int,
                                  help='Pagination offset (for large result sets)', location='args')
 flight_search_parser.add_argument('limit', type=int,
                                     help='Limit the number of results returned for page', location='args')
+
+
+
+
+
+
+
+
+
+
+
+
+flexible_date_search_parser = reqparse.RequestParser()
+flexible_date_search_parser.add_argument('departure_id', type=int, required=True,
+                                 help='Departure id', location='args')
+flexible_date_search_parser.add_argument(
+    'departure_type',
+    type=str,
+    choices=('airport', 'city'),
+    required=True,
+    help='Type of departure location: "airport" or "city"',
+    location='args'
+)
+flexible_date_search_parser.add_argument('arrival_id', type=int, required=True,
+                                 help='Arrival id', location='args')
+flexible_date_search_parser.add_argument(
+    'arrival_type',
+    type=str,
+    choices=('airport', 'city'),
+    required=True,
+    help='Type of arrival location: "airport" or "city"',
+    location='args'
+)
+flexible_date_search_parser.add_argument('departure_date', type=str, required=True,
+                                 help='Departure date (MM-YYYY)', location='args')
+flexible_date_search_parser.add_argument('airline_id', type=str,
+                                 help='Filter by specific airline ID', location='args')
+flexible_date_search_parser.add_argument('price_max', type=float,
+                                 help='Maximum price (economy class)', location='args')
+flexible_date_search_parser.add_argument('departure_time_min', type=str,
+                                 help='Minimum departure time (HH:MM)', location='args')
+flexible_date_search_parser.add_argument('departure_time_max', type=str,
+                                 help='Maximum departure time (HH:MM)', location='args')
+flexible_date_search_parser.add_argument(
+    'order_by',
+    type=str,
+    choices=('price', 'duration', 'stops'),
+    help='Order by field (price_economy, duration_minutes, stops)',
+    location='args'
+)
+flexible_date_search_parser.add_argument('order_by_desc' , type=str_to_bool,
+                                    default="False",
+                                    help='Order by field descending', location='args')
+flexible_date_search_parser.add_argument('page_number', type=int,
+                                 help='Pagination offset (for large result sets)', location='args')
+flexible_date_search_parser.add_argument('limit', type=int,
+                                    help='Limit the number of results returned for page', location='args')
+
+
+
+
+
+
+
 
 # --- Flight Search Model (for Swagger UI) ---
 
@@ -429,6 +493,8 @@ class FlightSearch(Resource):
             departure_journeys.sort(key=lambda x: x['stops'],reverse=args['order_by_desc'])
                 
         print(departure_journeys)
+
+        original_len = len(departure_journeys)
         
         
         args['limit'] = args['limit'] if args['limit'] else 10
@@ -444,7 +510,7 @@ class FlightSearch(Resource):
 
     
 
-        return marshal({'journeys':departure_journeys,'total_pages':int(len(departure_journeys)/args['limit'])},search_output_model), 200 #flight_search_result_schema.dump(results)
+        return marshal({'journeys':departure_journeys,'total_pages':math.ceil(original_len/args['limit'])},search_output_model), 200 #flight_search_result_schema.dump(results)
 
 def generate_journey(departure_airport, arrival_airport, departure_date, max_transfers=3,
                      min_transfer_time=120, args=None):
@@ -464,7 +530,7 @@ def generate_journey(departure_airport, arrival_airport, departure_date, max_tra
 
     return resutt
 
-@api.route('/flexible-search')
+@api.route('/flexible-dates')
 class FlexibleFlightSearch(Resource):
     
     def _calculate_dates(self,date):
@@ -474,9 +540,6 @@ class FlexibleFlightSearch(Resource):
             end_date = datetime.date(date.year + 1, 1, 1) - datetime.timedelta(days=1)
         else:
             end_date = datetime.date(date.year, date.month + 1, 1) - datetime.timedelta(days=1)
-            
-        if datetime.date.today().month == date.month and datetime.date.today().year == date.year:
-            start_date = datetime.date.today()
         
         date_range = [start_date + datetime.timedelta(days=i) for i in range((end_date - start_date).days + 1)]
         
@@ -485,11 +548,11 @@ class FlexibleFlightSearch(Resource):
     
     #generare ricerca per nazione -> città 
     @api.doc(security=None)
-    @api.expect(flight_search_parser)
-    @api.response(200, 'Created', [journey_model])
+    @api.expect(flexible_date_search_parser)
+    @api.response(200, 'OK')
     def get(self):
-        """Search for flights based on departure/arrival airports and date using RAPTOR algorithm"""
-        args = flight_search_parser.parse_args()
+        """Get minimum prices for each day in a month for a given departure and arrival airport"""
+        args = flexible_date_search_parser.parse_args()
 
         # Parse and validate date
         try:

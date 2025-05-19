@@ -90,7 +90,10 @@ export class SearchFetchService {
       );
   }
 
-  public getFlights(params: IFlightSearchParams): Observable<IJourney[]> {
+  public getFlights(params: IFlightSearchParams): Observable<{
+    journeys: IJourney[];
+    total_pages: number;
+  }> {
     const queryParams = new URLSearchParams({
       departure_id: params.departureId,
       departure_type: params.departureType,
@@ -98,7 +101,7 @@ export class SearchFetchService {
       arrival_type: params.arrivalType,
       departure_date: params.departureDate,
       page_number: params.page?.toString() ?? '1',
-      limit: params.limit?.toString() ?? '4',
+      limit: params.limit?.toString() ?? '1',
     });
 
     if (params.airlineId) queryParams.set('airline_id', params.airlineId);
@@ -109,8 +112,33 @@ export class SearchFetchService {
     if (params.maxDepartureTime)
       queryParams.set('departure_time_max', params.maxDepartureTime);
 
-    return this.http.get<IJourney[]>(
+    return this.http.get<{
+      journeys: IJourney[];
+      total_pages: number;
+    }>(
       `${environment.apiUrl}/search/flights?${queryParams.toString()}`
     );
+  }
+
+  public getFlexibleDates({
+    departureId,
+    departureType,
+    arrivalId,
+    arrivalType,
+    departureDate,
+  }: IFlightSearchParams): Observable<(number | null)[]> {
+    const queryParams = new URLSearchParams({
+      departure_id: departureId,
+      departure_type: departureType,
+      arrival_id: arrivalId,
+      arrival_type: arrivalType,
+      departure_date: departureDate,
+    });
+
+    return this.http
+      .get<(number | null)[]>(
+        `${environment.apiUrl}/search/flexible-dates?${queryParams.toString()}`
+      )
+      .pipe(map((dates) => dates));
   }
 }

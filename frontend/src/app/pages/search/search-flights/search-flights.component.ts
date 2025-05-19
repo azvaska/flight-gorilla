@@ -14,6 +14,7 @@ import { lucideLoaderCircle } from '@ng-icons/lucide';
 import { NgIcon } from '@ng-icons/core';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { CommonModule } from '@angular/common';
+import { HlmIconDirective } from '@spartan-ng/ui-icon-helm';
 
 enum SearchPhase {
   DEPARTURE = 'departure',
@@ -22,12 +23,21 @@ enum SearchPhase {
 
 @Component({
   selector: 'app-search-flights',
-  imports: [FlightCardComponent, HlmCardDirective, HlmCardContentDirective, NgIcon, HlmButtonDirective, CommonModule],
+  imports: [
+    FlightCardComponent,
+    HlmCardDirective,
+    HlmCardContentDirective,
+    NgIcon,
+    HlmButtonDirective,
+    CommonModule,
+    HlmIconDirective,
+  ],
   templateUrl: './search-flights.component.html',
   providers: [provideIcons({ lucideLoaderCircle })],
 })
 export class SearchFlightsComponent {
   protected journeys: IJourney[] = [];
+  protected totalPages: number = 0;
 
   protected searchPhase: SearchPhase = SearchPhase.DEPARTURE;
   protected SearchPhase = SearchPhase;
@@ -35,7 +45,6 @@ export class SearchFlightsComponent {
   private _page: number = 1;
   protected morePagesLoading: boolean = false;
   protected lastPage: boolean = false;
-
   protected selectedDepartureJourney: IJourney | null = null;
   protected selectedReturnJourney: IJourney | null = null;
 
@@ -47,7 +56,7 @@ export class SearchFlightsComponent {
   ) {
     this.loadingService.startLoadingTask();
     this.fetchFlights(SearchPhase.DEPARTURE, 1).then((flights) => {
-      this.journeys = flights;
+      this.journeys = flights.journeys;
       this.loadingService.endLoadingTask();
     });
   }
@@ -81,8 +90,13 @@ export class SearchFlightsComponent {
       });
     }
 
-    return new Promise<IJourney[]>((resolve) => {
+    return new Promise<{
+      journeys: IJourney[];
+      total_pages: number;
+    }>((resolve) => {
       fetch.subscribe((flights) => {
+        this.totalPages = flights.total_pages;
+        this.lastPage = this._page >= this.totalPages;
         resolve(flights);
       });
     });
@@ -92,27 +106,23 @@ export class SearchFlightsComponent {
     this._page++;
     this.morePagesLoading = true;
     this.fetchFlights(this.searchPhase, this._page).then((flights) => {
-      if (flights.length > 0) {
-        this.journeys = [...this.journeys, ...flights];
-      } else {
-        this.lastPage = true;
+      if (flights.journeys.length > 0) {
+        this.journeys = [...this.journeys, ...flights.journeys];
       }
       this.morePagesLoading = false;
     });
   }
 
   protected onFlightCardClick(journey: IJourney) {
-    console.log('onFlightCardClick', journey);
     if (this.searchPhase === SearchPhase.DEPARTURE) {
       if (this.searchParamsGuard.params.return_date) {
-
         this.searchPhase = SearchPhase.RETURN;
         this.selectedDepartureJourney = journey;
         this._page = 1;
 
         this.loadingService.startLoadingTask();
         this.fetchFlights(this.searchPhase, this._page).then((flights) => {
-          this.journeys = flights;
+          this.journeys = flights.journeys;
           this.loadingService.endLoadingTask();
         });
         return;

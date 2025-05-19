@@ -17,6 +17,7 @@
             (dateChange)="onDepartureDateChange($event)"
             [isLoading]="departureLoading"
             [defaultFocusedDate]="departureFocusedDate"
+            [prices]="departurePrices"
           ></price-calendar>
         </div>
       </section>
@@ -34,6 +35,7 @@
             (dateChange)="onReturnDateChange($event)"
             [isLoading]="returnLoading"
             [defaultFocusedDate]="returnFocusedDate"
+            [prices]="returnPrices"
           ></price-calendar>
         </div>
       </section>
