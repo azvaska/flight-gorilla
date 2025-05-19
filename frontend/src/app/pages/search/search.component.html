@@ -1,16 +1,10 @@
 <div *ngIf="state$ | async as state" class="h-full w-full">
-  <ng-container *ngIf="state.loading; else loaded">
-    <div class="flex h-full w-full items-center justify-center">
-      <hlm-spinner size="lg" />
-    </div>
+  <ng-container *ngIf="state.error; else success">
+    <p>Error: {{ state.error }}</p>
   </ng-container>
 
-  <ng-template #loaded>
-    <ng-container *ngIf="state.error; else success">
-      <p>Error: {{ state.error }}</p>
-    </ng-container>
-
-    <ng-template #success>
+  <ng-template #success>
+    <ng-container *ngIf="state.data">
       <div class="flex flex-col gap-8 my-20">
         <app-popover
           [popoverRelativePosition]="{ top: 20 }"
@@ -60,6 +54,6 @@
         </app-popover>
         <router-outlet />
       </div>
-    </ng-template>
+    </ng-container>
   </ng-template>
 </div>

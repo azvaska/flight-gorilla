@@ -34,8 +34,6 @@ flight_search_parser.add_argument(
 )
 flight_search_parser.add_argument('departure_date', type=str, required=True,
                                  help='Departure date (DD-MM-YYYY)', location='args')
-flight_search_parser.add_argument('return_date', type=str, required=False,
-                                 help='Return date (DD-MM-YYYY) for round trips', location='args')
 flight_search_parser.add_argument('airline_id', type=str,
                                  help='Filter by specific airline ID', location='args')
 flight_search_parser.add_argument('price_max', type=float,
@@ -344,7 +342,7 @@ class FlightSearch(Resource):
     @api.doc(security=None)
     @api.expect(flight_search_parser)
     @api.response(200, 'Created', [journey_model])
-    @api.response(400, 'Bad Request', {'error': 'Invalid request parameters'})
+    @api.response(400, 'Bad Request')
     def get(self):
         """Search for flights based on departure/arrival airports and date using RAPTOR algorithm"""
         args = flight_search_parser.parse_args()
@@ -354,11 +352,6 @@ class FlightSearch(Resource):
             departure_date = datetime.datetime.strptime(args['departure_date'], '%d-%m-%Y').date()
         except ValueError:
             return {'error': 'Invalid departure date format. Use DD-MM-YYYY', 'code': 400}, 400
-
-        try:
-            return_date = datetime.datetime.strptime(args['return_date'], '%d-%m-%Y').date()
-        except ValueError:
-            return {'error': 'Invalid return date format. Use DD-MM-YYYY', 'code': 400}, 400
 
         # Ensure departure date is not in the past
         if departure_date < datetime.datetime.now().date():
@@ -408,12 +401,11 @@ class FlightSearch(Resource):
         if args['page_number'] and args['limit']:
             start = (args['page_number'] - 1) * args['limit']
             end = start + args['limit']
-            #check if start and end are within the range of the list
-            if start < 0 or end > len(departure_journeys):
-                end = len(departure_journeys)
-                start = len(departure_journeys) - args['limit']
-
-            departure_journeys = departure_journeys[start:end]
+            if start >= len(departure_journeys) or start < 0:
+                departure_journeys = []
+            else:
+                end = min(end, len(departure_journeys))
+                departure_journeys = departure_journeys[start:end]
 
     
 

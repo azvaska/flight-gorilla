@@ -5,6 +5,7 @@ import {
 } from '@spartan-ng/ui-card-helm';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { IJourney } from '@/types/search/flight';
+import prettyMilliseconds from 'pretty-ms';
 
 @Component({
   selector: 'flight-card',
@@ -12,9 +13,14 @@ import { IJourney } from '@/types/search/flight';
   templateUrl: './flight-card.component.html',
 })
 export class FlightCardComponent {
-
   @Input() journey!: IJourney;
-  @Input() onSelect: () => void = () => {};
-  
+  @Input() onSelect!: (journey: IJourney) => void;
 
+  protected formatDate(date: string) {
+    return new Date(date).toISOString().slice(11, 16);
+  } 
+
+  protected formatDuration(minutes: number) {
+    return prettyMilliseconds(minutes * 60 * 1000);
+  }
 }

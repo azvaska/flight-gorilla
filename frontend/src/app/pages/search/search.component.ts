@@ -8,14 +8,12 @@ import { FlightSearchBarComponent } from '@/app/components/flight-search/search-
 import { SearchParamsGuard } from '@/app/guards/search-guard';
 import { parseSpecificFlightSearchParams } from '@/utils/parsers/flight-search.parse';
 import { forkJoin, Observable, of } from 'rxjs';
-import { catchError, map, startWith } from 'rxjs/operators';
+import { catchError, finalize, map, startWith } from 'rxjs/operators';
 import { SearchFetchService } from '@/app/services/search/search-fetch.service';
-import { stringToDate, formatDate, dateToString } from '@/utils/date';
-import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
+import { stringToDate, formatDate } from '@/utils/date';
 import { ILocation } from '@/types/search/location';
-
+import { LoadingService } from '@/app/services/loading.service';
 interface FetchState<T> {
-  loading: boolean;
   data: T | null;
   error: string | null;
 }
@@ -37,7 +35,6 @@ interface SearchState {
     PopoverComponent,
     PopoverTriggerDirective,
     FlightSearchBarComponent,
-    HlmSpinnerComponent,
   ],
   templateUrl: './search.component.html',
   host: {
@@ -54,17 +51,18 @@ export class SearchComponent {
   constructor(
     private searchParamsGuard: SearchParamsGuard,
     private flightSearchService: SearchFetchService,
-    private router: Router
+    private router: Router,
+    private loadingService: LoadingService
   ) {
     this.searchParamsGuard.params$.subscribe((params) => {
       this.params = params;
       console.log('refined params', this.params);
+      this.loadingService.startLoadingTask();
       this.state$ = forkJoin({
         departure: this.getDepartureInfo(this.params),
         arrival: this.getArrivalInfo(this.params),
       }).pipe(
         map(({ departure, arrival }) => ({
-          loading: false,
           data: {
             departureLocation: departure,
             arrivalLocation: arrival,
@@ -76,14 +74,16 @@ export class SearchComponent {
           },
           error: null,
         })),
-        startWith({ loading: true, data: null, error: null }),
+        startWith({ data: null, error: null }),
         catchError(() => {
           this.router.navigate(['/not-found']);
           return of({
-            loading: false,
             data: null,
             error: 'Failed to load data',
           });
+        }),
+        finalize(() => {
+          this.loadingService.endLoadingTask();
         })
       );
     });

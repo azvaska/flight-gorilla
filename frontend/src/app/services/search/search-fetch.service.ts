@@ -47,26 +47,31 @@ export class SearchFetchService {
   }
 
   public getCity(cityId: string): Observable<ICity> {
-    return this.http.get<ICity>(`${environment.apiUrl}/location/city/${cityId}`).pipe(
-      map((city) => ({
-        id: city.id,
-        name: `${city.name} (Any)`,
-        type: 'city',
-        nation: city.nation,
-      }))
-    );
+    return this.http
+      .get<ICity>(`${environment.apiUrl}/location/city/${cityId}`)
+      .pipe(
+        map((city) => ({
+          id: city.id,
+          name: `${city.name} (Any)`,
+          type: 'city',
+          nation: city.nation,
+        }))
+      );
   }
 
   public getCitiesByNation(nationId: string): Observable<ICity[]> {
-
     const queryParams = new URLSearchParams({
       nation_id: nationId,
     });
-    return this.http.get<ICity[]>(`${environment.apiUrl}/location/city?${queryParams.toString()}`);
+    return this.http.get<ICity[]>(
+      `${environment.apiUrl}/location/city?${queryParams.toString()}`
+    );
   }
 
   public getNation(nationId: string): Observable<INation> {
-    return this.http.get<INation>(`${environment.apiUrl}/location/nation/${nationId}`);
+    return this.http.get<INation>(
+      `${environment.apiUrl}/location/nation/${nationId}`
+    );
   }
 
   public getNations(): Observable<INation[]> {
@@ -74,29 +79,38 @@ export class SearchFetchService {
   }
 
   public getAirport(airportId: string): Observable<{ name: string }> {
-    return this.http.get<{ name: string, iata_code: string }>(`${environment.apiUrl}/airports/${airportId}`).pipe(
-      map((airport) => ({
-        name: `${airport.name} (${airport.iata_code})`,
-      }))
-    );
+    return this.http
+      .get<{ name: string; iata_code: string }>(
+        `${environment.apiUrl}/airports/${airportId}`
+      )
+      .pipe(
+        map((airport) => ({
+          name: `${airport.name} (${airport.iata_code})`,
+        }))
+      );
   }
 
-  public getFlights(params: IFlightSearchParams): Observable<{
-    departure: IJourney[];
-    arrival: IJourney[];
-  }> {
+  public getFlights(params: IFlightSearchParams): Observable<IJourney[]> {
     const queryParams = new URLSearchParams({
       departure_id: params.departureId,
       departure_type: params.departureType,
       arrival_id: params.arrivalId,
       arrival_type: params.arrivalType,
       departure_date: params.departureDate,
-      return_date: params.returnDate,
+      page_number: params.page?.toString() ?? '1',
+      limit: params.limit?.toString() ?? '4',
     });
 
-    return this.http.get<{
-      departure: IJourney[];
-      arrival: IJourney[];
-    }>(`${environment.apiUrl}/search/flights?${queryParams.toString()}`);
+    if (params.airlineId) queryParams.set('airline_id', params.airlineId);
+    if (params.maxPrice)
+      queryParams.set('price_max', params.maxPrice.toString());
+    if (params.minDepartureTime)
+      queryParams.set('departure_time_min', params.minDepartureTime);
+    if (params.maxDepartureTime)
+      queryParams.set('departure_time_max', params.maxDepartureTime);
+
+    return this.http.get<IJourney[]>(
+      `${environment.apiUrl}/search/flights?${queryParams.toString()}`
+    );
   }
 }

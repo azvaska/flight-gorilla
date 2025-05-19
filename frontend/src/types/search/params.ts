@@ -4,5 +4,10 @@ export interface IFlightSearchParams {
   arrivalId: string;
   arrivalType: 'airport' | 'city';
   departureDate: string;
-  returnDate: string;
+  airlineId?: string;
+  maxPrice?: number;
+  minDepartureTime?: string;
+  maxDepartureTime?: string;
+  page?: number;
+  limit?: number;
 }

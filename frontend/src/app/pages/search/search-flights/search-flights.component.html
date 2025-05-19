@@ -1,6 +1,7 @@
 <div class="flex flex-col gap-8">
   <h1 class="scroll-m-20 text-center text-xl font-semibold text-gray-700">
-    Search for {{ searchPhase === SearchPhase.DEPARTURE ? 'departure' : 'return' }} flights
+    Search for
+    {{ searchPhase === SearchPhase.DEPARTURE ? "departure" : "return" }} flights
   </h1>
   <div class="flex flex-row gap-8">
     <section hlmCard class="p-6 h-fit w-1/4">
@@ -43,8 +44,37 @@
       </aside>
     </section>
     <div class="flex-1 flex flex-col space-y-4">
-      @for (journey of departureJourneys; track journey) {
-      <flight-card [journey]="journey" (onSelect)="onFlightCardClick.bind(this)" />
+      @if (journeys.length === 0) {
+      <div class="flex flex-col items-center justify-center h-full">
+        <p class="text-gray-500">No flights found</p>
+      </div>
+      } @else { @for (journey of journeys; track journey) {
+      <flight-card
+        [journey]="journey"
+        [onSelect]="onFlightCardClick.bind(this)"
+      />
+
+      }
+
+      <div class="flex justify-center">
+        <button
+          type="submit"
+          hlmBtn
+          variant="outline"
+          class=" px-10 py-2 w-fit"
+          (click)="loadMoreFlights()"
+          *ngIf="!lastPage"
+        >
+          <ng-icon
+            *ngIf="morePagesLoading"
+            hlm
+            name="lucideLoaderCircle"
+            size="sm"
+            class="mr-2 animate-spin"
+          ></ng-icon>
+          Load more
+        </button>
+      </div>
       }
     </div>
   </div>
