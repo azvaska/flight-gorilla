@@ -28,8 +28,8 @@ import { dateToString, formatDate, stringToDate } from '@/utils/date';
 })
 export class SearchDatesComponent {
 
-  @Input() public departureFocusedDate: Date | undefined = undefined;
-  @Input() public returnFocusedDate: Date | undefined = undefined;
+  protected departureFocusedDate: Date | undefined = undefined;
+  protected returnFocusedDate: Date | undefined = undefined;
 
   protected departureMinDate = new Date();
   protected returnMinDate = new Date();

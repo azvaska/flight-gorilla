@@ -1,6 +1,6 @@
 <div class="flex flex-col gap-8">
   <h1 class="scroll-m-20 text-center text-xl font-semibold text-gray-700">
-    Search for flights
+    Search for {{ searchPhase === SearchPhase.DEPARTURE ? 'departure' : 'return' }} flights
   </h1>
   <div class="flex flex-row gap-8">
     <section hlmCard class="p-6 h-fit w-1/4">
@@ -43,7 +43,9 @@
       </aside>
     </section>
     <div class="flex-1 flex flex-col space-y-4">
-      <flight-card />
+      @for (journey of departureJourneys; track journey) {
+      <flight-card [journey]="journey" (onSelect)="onFlightCardClick.bind(this)" />
+      }
     </div>
   </div>
 </div>
