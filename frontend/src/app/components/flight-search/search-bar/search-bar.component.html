@@ -17,8 +17,10 @@
           departureLocation = $event?.data;
           departureLocationChange.emit($event?.data)
         "
+        (searchValueChange)="onDepartureSearchChange($event)"
         [nextInputRef]="secondLocationInput"
-        [searchList]="mockDepartureList"
+        [searchList]="departureLocationsList"
+        [searchWithinComponent]="false"
       />
     </div>
     <div class="flex flex-col p-4">
@@ -36,8 +38,11 @@
           arrivalLocation = $event?.data;
           arrivalLocationChange.emit($event?.data)
         "
+        (searchValueChange)="onArrivalSearchChange($event)"
         [nextInputRef]="firstDateInput"
-        [searchList]="mockArrivalList"
+        [searchList]="arrivalLocationsList"
+        [searchWithinComponent]="false"
+        [alwaysVisibleItems]="[anywhereObject]"
       />
     </div>
     <div class="flex flex-col p-4">

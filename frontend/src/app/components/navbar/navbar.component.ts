@@ -1,5 +1,5 @@
 // navbar.component.ts
-import { Component } from '@angular/core';
+import {Component, ViewChild} from '@angular/core';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import {
   HlmAvatarComponent,
@@ -10,6 +10,7 @@ import { PopoverComponent } from '@/app/components/popover/popover.component';
 import { PopoverTriggerDirective } from '@/app/components/popover/popover-trigger.directive';
 import { UserFetchService } from '@/app/services/user/user-fetch.service';
 import { IUser } from '@/types/user';
+import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
@@ -20,12 +21,19 @@ import { IUser } from '@/types/user';
     HlmButtonDirective,
     PopoverComponent,
     PopoverTriggerDirective,
+    RouterLink,
   ],
   templateUrl: './navbar.component.html',
 })
 export class NavbarComponent {
   protected isLoggedIn = false;
   protected user: IUser | null = null;
+
+  @ViewChild('popover') popover!: PopoverComponent;
+
+  closePopover() {
+    this.popover.close();
+  }
 
   constructor(
     private authService: AuthService,

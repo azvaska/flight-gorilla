@@ -4,6 +4,7 @@ import {
   HlmCardContentDirective,
 } from '@spartan-ng/ui-card-helm';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+import { IJourney } from '@/types/search/flight';
 
 @Component({
   selector: 'flight-card',
@@ -11,26 +12,9 @@ import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
   templateUrl: './flight-card.component.html',
 })
 export class FlightCardComponent {
-  @Input() departureCity: string = 'Paris';
-  @Input() arrivalCity: string = 'London';
 
-  @Input() firstDepartureTime: string = '10:00';
-  @Input() firstArrivalTime: string = '11:30';
+  @Input() journey!: IJourney;
+  @Input() onSelect: () => void = () => {};
+  
 
-  @Input() secondDepartureTime: string = '12:00';
-  @Input() secondArrivalTime: string = '13:30';
-
-  @Input() firstDuration: string = '1h 30m';
-  @Input() secondDuration: string = '1h 30m';
-
-  @Input() firstAirline: string = 'Ryanair';
-  @Input() secondAirline: string = 'Ryanair';
-
-  @Input() price: string = '100';
-
-  @Input() firstStops: number = 0;
-  @Input() secondStops: number = 0;
-
-  @Input() firstStopLocations: string[] = [];
-  @Input() secondStopLocations: string[] = [];
 }

@@ -4,7 +4,12 @@
   (click)="handleClick()"
 >
   <div hlmCardHeader class="flex flex-col">
-    <h3 hlmCardTitle>{{ countryName }}</h3>
+    <h3
+  hlmCardTitle
+  class="break-words w-full"
+>
+  {{ nation.name }}
+</h3>
     <div hlmCardDescription class="flex flex-row w-full justify-between">
       <p class="flex items-center">Starting from</p>
       <p class="text-xl font-bold text-black flex items-center">

@@ -14,6 +14,7 @@ import { DateInputComponent } from '@/app/components/date-input/date-input.compo
 import { Router } from '@angular/router';
 import { dateToString } from '@/utils/date';
 import { ILocation } from '@/types/search/location';
+import { SearchFetchService } from '@/app/services/search/search-fetch.service';
 
 @Component({
   selector: 'flight-search-bar',
@@ -46,46 +47,52 @@ export class FlightSearchBarComponent implements OnInit {
 
   public departureDateMinDate: Date | undefined = undefined;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private searchFetchService: SearchFetchService
+  ) {
+    this.onDepartureSearchChange('');
+    this.onArrivalSearchChange('');
+  }
+
+  protected anywhereObject: SearchInputValue<ILocation> = {
+    value: 'Anywhere',
+    data: {
+      id: undefined,
+      name: 'Anywhere',
+      type: 'anywhere',
+    },
+  };
+
+  public onDepartureSearchChange(value: string) {
+    this.searchFetchService
+      .getAllLocations(value, false)
+      .subscribe((locations) => {
+        this.departureLocationsList = locations.map((location) => ({
+          value: location.name,
+          data: location,
+        }));
+      });
+  }
+
+  public onArrivalSearchChange(value: string) {
+    this.searchFetchService
+      .getAllLocations(value, true)
+      .subscribe((locations) => {
+        this.arrivalLocationsList = locations.map((location) => ({
+          value: location.name,
+          data: location,
+        }));
+      });
+  }
 
   ngOnInit() {
     this.updateMinDate();
   }
 
-  protected mockDepartureList: SearchInputValue<ILocation>[] = [
-    {
-      value: 'New York (any)',
-      data: { id: '1', name: 'New York', type: 'city' },
-    },
-    {
-      value: 'Los Angeles (any)',
-      data: { id: '2', name: 'Los Angeles', type: 'city' },
-    },
-    {
-      value: 'Chicago (any)',
-      data: { id: '3', name: 'Chicago', type: 'city' },
-    },
-    { value: 'JFK', data: { id: '1', name: 'JFK', type: 'airport' } },
-    { value: 'LAX', data: { id: '2', name: 'LAX', type: 'airport' } },
-    { value: 'ORD', data: { id: '3', name: 'ORD', type: 'airport' } },
-    { value: 'MIA', data: { id: '4', name: 'MIA', type: 'airport' } },
-  ];
+  protected departureLocationsList: SearchInputValue<ILocation>[] = [];
 
-  protected mockArrivalList: SearchInputValue<ILocation>[] =
-    this.mockDepartureList.concat([
-      {
-        value: 'United States',
-        data: { id: '1', name: 'United States', type: 'country' },
-      },
-      {
-        value: 'Italy',
-        data: { id: '4', name: 'Italy', type: 'country' },
-      },
-      {
-        value: 'Anywhere',
-        data: { id: undefined, name: 'Anywhere', type: 'anywhere' },
-      },
-    ]);
+  protected arrivalLocationsList: SearchInputValue<ILocation>[] = [];
 
   public get firstLocationInput() {
     if (!this.autoFocus) {
@@ -168,7 +175,9 @@ export class FlightSearchBarComponent implements OnInit {
       to_type: this.arrivalLocation.type,
       to_id: this.arrivalLocation.id,
       departure_date: dateToString(this.departureDate, this.dateType),
-      return_date: this.returnDate ? dateToString(this.returnDate, this.dateType) : undefined,
+      return_date: this.returnDate
+        ? dateToString(this.returnDate, this.dateType)
+        : undefined,
       date_type: this.dateType,
     };
 

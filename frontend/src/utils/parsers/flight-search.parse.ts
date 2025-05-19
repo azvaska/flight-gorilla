@@ -51,7 +51,7 @@ const baseValidation = (data: any, ctx: z.RefinementCtx) => {
 
 const genericSearchSchema = baseSearchSchema
   .extend({
-    to_type: z.enum(['country', 'city', 'airport', 'anywhere']),
+    to_type: z.enum(['nation', 'city', 'airport', 'anywhere']),
     to_id: z.string().optional(),
     date_type: z.enum(['flexible', 'specific']),
   })
@@ -75,7 +75,7 @@ const countrySearchSchema = baseSearchSchema
 
 const citySearchSchema = baseSearchSchema
   .extend({
-    to_type: z.literal('country'),
+    to_type: z.literal('nation'),
     to_id: z.string(),
     date_type: z.enum(['flexible', 'specific']),
   })
@@ -132,11 +132,11 @@ type SearchParams = MergeOptional<
 
 export function parseSpecificFlightSearchParams(
   params: any,
-  type: 'country' | 'city' | 'dates' | 'flights'
+  type: 'nation' | 'city' | 'dates' | 'flights'
 ): SearchParams {
   let result;
   switch (type) {
-    case 'country':
+    case 'nation':
       result = countrySearchSchema.safeParse(params);
       break;
     case 'city':

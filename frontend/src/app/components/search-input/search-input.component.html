@@ -11,12 +11,11 @@
       [placeholder]="placeHolder"
       [value]="search"
       (input)="onInput($event)"
-      (click)="onInput($event)"
     />
     <ng-icon
       hlm
       [ngClass]="{
-        'invisible': !isOpen || search.length === 0
+        'invisible': (!inputValue && !isOpen) || search.length === 0
       }"
       name="lucideCircleX"
       size="1.2rem"
@@ -41,6 +40,14 @@
         {{ noResultsText }}
       </li>
       }
+      <ng-container *ngFor="let item of alwaysVisibleItems">
+        <li
+          class="px-4 py-1 hover:bg-gray-100 cursor-pointer font-bold text-blue-600"
+          (click)="onSelect(item)"
+        >
+          {{ item.value }}
+        </li>
+      </ng-container>
     </ul>
   </div>
 </app-popover>
