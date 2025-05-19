@@ -481,7 +481,9 @@ class FlexibleFlightSearch(Resource):
         date_range = [start_date + datetime.timedelta(days=i) for i in range((end_date - start_date).days + 1)]
         
         return date_range
-    #generate an api that calculates the best price for each day in a range of dates
+    
+    
+    #generare ricerca per nazione -> città 
     @api.doc(security=None)
     @api.expect(flight_search_parser)
     @api.response(200, 'Created', [journey_model])
@@ -494,12 +496,6 @@ class FlexibleFlightSearch(Resource):
             departure_date = datetime.datetime.strptime(args['departure_date'], '%m-%Y').date()
         except ValueError:
             return {'error': 'Invalid departure date format. Use MM', 'code': 400}, 400
-
-
-
-        # # Ensure departure date is not in the past
-        # if departure_date < datetime.now().date():
-        #     return {'error': 'Departure date cannot be in the past', 'code': 400}, 400
 
         # Get airports
         departure_journeys = []
@@ -523,13 +519,10 @@ class FlexibleFlightSearch(Resource):
             arrival_airports = Airport.query.filter_by(city_id=args['arrival_id']).all()
             
             
-        
-        # for each day in the range of dates, generate journeys
-        # for each day in the range of dates, generate journeys
         departure_date_range = self._calculate_dates(departure_date)
 
 
-        
+        result  = []
         # for each day in the range of dates, generate journeys
         for date in departure_date_range:
             journey_departure = []
@@ -550,6 +543,11 @@ class FlexibleFlightSearch(Resource):
             
             # Get the best price for each day
             best_price = journey_departure[0] if journey_departure else None
-            departure_journeys.append(best_price)
+            if best_price:
+                
+                departure_journeys.append(best_price['price_economy'])
+            else:
+                departure_journeys.append(None)
+        
             
-        return marshal(departure_journeys,journey_model,skip_none=False), 200
+        return departure_journeys, 200
