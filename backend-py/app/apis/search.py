@@ -18,7 +18,7 @@ flight_search_parser.add_argument('arrival_airport', type=int, required=True,
                                  help='Arrival airport id', location='args')
 flight_search_parser.add_argument('departure_date', type=str, required=True,
                                  help='Departure date (DD-MM-YYYY)', location='args')
-flight_search_parser.add_argument('return_date', type=str, required=True,
+flight_search_parser.add_argument('return_date', type=str, required=False,
                                  help='Return date (DD-MM-YYYY) for round trips', location='args')
 flight_search_parser.add_argument('airline_id', type=str,
                                  help='Filter by specific airline ID', location='args')
@@ -57,21 +57,12 @@ layover_model = api.model('Layover', {
 })
 
 journey_model = api.model('Journey', {
-    'id': fields.String(description='Journey ID (comma-separated flight IDs)'),
-    'flight_number': fields.String(description='Overall flight number (e.g., AA123 or AA123+)'),
-    'airline_name': fields.String(description='Primary airline name for the journey'),
-    'airline_id': fields.String(description='Primary airline ID for the journey'),
     'departure_airport': fields.String(description='Origin airport code for the journey'),
     'arrival_airport': fields.String(description='Destination airport code for the journey'),
-    'departure_time': fields.DateTime(description='Overall departure time for the journey'),
-    'arrival_time': fields.DateTime(description='Overall arrival time for the journey'),
     'duration_minutes': fields.Integer(description='Total journey duration in minutes'),
     'price_economy': fields.Float(description='Total economy class price for the journey'),
     'price_business': fields.Float(description='Total business class price for the journey'),
     'price_first': fields.Float(description='Total first class price for the journey'),
-    'aircraft_name': fields.String(description='Primary aircraft name for the journey'),
-    'gate': fields.String(description='Departure gate for the first segment', allow_null=True),
-    'terminal': fields.String(description='Departure terminal for the first segment', allow_null=True),
     'is_direct': fields.Boolean(description='True if the journey is direct, false otherwise'),
     'stops': fields.Integer(description='Number of stops (layovers)'),
     'segments': fields.List(fields.Nested(segment_model), description='List of flight segments in the journey'),
@@ -139,22 +130,25 @@ class FlightSearch(Resource):
             departure_journeys.extend(departure_results[k_step])
 
         departure_journeys.sort(key=lambda x: x['duration_minutes'])
-
-        return_results = self._raptor_search(
-            arrival_airport.id,
-            departure_airport.id,
-            return_date,
-            max_transfers,
-            min_transfer_time,
-            args
-        )
+        
         return_journeys = []
-        # Sort results by total duration
-        for k_step in return_results:
-            return_journeys.extend(return_results[k_step])
+        if not args['return_date']:
+        
+            return_results = self._raptor_search(
+                arrival_airport.id,
+                departure_airport.id,
+                return_date,
+                max_transfers,
+                min_transfer_time,
+                args
+            )
+                        # Sort results by total duration
+            for k_step in return_results:
+                return_journeys.extend(return_results[k_step])
 
-        return_journeys.sort(key=lambda x: x['duration_minutes'])
-        print(return_journeys)
+
+            return_journeys.sort(key=lambda x: x['duration_minutes'])
+            print(return_journeys)
 
         return marshal({'departure':departure_journeys,'return':return_journeys },flight_search_response_model), 200 #flight_search_result_schema.dump(results)
 
@@ -320,21 +314,12 @@ class FlightSearch(Resource):
 
         # Prepare the final result
         result = {
-            'id': f"{','.join(str(flight.id) for flight in flight_path)}",
-            'flight_number': f"{first_route.flight_number}" + ("+" if len(flight_path) > 1 else ""),
-            'airline_name': airline.name if airline else 'Multiple Airlines',
-            'airline_id': str(airline.id) if airline else None,
             'departure_airport': origin_airport.iata_code,
             'arrival_airport': destination_airport.iata_code,
-            'departure_time': first_flight.departure_time,
-            'arrival_time': last_flight.arrival_time,
             'duration_minutes': total_duration_minutes,
             'price_economy': total_economy_price,
             'price_business': total_business_price,
             'price_first': total_first_price,
-            'aircraft_name': aircraft.name if aircraft else 'Multiple Aircraft',
-            'gate': first_flight.gate,
-            'terminal': first_flight.terminal,
             'is_direct': len(flight_path) == 1,
             'stops': len(flight_path) - 1,
             'segments': segments,
