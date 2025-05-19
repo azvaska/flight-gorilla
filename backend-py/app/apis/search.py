@@ -10,6 +10,16 @@ from app.models.airlines import Airline, AirlineAircraft
 
 api = Namespace('search', description='Flight search operations')
 
+
+def str_to_bool(value: str) -> bool:
+    if isinstance(value, bool):
+        return value
+    if value.lower() in {'true', '1', 'yes'}:
+        return True
+    elif value.lower() in {'false', '0', 'no'}:
+        return False
+    raise ValueError(f"Invalid boolean value: {value}")
+
 # --- Request Parser ---
 flight_search_parser = reqparse.RequestParser()
 flight_search_parser.add_argument('departure_id', type=int, required=True,
@@ -42,6 +52,16 @@ flight_search_parser.add_argument('departure_time_min', type=str,
                                  help='Minimum departure time (HH:MM)', location='args')
 flight_search_parser.add_argument('departure_time_max', type=str,
                                  help='Maximum departure time (HH:MM)', location='args')
+flight_search_parser.add_argument(
+    'order_by',
+    type=str,
+    choices=('price', 'duration', 'stops'),
+    help='Order by field (price_economy, duration_minutes, stops)',
+    location='args'
+)
+flight_search_parser.add_argument('order_by_desc' , type=str_to_bool,
+                                    default="False",
+                                    help='Order by field descending', location='args')
 flight_search_parser.add_argument('page_number', type=int,
                                  help='Pagination offset (for large result sets)', location='args')
 flight_search_parser.add_argument('limit', type=int,
@@ -85,6 +105,11 @@ journey_model = api.model('Journey', {
     'stops': fields.Integer(description='Number of stops (layovers)'),
     'segments': fields.List(fields.Nested(segment_model), description='List of flight segments in the journey'),
     'layovers': fields.List(fields.Nested(layover_model), description='List of layovers in the journey'),
+})
+
+search_output_model = api.model('SearchOutput', {
+    'journeys': fields.List(fields.Nested(journey_model), description='List of flight journeys'),
+    'total_pages': fields.Integer(description='Total number of pages for pagination'),
 })
 
 class SearchFlight:
@@ -341,7 +366,7 @@ class SearchFlight:
 class FlightSearch(Resource):
     @api.doc(security=None)
     @api.expect(flight_search_parser)
-    @api.response(200, 'Created', [journey_model])
+    @api.response(200, 'Created', [search_output_model])
     @api.response(400, 'Bad Request')
     def get(self):
         """Search for flights based on departure/arrival airports and date using RAPTOR algorithm"""
@@ -391,12 +416,22 @@ class FlightSearch(Resource):
                     args=args
                 )
                 departure_journeys.extend(departure_results)
+        
+        # Sort results by total duration
+        if args['order_by'] == 'price':
+            if args['order_by_desc'] == False:
+                departure_journeys.sort(key=lambda x: x['price_first_class'],reverse=args['order_by_desc'])
+            else:
+                departure_journeys.sort(key=lambda x: x['price_economy'],reverse=args['order_by_desc'])
+        elif args['order_by'] == 'duration':
+            departure_journeys.sort(key=lambda x: x['duration_minutes'],reverse=args['order_by_desc'])
+        elif args['order_by'] == 'stops':
+            departure_journeys.sort(key=lambda x: x['stops'],reverse=args['order_by_desc'])
                 
-        departure_journeys.sort(key=lambda x: x['duration_minutes'])
         print(departure_journeys)
         
         
-        
+        args['limit'] = args['limit'] if args['limit'] else 10
         #paginate results
         if args['page_number'] and args['limit']:
             start = (args['page_number'] - 1) * args['limit']
@@ -409,7 +444,7 @@ class FlightSearch(Resource):
 
     
 
-        return marshal(departure_journeys,journey_model), 200 #flight_search_result_schema.dump(results)
+        return marshal({'journeys':departure_journeys,'total_pages':int(len(departure_journeys)/args['limit'])},search_output_model), 200 #flight_search_result_schema.dump(results)
 
 def generate_journey(departure_airport, arrival_airport, departure_date, max_transfers=3,
                      min_transfer_time=120, args=None):
