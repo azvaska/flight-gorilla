@@ -3,10 +3,11 @@
     Select your departure city
   </h1>
   <div class="flex flex-row flex-wrap gap-4">
-    <city-card [handleCitySelection]="handleCitySelection.bind(this)"></city-card>
-    <city-card [handleCitySelection]="handleCitySelection.bind(this)"></city-card>
-    <city-card [handleCitySelection]="handleCitySelection.bind(this)"></city-card>
-    <city-card [handleCitySelection]="handleCitySelection.bind(this)"></city-card>
-    <city-card [handleCitySelection]="handleCitySelection.bind(this)"></city-card>
+    @for (city of cities; track city.id) {
+    <city-card
+      [handleCitySelection]="handleCitySelection.bind(this)"
+      [city]="city"
+    ></city-card>
+    }
   </div>
 </div>

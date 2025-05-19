@@ -39,7 +39,7 @@ export class SearchRedirectGuard implements CanActivate {
       } = parseGenericFlightSearchParams(route.queryParams);
 
       if (to_type === 'anywhere') {
-        return this.router.createUrlTree([`/search/country`], {
+        return this.router.createUrlTree([`/search/nation`], {
           queryParams: {
             from_id,
             from_type,
@@ -49,7 +49,7 @@ export class SearchRedirectGuard implements CanActivate {
             date_type,
           },
         });
-      } else if (to_type === 'country') {
+      } else if (to_type === 'nation') {
         return this.router.createUrlTree([`/search/city`], {
           queryParams: {
             from_id,
@@ -110,7 +110,7 @@ export class SearchParamsGuard implements CanActivateChild {
       const type = childRoute.routeConfig?.path;
       const params = parseSpecificFlightSearchParams(
         childRoute.queryParams,
-        type as 'country' | 'city' | 'dates' | 'flights'
+        type as 'nation' | 'city' | 'dates' | 'flights'
       );
 
       this._paramsSubject.next(params);

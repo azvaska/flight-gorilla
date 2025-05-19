@@ -49,7 +49,7 @@ export const routes: Routes = [
     runGuardsAndResolvers: 'always',
     children: [
       {
-        path: 'country',
+        path: 'nation',
         component: SearchCountryComponent,
         runGuardsAndResolvers: 'paramsOrQueryParamsChange',
       },
