@@ -12,10 +12,26 @@ api = Namespace('search', description='Flight search operations')
 
 # --- Request Parser ---
 flight_search_parser = reqparse.RequestParser()
-flight_search_parser.add_argument('departure_airport', type=int, required=True,
-                                 help='Departure airport id', location='args')
-flight_search_parser.add_argument('arrival_airport', type=int, required=True,
-                                 help='Arrival airport id', location='args')
+flight_search_parser.add_argument('departure_id', type=int, required=True,
+                                 help='Departure id', location='args')
+flight_search_parser.add_argument(
+    'departure_type',
+    type=str,
+    choices=('airport', 'city'),
+    required=True,
+    help='Type of departure location: "airport" or "city"',
+    location='args'
+)
+flight_search_parser.add_argument('arrival_id', type=int, required=True,
+                                 help='Arrival id', location='args')
+flight_search_parser.add_argument(
+    'arrival_type',
+    type=str,
+    choices=('airport', 'city'),
+    required=True,
+    help='Type of arrival location: "airport" or "city"',
+    location='args'
+)
 flight_search_parser.add_argument('departure_date', type=str, required=True,
                                  help='Departure date (DD-MM-YYYY)', location='args')
 flight_search_parser.add_argument('return_date', type=str, required=False,
@@ -75,6 +91,8 @@ flight_search_response_model = api.model('FlightSearchResponse', {
 })
 
 
+
+
 @api.route('/flights')
 class FlightSearch(Resource):
     @api.doc(security=None)
@@ -101,21 +119,67 @@ class FlightSearch(Resource):
             return {'error': 'Departure date cannot be in the past', 'code': 400}, 400
 
         # Get airports
-        departure_airport = Airport.query.filter_by(id=args['departure_airport']).first()
-        arrival_airport = Airport.query.filter_by(id=args['arrival_airport']).first()
+        departure_journeys = []
+        
+        if args['departure_type'] == 'airport':
+            if not args['departure_id']:
+                return {'error': 'Departure airport ID is required', 'code': 400}, 400
+            departure_airports = Airport.query.filter_by(id=args['departure_id']).all()
+        else:
+            if not args['departure_id']:
+                return {'error': 'Departure city ID is required', 'code': 400}, 400
+            departure_airports = Airport.query.filter_by(city_id=args['departure_id']).all()
+        
+        if args['arrival_type'] == 'airport':
+            if not args['arrival_id']:
+                return {'error': 'Arrival airport ID is required', 'code': 400}, 400
+            arrival_airports = Airport.query.filter_by(id=args['arrival_id']).all()
+        else:
+            if not args['arrival_id']:
+                return {'error': 'Arrival city ID is required', 'code': 400}, 400
+            arrival_airports = Airport.query.filter_by(city_id=args['arrival_id']).all()
+            
+            
+        
+        for departure_airport in departure_airports:
+            for arrival_airport in arrival_airports:
+                # Generate journeys for each departure and arrival airport
+                departure_results = self.generate_journey(
+                    departure_airport,
+                    arrival_airport,
+                    departure_date,
+                    args=args
+                )
+                departure_journeys.extend(departure_results)
+                
+        departure_journeys.sort(key=lambda x: x['duration_minutes'])
+        print(departure_journeys)
+        
+        # Handle return journeys if return date is provided
+        return_journeys = []
+        if not args['return_date']:
+            return_journeys = []
+        else:
+            for departure_airport in arrival_airports:
+                for arrival_airport in departure_airports:
+                    # Generate journeys for each departure and arrival airport
+                    return_results = self.generate_journey(
+                        departure_airport,
+                        arrival_airport,
+                        return_date,
+                        args=args
+                    )
+                    return_journeys.extend(return_results)
+            # Sort results by total duration
+            return_journeys.sort(key=lambda x: x['duration_minutes'])
+            print(return_journeys)
+        
+    
 
-        if not departure_airport:
-            return {'error': f"Departure airport with id {args['departure_airport']} not found", 'code': 404}, 404
+        return marshal({'departure':departure_journeys,'return':return_journeys },flight_search_response_model), 200 #flight_search_result_schema.dump(results)
 
-        if not arrival_airport:
-            return {'error': f"Arrival airport with id {args['arrival_airport']} not found", 'code': 404}, 404
-
-        if departure_airport.id == arrival_airport.id:
-            return {'error': "Departure and arrival airports cannot be the same", 'code': 400}, 400
-
-        # Use RAPTOR algorithm to find optimal itineraries
-        max_transfers = 3  # Maximum 3 transfers = 4 flight segments
-        min_transfer_time = 120  # Minutes
+    def generate_journey(self, departure_airport, arrival_airport, departure_date,max_transfers=3,min_transfer_time=120, args=None):
+        resutt = []
         departure_results = self._raptor_search(
             departure_airport.id,
             arrival_airport.id,
@@ -124,33 +188,13 @@ class FlightSearch(Resource):
             min_transfer_time,
             args
         )
-        departure_journeys = []
+        
         # Sort results by total duration
         for k_step in departure_results:
-            departure_journeys.extend(departure_results[k_step])
+            resutt.extend(departure_results[k_step])
 
-        departure_journeys.sort(key=lambda x: x['duration_minutes'])
-        
-        return_journeys = []
-        if not args['return_date']:
-        
-            return_results = self._raptor_search(
-                arrival_airport.id,
-                departure_airport.id,
-                return_date,
-                max_transfers,
-                min_transfer_time,
-                args
-            )
-                        # Sort results by total duration
-            for k_step in return_results:
-                return_journeys.extend(return_results[k_step])
+        return resutt
 
-
-            return_journeys.sort(key=lambda x: x['duration_minutes'])
-            print(return_journeys)
-
-        return marshal({'departure':departure_journeys,'return':return_journeys },flight_search_response_model), 200 #flight_search_result_schema.dump(results)
 
     def _raptor_search(self, origin_id, destination_id, departure_date,
                        max_transfers, min_transfer_minutes, args):
