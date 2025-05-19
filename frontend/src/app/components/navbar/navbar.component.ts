@@ -1,5 +1,5 @@
 // navbar.component.ts
-import { Component } from '@angular/core';
+import {Component, ViewChild} from '@angular/core';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import {
   HlmAvatarComponent,
@@ -28,6 +28,12 @@ import {RouterLink} from '@angular/router';
 export class NavbarComponent {
   protected isLoggedIn = false;
   protected user: IUser | null = null;
+
+  @ViewChild('popover') popover!: PopoverComponent;
+
+  closePopover() {
+    this.popover.close();
+  }
 
   constructor(
     private authService: AuthService,
