@@ -39,13 +39,22 @@
           <ul>
             <li
               class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
-
+              [routerLink]="['../']"
+              (click)="closePopover()"
+            >
+              Home
+            </li>
+            <li
+              class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
+              [routerLink]="['../profile']"
+              (click)="closePopover()"
             >
               Profile
             </li>
             <li
               class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
               [routerLink]="['../reservations']"
+              (click)="closePopover()"
             >
               Reservations
             </li>
