@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { forkJoin, map, Observable } from 'rxjs';
 import { ICity, ILocation, INation } from '@/types/search/location';
 import { environment } from '@/app/environments/environment';
+import { IFlightSearchParams } from '@/types/search/params';
+import { IJourney } from '@/types/search/flight';
 
 @Injectable({ providedIn: 'root' })
 export class SearchFetchService {
@@ -77,5 +79,24 @@ export class SearchFetchService {
         name: `${airport.name} (${airport.iata_code})`,
       }))
     );
+  }
+
+  public getFlights(params: IFlightSearchParams): Observable<{
+    departure: IJourney[];
+    arrival: IJourney[];
+  }> {
+    const queryParams = new URLSearchParams({
+      departure_id: params.departureId,
+      departure_type: params.departureType,
+      arrival_id: params.arrivalId,
+      arrival_type: params.arrivalType,
+      departure_date: params.departureDate,
+      return_date: params.returnDate,
+    });
+
+    return this.http.get<{
+      departure: IJourney[];
+      arrival: IJourney[];
+    }>(`${environment.apiUrl}/search/flights?${queryParams.toString()}`);
   }
 }
