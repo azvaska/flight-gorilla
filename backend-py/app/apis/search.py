@@ -44,6 +44,10 @@ flight_search_parser.add_argument('departure_time_min', type=str,
                                  help='Minimum departure time (HH:MM)', location='args')
 flight_search_parser.add_argument('departure_time_max', type=str,
                                  help='Maximum departure time (HH:MM)', location='args')
+flight_search_parser.add_argument('page_number', type=int,
+                                 help='Pagination offset (for large result sets)', location='args')
+flight_search_parser.add_argument('limit', type=int,
+                                    help='Limit the number of results returned for page', location='args')
 
 # --- Flight Search Model (for Swagger UI) ---
 
@@ -143,6 +147,7 @@ class FlightSearch(Resource):
         
         for departure_airport in departure_airports:
             for arrival_airport in arrival_airports:
+
                 # Generate journeys for each departure and arrival airport
                 departure_results = self.generate_journey(
                     departure_airport,
@@ -173,6 +178,13 @@ class FlightSearch(Resource):
             # Sort results by total duration
             return_journeys.sort(key=lambda x: x['duration_minutes'])
             print(return_journeys)
+            
+        #paginate results
+        if args['page_number'] and args['limit']:
+            start = (args['page_number'] - 1) * args['limit']
+            end = start + args['limit']
+            departure_journeys = departure_journeys[start:end]
+            return_journeys = return_journeys[start:end]
         
     
 
@@ -402,9 +414,9 @@ class FlightSearch(Resource):
             'departure_time': flight.departure_time,
             'arrival_time': flight.arrival_time,
             'duration_minutes': duration_minutes,
-            'price_economy': flight.price_economy_class,
-            'price_business': flight.price_business_class,
-            'price_first': flight.price_first_class,
+            'price_economy': round(flight.price_economy_class,2),
+            'price_business': round(flight.price_business_class,2),
+            'price_first': round(flight.price_first_class,2),
             'aircraft_name': aircraft.name if aircraft else 'Unknown Aircraft',
             'gate': flight.gate,
             'terminal': flight.terminal
@@ -442,3 +454,66 @@ class FlightSearch(Resource):
                 pass  # Invalid time format will be handled by the caller
 
         return flight_query
+
+
+@api.route('/flexible-search')
+class FlexibleFlightSearch(Resource):
+    #generate an api that calculates the best price for each day in a range of dates
+    @api.doc(security=None)
+    @api.expect(flight_search_parser)
+    @api.response(200, 'Created', flight_search_response_model)
+    def get(self):
+        """Search for flights based on departure/arrival airports and date using RAPTOR algorithm"""
+        args = flight_search_parser.parse_args()
+
+        # Parse and validate date
+        try:
+            departure_date = datetime.strptime(args['departure_date'], '%d-%m-%Y').date()
+        except ValueError:
+            return {'error': 'Invalid departure date format. Use DD-MM-YYYY', 'code': 400}, 400
+
+        try:
+            return_date = datetime.strptime(args['return_date'], '%d-%m-%Y').date()
+        except ValueError:
+            return {'error': 'Invalid return date format. Use DD-MM-YYYY', 'code': 400}, 400
+
+        # Ensure departure date is not in the past
+        if departure_date < datetime.now().date():
+            return {'error': 'Departure date cannot be in the past', 'code': 400}, 400
+
+        # Get airports
+        departure_journeys = []
+        
+        if args['departure_type'] == 'airport':
+            if not args['departure_id']:
+                return {'error': 'Departure airport ID is required', 'code': 400}, 400
+            departure_airports = Airport.query.filter_by(id=args['departure_id']).all()
+        else:
+            if not args['departure_id']:
+                return {'error': 'Departure city ID is required', 'code': 400}, 400
+            departure_airports = Airport.query.filter_by(city_id=args['departure_id']).all()
+        
+        if args['arrival_type'] == 'airport':
+            if not args['arrival_id']:
+                return {'error': 'Arrival airport ID is required', 'code': 400}, 400
+            arrival_airports = Airport.query.filter_by(id=args['arrival_id']).all()
+        else:
+            if not args['arrival_id']:
+                return {'error': 'Arrival city ID is required', 'code': 400}, 400
+            arrival_airports = Airport.query.filter_by(city_id=args['arrival_id']).all()
+            
+            
+        
+        for departure_airport in departure_airports:
+            for arrival_airport in arrival_airports:
+
+                # Generate journeys for each departure and arrival airport
+                departure_results = self.generate_journey(
+                    departure_airport,
+                    arrival_airport,
+                    departure_date,
+                    args=args
+                )
+                departure_journeys.extend(departure_results)
+                
+        departure_journeys.sort(key
