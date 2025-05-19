@@ -89,11 +89,6 @@ journey_model = api.model('Journey', {
     'layovers': fields.List(fields.Nested(layover_model), description='List of layovers in the journey'),
 })
 
-flight_search_response_model = api.model('FlightSearchResponse', {
-    'departure': fields.List(fields.Nested(journey_model), description='List of departure journey options'),
-    'return': fields.List(fields.Nested(journey_model), description='List of return journey options'),
-})
-
 
 
 
@@ -101,8 +96,8 @@ flight_search_response_model = api.model('FlightSearchResponse', {
 class FlightSearch(Resource):
     @api.doc(security=None)
     @api.expect(flight_search_parser)
-    @api.response(200, 'Created', flight_search_response_model)
-
+    @api.response(200, 'Created', [journey_model])
+    @api.response(400, 'Bad Request', {'error': 'Invalid request parameters'})
     def get(self):
         """Search for flights based on departure/arrival airports and date using RAPTOR algorithm"""
         args = flight_search_parser.parse_args()
@@ -160,35 +155,26 @@ class FlightSearch(Resource):
         departure_journeys.sort(key=lambda x: x['duration_minutes'])
         print(departure_journeys)
         
-        # Handle return journeys if return date is provided
-        return_journeys = []
-        if not args['return_date']:
-            return_journeys = []
-        else:
-            for departure_airport in arrival_airports:
-                for arrival_airport in departure_airports:
-                    # Generate journeys for each departure and arrival airport
-                    return_results = self.generate_journey(
-                        departure_airport,
-                        arrival_airport,
-                        return_date,
-                        args=args
-                    )
-                    return_journeys.extend(return_results)
-            # Sort results by total duration
-            return_journeys.sort(key=lambda x: x['duration_minutes'])
-            print(return_journeys)
-            
+        
+        
         #paginate results
         if args['page_number'] and args['limit']:
             start = (args['page_number'] - 1) * args['limit']
             end = start + args['limit']
+            #check if start and end are within the range of the list
+            if start < 0 or end > len(departure_journeys):
+                end = len(departure_journeys)
+                start = len(departure_journeys) - args['limit']
+            #check if start and end are within the range of the list
+            if start < 0 or end > len(return_journeys):
+                end = len(return_journeys)
+                start = len(return_journeys) - args['limit']
             departure_journeys = departure_journeys[start:end]
             return_journeys = return_journeys[start:end]
         
     
 
-        return marshal({'departure':departure_journeys,'return':return_journeys },flight_search_response_model), 200 #flight_search_result_schema.dump(results)
+        return marshal(departure_journeys,journey_model), 200 #flight_search_result_schema.dump(results)
 
     def generate_journey(self, departure_airport, arrival_airport, departure_date,max_transfers=3,min_transfer_time=120, args=None):
         resutt = []
@@ -461,19 +447,19 @@ class FlexibleFlightSearch(Resource):
     #generate an api that calculates the best price for each day in a range of dates
     @api.doc(security=None)
     @api.expect(flight_search_parser)
-    @api.response(200, 'Created', flight_search_response_model)
+    @api.response(200, 'Created', [journey_model])
     def get(self):
         """Search for flights based on departure/arrival airports and date using RAPTOR algorithm"""
         args = flight_search_parser.parse_args()
 
         # Parse and validate date
         try:
-            departure_date = datetime.strptime(args['departure_date'], '%d-%m-%Y').date()
+            departure_date = datetime.strptime(args['departure_month'], '%m').date()
         except ValueError:
-            return {'error': 'Invalid departure date format. Use DD-MM-YYYY', 'code': 400}, 400
+            return {'error': 'Invalid departure date format. Use MM', 'code': 400}, 400
 
         try:
-            return_date = datetime.strptime(args['return_date'], '%d-%m-%Y').date()
+            return_date = datetime.strptime(args['return_month'], '%m').date()
         except ValueError:
             return {'error': 'Invalid return date format. Use DD-MM-YYYY', 'code': 400}, 400
 
@@ -504,6 +490,49 @@ class FlexibleFlightSearch(Resource):
             
             
         
+        # for each day in the range of dates, generate journeys
+        # for each day in the range of dates, generate journeys
+        departure_date_range = []
+        for i in range((return_date - departure_date).days + 1):
+            departure_date_range.append(departure_date + timedelta(days=i))
+            
+        arrival_date_range = []
+        for i in range((return_date - departure_date).days + 1):
+            arrival_date_range.append(return_date + timedelta(days=i))
+        
+        price_days = {
+            'departure': [],
+            'return': []
+        }
+        
+        # for each day in the range of dates, generate journeys
+        for date in departure_date_range:
+            journey_departure = []
+            journey_return = []
+            for departure_airport in departure_airports:
+                for arrival_airport in arrival_airports:
+
+                    # Generate journeys for each departure and arrival airport
+                    departure_results = self.generate_journey(
+                        departure_airport,
+                        arrival_airport,
+                        date,
+                        args=args
+                    )
+                    journey_departure.extend(departure_results)
+        for date in departure_date_range:
+            for departure_airport in arrival_airports:
+                for arrival_airport in departure_airports:
+                    # Generate journeys for each departure and arrival airport
+                    return_results = self.generate_journey(
+                        departure_airport,
+                        arrival_airport,
+                        date,
+                        args=args
+                    )
+                    journey_return.extend(return_results)
+
+        
         for departure_airport in departure_airports:
             for arrival_airport in arrival_airports:
 
@@ -515,5 +544,3 @@ class FlexibleFlightSearch(Resource):
                     args=args
                 )
                 departure_journeys.extend(departure_results)
-                
-        departure_journeys.sort(key
