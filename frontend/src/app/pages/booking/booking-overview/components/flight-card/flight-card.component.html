@@ -1,0 +1,41 @@
+<div class="flex flex-col gap-4">
+
+  <div class="text-xl font-semibold text-gray-700">{{ title }}</div>
+  <section hlmCard class="w-full transition-all duration-100 rounded-lg p-6 ">
+    <div hlmCardContent class="flex flex-col p-0">
+      <div class="flex flex-col gap-4">
+        @for (segment of journey.segments; track segment; let i = $index) {
+        <div class="flex flex-row justify-between items-center gap-6">
+          <div class="flex flex-row justify-between items-center w-full">
+            <div class="flex flex-col">
+              <span class="text-2xl font-bold text-gray-900">{{
+                formatDate(segment.departure_time)
+              }}</span>
+              <span class="text-sm text-gray-500">{{
+                segment.departure_airport
+              }}</span>
+            </div>
+  
+            <div class="flex flex-col items-center text-center gap-1">
+              <span class="text-sm text-muted-foreground">{{
+                formatDuration(segment.duration_minutes)
+              }}</span>
+              <span class="text-sm font-medium">{{ segment.airline_name }}</span>
+            </div>
+  
+            <div class="flex flex-col items-end">
+              <span class="text-2xl font-bold text-gray-900">{{
+                formatDate(segment.arrival_time)
+              }}</span>
+              <span class="text-sm text-gray-500">{{
+                segment.arrival_airport
+              }}</span>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </section>
+</div>
+

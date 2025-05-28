@@ -135,9 +135,9 @@ export class SearchFlightsComponent {
 
   protected onFlightCardClick(journey: IJourney) {
     if (this.searchPhase === SearchPhase.DEPARTURE) {
+      this.selectedDepartureJourney = journey;
       if (this.searchParamsGuard.params.return_date) {
         this.searchPhase = SearchPhase.RETURN;
-        this.selectedDepartureJourney = journey;
 
         this.loadingService.startLoadingTask();
         this.fetchFlights(this.searchPhase, 1).then((flights) => {
@@ -149,8 +149,13 @@ export class SearchFlightsComponent {
     } else {
       this.selectedReturnJourney = journey;
     }
-    //TODO: Navigate to booking
     console.log(this.selectedDepartureJourney, this.selectedReturnJourney);
+    this.router.navigateByUrl('/booking', {
+      state: {
+        departureJourney: this.selectedDepartureJourney,
+        returnJourney: this.selectedReturnJourney,
+      },
+    });
   }
 
   protected onSortChange(event: Event) {

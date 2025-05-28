@@ -9,7 +9,7 @@ import { NotFoundComponent } from '@/app/pages/not-found/not-found.component';
 import { SearchParamsGuard, SearchRedirectGuard } from './guards/search-guard';
 
 import { BookingComponent } from '@/app/pages/booking/booking.component';
-import { Booking1OverviewComponent } from '@/app/pages/booking/booking1-overview/booking1-overview.component';
+import { BookingOverviewComponent } from '@/app/pages/booking/booking-overview/booking-overview.component';
 import { Booking2SeatsComponent } from '@/app/pages/booking/booking2-seats/booking2-seats.component';
 import { Booking3ExtraComponent } from '@/app/pages/booking/booking3-extra/booking3-extra.component';
 import { LoginComponent } from '@/app/pages/auth/login/login.component';
@@ -77,7 +77,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'overview',
-        component: Booking1OverviewComponent,
+        component: BookingOverviewComponent,
         data: { selectedNumber: 1 },
       },
       {

@@ -46,7 +46,14 @@ export class LoginComponent {
     password: new FormControl('', Validators.required),
   });
 
-  constructor(private authService: AuthService, private router: Router) {}
+  private redirectUrl: string = '/';
+  private originalState: any = {};
+
+  constructor(private authService: AuthService, private router: Router) {
+    this.redirectUrl = this.router.getCurrentNavigation()?.extras.state?.['redirectUrl'] || '/';
+    this.originalState = this.router.getCurrentNavigation()?.extras.state?.['originalState'] || {};
+  }
+
 
   onSubmit() {
     if (this.loginForm.valid) {
@@ -57,7 +64,7 @@ export class LoginComponent {
         })
         .subscribe({
           next: () => {
-            this.router.navigate(['/']);
+            this.router.navigateByUrl(this.redirectUrl, { state: this.originalState });
           },
           error: (err) => {
             if (err.status === 401) {
