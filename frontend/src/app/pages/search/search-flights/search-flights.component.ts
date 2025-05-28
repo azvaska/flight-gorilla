@@ -15,6 +15,8 @@ import { NgIcon } from '@ng-icons/core';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { CommonModule } from '@angular/common';
 import { HlmIconDirective } from '@spartan-ng/ui-icon-helm';
+import { HlmSliderComponent } from '@spartan-ng/ui-slider-helm';
+
 
 enum SearchPhase {
   DEPARTURE = 'departure',
@@ -31,6 +33,7 @@ enum SearchPhase {
     HlmButtonDirective,
     CommonModule,
     HlmIconDirective,
+    HlmSliderComponent,
   ],
   templateUrl: './search-flights.component.html',
   providers: [provideIcons({ lucideLoaderCircle })],
@@ -48,6 +51,11 @@ export class SearchFlightsComponent {
   protected selectedDepartureJourney: IJourney | null = null;
   protected selectedReturnJourney: IJourney | null = null;
 
+  protected sortBy: string = 'price-asc';
+  protected maxPrice: number = 1000;
+  protected minDepartureTime: string = '00:00';
+  protected maxDepartureTime: string = '23:00';
+
   constructor(
     private router: Router,
     private searchParamsGuard: SearchParamsGuard,
@@ -63,6 +71,9 @@ export class SearchFlightsComponent {
 
   private async fetchFlights(type: SearchPhase, page: number) {
     let fetch;
+    this._page = page;
+
+    const sortParamters = this.sortBy.split('-')
 
     if (type === SearchPhase.DEPARTURE) {
       fetch = this.searchFetchService.getFlights({
@@ -74,6 +85,11 @@ export class SearchFlightsComponent {
           | 'city',
         departureDate: this.searchParamsGuard.params.departure_date,
         page: page,
+        sortBy: sortParamters[0] as 'price' | 'duration' | 'stops',
+        sortDirection: sortParamters[1] as 'asc' | 'desc',
+        maxPrice: this.maxPrice,
+        minDepartureTime: this.minDepartureTime,
+        maxDepartureTime: this.maxDepartureTime,
       });
     } else {
       fetch = this.searchFetchService.getFlights({
@@ -87,6 +103,11 @@ export class SearchFlightsComponent {
           | 'city',
         departureDate: this.searchParamsGuard.params.return_date!,
         page: page,
+        sortBy: sortParamters[0] as 'price' | 'duration' | 'stops',
+        sortDirection: sortParamters[1] as 'asc' | 'desc',
+        maxPrice: this.maxPrice,
+        minDepartureTime: this.minDepartureTime,
+        maxDepartureTime: this.maxDepartureTime,
       });
     }
 
@@ -103,9 +124,8 @@ export class SearchFlightsComponent {
   }
 
   protected loadMoreFlights() {
-    this._page++;
     this.morePagesLoading = true;
-    this.fetchFlights(this.searchPhase, this._page).then((flights) => {
+    this.fetchFlights(this.searchPhase, this._page + 1).then((flights) => {
       if (flights.journeys.length > 0) {
         this.journeys = [...this.journeys, ...flights.journeys];
       }
@@ -118,10 +138,9 @@ export class SearchFlightsComponent {
       if (this.searchParamsGuard.params.return_date) {
         this.searchPhase = SearchPhase.RETURN;
         this.selectedDepartureJourney = journey;
-        this._page = 1;
 
         this.loadingService.startLoadingTask();
-        this.fetchFlights(this.searchPhase, this._page).then((flights) => {
+        this.fetchFlights(this.searchPhase, 1).then((flights) => {
           this.journeys = flights.journeys;
           this.loadingService.endLoadingTask();
         });
@@ -132,5 +151,48 @@ export class SearchFlightsComponent {
     }
     //TODO: Navigate to booking
     console.log(this.selectedDepartureJourney, this.selectedReturnJourney);
+  }
+
+  protected onSortChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.sortBy = target.value;
+    this.loadingService.startLoadingTask();
+    this.fetchFlights(this.searchPhase, 1).then((flights) => {
+      this.journeys = flights.journeys;
+      this.loadingService.endLoadingTask();
+    });
+  }
+
+  protected onMinDepartureTimeChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.minDepartureTime = target.value;
+    this.loadingService.startLoadingTask();
+    this.fetchFlights(this.searchPhase, 1).then((flights) => {
+      this.journeys = flights.journeys;
+      this.loadingService.endLoadingTask();
+    });
+  }
+
+  protected onMaxDepartureTimeChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.maxDepartureTime = target.value;
+    this.loadingService.startLoadingTask();
+    this.fetchFlights(this.searchPhase, 1).then((flights) => {
+      this.journeys = flights.journeys;
+      this.loadingService.endLoadingTask();
+    });
+  }
+
+  protected onPriceChange() {
+    console.log('onPriceChange');
+    this.loadingService.startLoadingTask();
+    this.fetchFlights(this.searchPhase, 1).then((flights) => {
+      this.journeys = flights.journeys;
+      this.loadingService.endLoadingTask();
+    });
+  }
+
+  protected capture(event: PointerEvent) {
+    (event.target as HTMLElement).setPointerCapture(event.pointerId);
   }
 }

@@ -5,9 +5,11 @@ export interface IFlightSearchParams {
   arrivalType: 'airport' | 'city';
   departureDate: string;
   airlineId?: string;
-  maxPrice?: number;
-  minDepartureTime?: string;
-  maxDepartureTime?: string;
   page?: number;
   limit?: number;
+  sortBy: 'price' | 'duration' | 'stops';
+  sortDirection: 'asc' | 'desc';
+  maxPrice: number;
+  minDepartureTime: string;
+  maxDepartureTime: string;
 }

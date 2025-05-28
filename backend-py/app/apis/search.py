@@ -483,10 +483,7 @@ class FlightSearch(Resource):
         
         # Sort results by total duration
         if args['order_by'] == 'price':
-            if args['order_by_desc'] == False:
-                departure_journeys.sort(key=lambda x: x['price_first_class'],reverse=args['order_by_desc'])
-            else:
-                departure_journeys.sort(key=lambda x: x['price_economy'],reverse=args['order_by_desc'])
+            departure_journeys.sort(key=lambda x: x['price_economy'],reverse=args['order_by_desc'])
         elif args['order_by'] == 'duration':
             departure_journeys.sort(key=lambda x: x['duration_minutes'],reverse=args['order_by_desc'])
         elif args['order_by'] == 'stops':

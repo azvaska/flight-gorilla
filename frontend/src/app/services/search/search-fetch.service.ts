@@ -94,6 +94,8 @@ export class SearchFetchService {
     journeys: IJourney[];
     total_pages: number;
   }> {
+
+
     const queryParams = new URLSearchParams({
       departure_id: params.departureId,
       departure_type: params.departureType,
@@ -101,16 +103,15 @@ export class SearchFetchService {
       arrival_type: params.arrivalType,
       departure_date: params.departureDate,
       page_number: params.page?.toString() ?? '1',
-      limit: params.limit?.toString() ?? '1',
+      limit: params.limit?.toString() ?? '3',
+      order_by: params.sortBy,
+      order_by_desc: params.sortDirection === 'desc' ? 'true' : 'false',
+      price_max: params.maxPrice.toString(),
+      departure_time_min: params.minDepartureTime,
+      departure_time_max: params.maxDepartureTime,
     });
 
     if (params.airlineId) queryParams.set('airline_id', params.airlineId);
-    if (params.maxPrice)
-      queryParams.set('price_max', params.maxPrice.toString());
-    if (params.minDepartureTime)
-      queryParams.set('departure_time_min', params.minDepartureTime);
-    if (params.maxDepartureTime)
-      queryParams.set('departure_time_max', params.maxDepartureTime);
 
     return this.http.get<{
       journeys: IJourney[];
@@ -126,7 +127,13 @@ export class SearchFetchService {
     arrivalId,
     arrivalType,
     departureDate,
-  }: IFlightSearchParams): Observable<(number | null)[]> {
+  }: {
+    departureId: string;
+    departureType: 'airport' | 'city';
+    arrivalId: string;
+    arrivalType: 'airport' | 'city';
+    departureDate: string;
+  }): Observable<(number | null)[]> {
     const queryParams = new URLSearchParams({
       departure_id: departureId,
       departure_type: departureType,
