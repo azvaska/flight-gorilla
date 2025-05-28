@@ -52,6 +52,7 @@ flight_search_parser.add_argument('departure_time_min', type=str,
                                  help='Minimum departure time (HH:MM)', location='args')
 flight_search_parser.add_argument('departure_time_max', type=str,
                                  help='Maximum departure time (HH:MM)', location='args')
+flight_search_parser.add_argument('max_transfers', type=int, default=3,)
 flight_search_parser.add_argument(
     'order_by',
     type=str,
@@ -406,21 +407,7 @@ class SearchFlight:
         if args['price_max']:
             flight_query = flight_query.filter(Flight.price_economy_class <= args['price_max'])
 
-        if args['departure_time_min']:
-            try:
-                min_time = datetime.datetime.strptime(args['departure_time_min'], '%H:%M').time()
-                min_datetime = datetime.datetime.combine(departure_date, min_time)
-                flight_query = flight_query.filter(Flight.departure_time >= min_datetime)
-            except ValueError:
-                pass  # Invalid time format will be handled by the caller
 
-        if args['departure_time_max']:
-            try:
-                max_time = datetime.datetime.strptime(args['departure_time_max'], '%H:%M').time()
-                max_datetime = datetime.datetime.combine(departure_date, max_time)
-                flight_query = flight_query.filter(Flight.departure_time <= max_datetime)
-            except ValueError:
-                pass  # Invalid time format will be handled by the caller
 
         return flight_query
 
@@ -447,7 +434,7 @@ class FlightSearch(Resource):
             return {'error': 'Departure date cannot be in the past', 'code': 400}, 400
 
         # Get airports
-        departure_journeys = []
+        unfiltered_departure_journeys = []
         
         if args['departure_type'] == 'airport':
             if not args['departure_id']:
@@ -477,18 +464,42 @@ class FlightSearch(Resource):
                     departure_airport,
                     arrival_airport,
                     departure_date,
+                    max_transfers=int(args['max_transfers']),
                     args=args
                 )
-                departure_journeys.extend(departure_results)
+                unfiltered_departure_journeys.extend(departure_results)
         
         # Sort results by total duration
+        # filter resulting journeys
+        departure_journeys = []
+        for journey in unfiltered_departure_journeys:
+            # Filter by departure time range
+            if args['departure_time_min']:
+                min_time = datetime.datetime.strptime(args['departure_time_min'], '%H:%M').time()
+                if journey['segments'][0]['departure_time'].time() < min_time:
+                    continue
+
+            if args['departure_time_max']:
+                max_time = datetime.datetime.strptime(args['departure_time_max'], '%H:%M').time()
+                if journey['segments'][0]['departure_time'].time() > max_time:
+                    continue
+            if args['price_max']:
+                # Filter by maximum price
+                if journey['price_economy'] > args['price_max']:
+                    continue
+            departure_journeys.append(journey)
+
+
+
         if args['order_by'] == 'price':
             departure_journeys.sort(key=lambda x: x['price_economy'],reverse=args['order_by_desc'])
         elif args['order_by'] == 'duration':
             departure_journeys.sort(key=lambda x: x['duration_minutes'],reverse=args['order_by_desc'])
         elif args['order_by'] == 'stops':
             departure_journeys.sort(key=lambda x: x['stops'],reverse=args['order_by_desc'])
-                
+
+
+
         print(departure_journeys)
 
         original_len = len(departure_journeys)
@@ -594,6 +605,7 @@ class FlexibleFlightSearch(Resource):
                         departure_airport,
                         arrival_airport,
                         date,
+                        max_transfers=args['max_transfers'],
                         args=args
                     )
                     journey_departure.extend(departure_results)
