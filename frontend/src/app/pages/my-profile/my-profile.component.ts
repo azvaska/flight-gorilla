@@ -3,22 +3,18 @@ import { Component } from '@angular/core';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import {CreditCardListComponent} from '@/app/components/credit-card-list/credit-card-list.component';
 import {CreditCard} from '@/types/credit-card';
+import {UserInfo} from '@/types/user-info';
+import {ProfileComponent} from '@/app/components/profile/profile.component';
+import {NgClass} from '@angular/common';
 
-interface UserInfo {
-  email:    string;
-  password: string;
-  name:     string;
-  surname:  string;
-  address:  string;
-  zipCode:  string;
-}
 
 @Component({
   selector: 'app-my-profile',
   standalone: true,
   imports: [
-    HlmButtonDirective,
-    CreditCardListComponent
+    CreditCardListComponent,
+    ProfileComponent,
+    NgClass
   ],
   host: {
     class: 'block w-full h-full',
@@ -28,7 +24,7 @@ interface UserInfo {
 export class MyProfileComponent {
   user: UserInfo = {
     email:    'user@example.com',
-    password: '••••••••',
+    password: '',
     name:     'John',
     surname:  'Doe',
     address:  '123 Main St, Anytown',
@@ -42,11 +38,10 @@ export class MyProfileComponent {
     { id: 2, name: 'Card2', last4: '5421', circuit: 'visa',       expiry: '11/25', holder: 'John Smith', type: 'credit' },
   ];
 
+  editingProfile = false;
 
   editProfile() {
-    console.log(`Edit profile for ${this.user.email}`);
-    // TODO: navigate to an edit form or open a modal
-    // this.router.navigate(['edit'], { relativeTo: this.route });
+    this.editingProfile = !this.editingProfile;
   }
 
 }

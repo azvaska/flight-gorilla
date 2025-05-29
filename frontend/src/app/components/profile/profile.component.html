@@ -1,0 +1,243 @@
+<div class="space-y-4 text-gray-800">
+  <!-- Email -->
+  <div class="flex">
+    <span class="w-32 font-medium text-gray-700 flex items-center">Email:</span>
+    <app-switcher [isActive]="isEditMode">
+      <span inactive>{{ user.email }}</span>
+      <div active class="relative">
+        <input
+          hlmInput
+          id="email"
+          name="email"
+          type="text"
+          class="w-48 h-8"
+          [(ngModel)]="newUser.email"
+          (input)="emailDirty = true"
+          (blur)="emailTouched = true"
+          [ngClass]="{
+          '!ring-red-600 border-red-400': emailDirty && emailTouched && !isEmailValid
+        }"
+        />
+        <div
+          *ngIf="emailDirty && emailTouched && !isEmailValid"
+          class="absolute left-full top-0 w-40 ml-1 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+        >
+          Invalid email address.
+        </div>
+      </div>
+    </app-switcher>
+  </div>
+
+
+  <!-- Password -->
+  <div class="flex">
+    <span class="w-32 font-medium text-gray-700 flex items-center">Password:</span>
+    <app-switcher [isActive]="isEditMode">
+      <span inactive>••••••••</span>
+      <div active class="flex space-x-4">
+        <!-- old password – no validation -->
+        <div class="relative">
+          <input
+            hlmInput
+            id="oldPassword"
+            name="oldPassword"
+            type="password"
+            class="w-48 h-8"
+            placeholder="Enter old password"
+            [(ngModel)]="oldPassword"
+          />
+        </div>
+        <!-- new password – validated -->
+        <div class="relative">
+          <input
+            hlmInput
+            id="password"
+            name="password"
+            type="password"
+            class="w-48 h-8"
+            placeholder="Enter new password"
+            [(ngModel)]="newUser.password"
+            (input)="passwordDirty = true"
+            (blur)="passwordTouched = true"
+            [ngClass]="{
+            '!ring-red-600 border-red-400': passwordDirty && passwordTouched && !isPasswordValid
+          }"
+          />
+          <div
+            *ngIf="passwordDirty && passwordTouched && !isPasswordValid"
+            class="absolute left-full -top-5 w-40 ml-1 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+          >
+            Password must be at least 8 characters and include an uppercase letter and a number.
+          </div>
+        </div>
+      </div>
+    </app-switcher>
+  </div>
+
+
+  <!-- Name -->
+  <div class="flex">
+    <span class="w-32 font-medium text-gray-700 flex items-center">Name:</span>
+    <app-switcher [isActive]="isEditMode">
+      <span inactive>{{ user.name }}</span>
+      <div active class="relative">
+        <input
+          hlmInput
+          id="name"
+          name="name"
+          type="text"
+          class="w-48 h-8"
+          [(ngModel)]="newUser.name"
+          (input)="nameDirty = true"
+          (blur)="nameTouched = true"
+          [ngClass]="{
+          '!ring-red-600 border-red-400': nameDirty && nameTouched && !isNameValid
+        }"
+        />
+        <div
+          *ngIf="nameDirty && nameTouched && !isNameValid"
+          class="absolute left-full top-0 w-40 ml-1 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+        >
+          Name must contain only letters and spaces.
+        </div>
+      </div>
+    </app-switcher>
+  </div>
+
+
+  <!-- Surname -->
+  <div class="flex">
+    <span class="w-32 font-medium text-gray-700 flex items-center">Surname:</span>
+    <app-switcher [isActive]="isEditMode">
+      <span inactive>{{ user.surname }}</span>
+      <div active class="relative">
+        <input
+          hlmInput
+          id="surname"
+          name="surname"
+          type="text"
+          class="w-48 h-8"
+          [(ngModel)]="newUser.surname"
+          (input)="surnameDirty = true"
+          (blur)="surnameTouched = true"
+          [ngClass]="{
+          '!ring-red-600 border-red-400': surnameDirty && surnameTouched && !isSurnameValid
+        }"
+        />
+        <div
+          *ngIf="surnameDirty && surnameTouched && !isSurnameValid"
+          class="absolute top-[-25px] right-0 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+        >
+          Surname must contain only letters and spaces.
+        </div>
+      </div>
+    </app-switcher>
+  </div>
+
+
+  <!-- Address -->
+  <div class="flex">
+    <span class="w-32 font-medium text-gray-700 flex items-center">Address:</span>
+    <app-switcher [isActive]="isEditMode">
+      <span inactive>{{ user.address }}</span>
+      <div active class="relative">
+        <input
+          hlmInput
+          id="address"
+          name="address"
+          type="text"
+          class="w-48 h-8"
+          [(ngModel)]="newUser.address"
+          (input)="addressDirty = true"
+          (blur)="addressTouched = true"
+          [ngClass]="{
+          '!ring-red-600 border-red-400': addressDirty && addressTouched && !isAddressValid
+        }"
+        />
+        <div
+          *ngIf="addressDirty && addressTouched && !isAddressValid"
+          class="absolute left-full top-0 w-40 ml-1 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+        >
+          Address cannot be empty.
+        </div>
+      </div>
+    </app-switcher>
+  </div>
+
+
+  <!-- Zip Code -->
+  <div class="flex">
+    <span class="w-32 font-medium text-gray-700 flex items-center">Zip Code:</span>
+    <app-switcher [isActive]="isEditMode">
+      <span inactive>{{ user.zipCode }}</span>
+      <div active class="relative">
+        <input
+          hlmInput
+          id="zipCode"
+          name="zipCode"
+          type="text"
+          class="w-48 h-8"
+          [(ngModel)]="newUser.zipCode"
+          (input)="zipCodeDirty = true"
+          (blur)="zipCodeTouched = true"
+          [ngClass]="{
+          '!ring-red-600 border-red-400': zipCodeDirty && zipCodeTouched && !isZipCodeValid
+        }"
+        />
+        <div
+          *ngIf="zipCodeDirty && zipCodeTouched && !isZipCodeValid"
+          class="absolute left-full top-0 w-40 ml-1 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+        >
+          Invalid zip code.
+        </div>
+      </div>
+    </app-switcher>
+  </div>
+
+</div>
+
+<!-- Action button -->
+<div class="flex justify-end mt-6 space-x-3">
+<!--  <button-->
+<!--    hlmBtn-->
+<!--    variant="outline"-->
+<!--    class="px-4 py-2 bg-black text-white w-20 transition-opacity duration-300"-->
+<!--    [ngClass]="{-->
+<!--      'opacity-0 pointer-events-none': !isEditMode,-->
+<!--      'opacity-100 pointer-events-auto': isEditMode-->
+<!--    }"-->
+<!--    (click)="saveClickedHandler()"-->
+<!--  >-->
+<!--    Save-->
+<!--  </button>-->
+  <button
+    type="submit"
+    hlmBtn
+    variant="outline"
+    class="bg-black text-white px-4 py-2 transition-opacity duration-300"
+    [ngClass]="{
+      '!opacity-0 pointer-events-none': !isEditMode,
+      'opacity-100 pointer-events-auto': isEditMode
+    }"
+    (click)="saveClickedHandler()"
+    [disabled]="!isFormValid || loadingSave"
+  >
+    <ng-icon
+      *ngIf="loadingSave"
+      hlm
+      name="lucideLoaderCircle"
+      size="sm"
+      class="mr-2 animate-spin"
+    ></ng-icon>
+    Save
+  </button>
+
+  <button
+    hlmBtn
+    variant="outline"
+    class="px-4 py-2 bg-black text-white w-20"
+    (click)="editClickedHandler()"
+  >
+    {{ isEditMode ? 'Back' : 'Edit' }}
+  </button>
+</div>
