@@ -4,7 +4,7 @@ import {
   HlmCardDirective,
   HlmCardContentDirective,
 } from '@spartan-ng/ui-card-helm';
-import { IJourney } from '@/types/search/flight';
+import { IJourney } from '@/types/search/journey';
 import { Router } from '@angular/router';
 import { SearchParamsGuard } from '@/app/guards/search-guard';
 import { SearchFetchService } from '@/app/services/search/search-fetch.service';

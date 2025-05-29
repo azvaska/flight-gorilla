@@ -1,0 +1,111 @@
+<h1 class="text-xl font-semibold text-gray-700">Selected flight: {{ currentFlight!.departure_airport.iata_code }} - {{ currentFlight!.arrival_airport.iata_code }}</h1>
+
+<div class="flex h-full pt-8 gap-4">
+  @if(currentFlightSeats) {
+
+  <!-- LEFT HALF -->
+  <div
+    class="w-1/2 pt-0 flex flex-col space-y-4 sticky top-[150px] max-h-[calc(100vh-100px)] overflow-y-auto"
+  >
+    <!-- FIRST CLASS ROW -->
+    @if(currentFlightSeats.seats_info.first_class_seats.length > 0) {
+    <div
+      class="first-class-row group transform flex items-start justify-between p-4 rounded-xl transition-all duration-300 cursor-pointer"
+      (click)="toggleSelection(SeatClass.FIRST)"
+      [ngClass]="{ selected: selectedClassInternal === SeatClass.FIRST }"
+    >
+      <div>
+        <h3 class="text-lg font-bold text-black mb-1">First Class</h3>
+        <p class="text-sm italic text-zinc-800 mb-2">
+          {{ currentFlight!.airline.first_class_description }}
+        </p>
+        <ul
+          class="list-disc list-inside text-black text-sm max-h-0 overflow-hidden transition-all duration-300 group-hover:max-h-32"
+          [class.max-h-32]="selectedClassInternal === 'first'"
+        >
+          <li>Unlimited bags</li>
+          <li>Lie-flat seats</li>
+          <li>Gourmet dining</li>
+          <li>Dedicated service</li>
+        </ul>
+      </div>
+      <div class="text-xl font-bold text-black ml-4">$299</div>
+    </div>
+    } @if(currentFlightSeats.seats_info.business_class_seats.length > 0) {
+    <!-- BUSINESS ROW -->
+    <div
+      class="row group transform flex items-start justify-between p-4 rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer bg-zinc-200"
+      (click)="toggleSelection(SeatClass.BUSINESS)"
+      [ngClass]="{ selected: selectedClassInternal === SeatClass.BUSINESS }"
+    >
+      <div>
+        <h3 class="text-lg font-bold text-black mb-1">Business</h3>
+        <p class="text-sm italic text-zinc-800 mb-2">
+          {{ currentFlight!.airline.business_class_description }}
+        </p>
+        <ul
+          class="list-disc list-inside text-zinc-700 text-sm max-h-0 overflow-hidden transition-all duration-300 group-hover:max-h-32"
+          [class.max-h-32]="selectedClassInternal === 'business'"
+        >
+          <li>2 cabin bags</li>
+          <li>Premium seating</li>
+          <li>Lounge access</li>
+          <li>Priority boarding</li>
+        </ul>
+      </div>
+      <div class="text-xl font-bold text-black ml-4">$199</div>
+    </div>
+    } @if(currentFlightSeats.seats_info.economy_class_seats.length > 0) {
+    <!-- ECONOMY ROW -->
+    <div
+      class="row group transform flex items-start justify-between p-4 rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer bg-zinc-100"
+      (click)="toggleSelection(SeatClass.ECONOMY)"
+      [ngClass]="{ selected: selectedClassInternal === SeatClass.ECONOMY }"
+    >
+      <div>
+        <h3 class="text-lg font-bold text-black mb-1">Economy</h3>
+        <p class="text-sm italic text-zinc-800 mb-2">
+          {{ currentFlight!.airline.economy_class_description }}
+        </p>
+        <ul
+          class="list-disc list-inside text-zinc-700 text-sm max-h-0 overflow-hidden transition-all duration-300 group-hover:max-h-32"
+          [class.max-h-32]="selectedClassInternal === 'economy'"
+        >
+          <li>1 small cabin bag</li>
+          <li>Standard seating</li>
+          <li>Online check-in</li>
+          <li>Complimentary water</li>
+        </ul>
+      </div>
+      <div class="text-xl font-bold text-black ml-4">$99</div>
+    </div>
+    }
+    <button
+      hlmBtn
+      variant="outline"
+      class="bg-black text-white w-[250px] mx-auto mt-8"
+      (click)="onContinue()"
+      [disabled]="selectedSeat === null"
+    >
+      Continue
+    </button>
+  </div>
+
+  <div
+    class="w-1/2 p-6 flex items-center justify-center bg-white text-zinc-500 border-1 border-[#e4e4e7] text-lg italic rounded-2xl"
+  >
+    <app-seats-grid
+      [selectedClass]="selectedClassGrid"
+      [rows]="currentFlightSeats.rows"
+      [selectedSeatCol]="selectedSeatCol"
+      [selectedSeatRow]="selectedSeatRow"
+      (selected)="seatSelected($event)"
+      [economyClassSeats]="currentFlightSeats.seats_info.economy_class_seats"
+      [businessClassSeats]="currentFlightSeats.seats_info.business_class_seats"
+      [firstClassSeats]="currentFlightSeats.seats_info.first_class_seats"
+      [occupiedSeats]="currentFlightSeats.seats_info.booked_seats"
+    />
+  </div>
+  <hlm-toaster />
+  }
+</div>

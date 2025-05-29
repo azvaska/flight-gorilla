@@ -90,6 +90,21 @@ class Flight(db.Model):
         session_seats = [seat.seat_number for seat in session_seats_obj]
         return booked_seats + session_seats
     
+    @property
+    def seats_info(self):
+        return {
+            "first_class_seats": self.aircraft.first_class_seats,
+            "business_class_seats": self.aircraft.business_class_seats,
+            "economy_class_seats": self.aircraft.economy_class_seats,
+            "booked_seats": self.booked_seats,
+        }
+    
+    @property
+    def rows(self):
+        return self.aircraft.aircraft.rows
+
+    
+    
 class FlightExtra(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     flight_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Flight.id))

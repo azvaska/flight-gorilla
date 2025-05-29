@@ -4,7 +4,7 @@ import { forkJoin, map, Observable } from 'rxjs';
 import { ICity, ILocation, INation } from '@/types/search/location';
 import { environment } from '@/app/environments/environment';
 import { IFlightSearchParams } from '@/types/search/params';
-import { IJourney } from '@/types/search/flight';
+import { IJourney } from '@/types/search/journey';
 
 @Injectable({ providedIn: 'root' })
 export class SearchFetchService {

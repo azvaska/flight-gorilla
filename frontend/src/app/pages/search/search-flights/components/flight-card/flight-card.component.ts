@@ -4,7 +4,7 @@ import {
   HlmCardContentDirective,
 } from '@spartan-ng/ui-card-helm';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import { IJourney } from '@/types/search/flight';
+import { IJourney } from '@/types/search/journey';
 import prettyMilliseconds from 'pretty-ms';
 
 @Component({

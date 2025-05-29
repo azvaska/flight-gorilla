@@ -9,6 +9,10 @@ import {
 import { filter } from 'rxjs/operators';
 import { BookingStateStore } from '@/app/stores/booking-state.store';
 import { BookingPhase, IBookingState } from '@/types/booking/booking-state';
+import { IJourney } from '@/types/search/journey';
+import { forkJoin, of } from 'rxjs';
+import { FlightFetchService } from '@/app/services/flight/flight-fetch.service';
+import { LoadingService } from '@/app/services/loading.service';
 
 @Component({
   selector: 'app-booking',
@@ -25,8 +29,11 @@ export class BookingComponent {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private bookingStore: BookingStateStore
+    private bookingStore: BookingStateStore,
+    private flightFetchService: FlightFetchService,
+    private loadingService: LoadingService
   ) {
+
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
@@ -34,29 +41,51 @@ export class BookingComponent {
         this.selectedNumber = child?.data?.['selectedNumber'] || 1;
       });
 
-    const state = this.router.getCurrentNavigation()?.extras.state;
-    console.log('state from booking', state);
-    if (!state) {
-      this.router.navigate(['/'], { replaceUrl: true });
-      return;
-    }
+      
+      const state = this.router.getCurrentNavigation()?.extras.state as {
+        departureJourney: IJourney;
+        returnJourney?: IJourney;
+      };
+      
+      if (!state) {
+        this.router.navigate(['/'], { replaceUrl: true });
+        return;
+      }
+      
+    this.loadingService.startLoadingTask();
+    forkJoin({
+      departureFlights: forkJoin(
+        state.departureJourney.segments.map((segment) =>
+          this.flightFetchService.getFlight(segment.id)
+        )
+      ),
+      returnFlights: state.returnJourney
+        ? forkJoin(
+            state.returnJourney.segments.map((segment) =>
+              this.flightFetchService.getFlight(segment.id)
+            )
+          )
+        : of([]),
+    }).subscribe(({ departureFlights, returnFlights }) => {
+      this.bookingStore.setBookingState({
+        departureFlights,
+        returnFlights,
+        phase: BookingPhase.OVERVIEW,
+      });
 
-
-    this.bookingStore.setBookingState({
-      ...(state as IBookingState),
-      phase: BookingPhase.OVERVIEW,
+      console.log('booking state', this.bookingStore.getBookingState());
+      this.loadingService.endLoadingTask();
     });
 
     this.bookingStore.getBookingStateObservable().subscribe((state) => {
       if (!state) {
-        this.router.navigate(['/not-found'], { replaceUrl: true });
         return;
       }
 
       const phase = state.phase;
       switch (phase) {
         case BookingPhase.OVERVIEW:
-          this.router.navigate(['/booking/overview'], { replaceUrl: true });
+          this.router.navigate(['/booking/overview']);
           break;
         case BookingPhase.SEATS:
           this.router.navigate(['/booking/seats'], { replaceUrl: true });

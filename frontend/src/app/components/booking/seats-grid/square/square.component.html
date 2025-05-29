@@ -4,12 +4,11 @@
     transition-all duration-300
     {{squareStyle}}"
   [ngClass]="{
-    'rounded-sm': (selectedClass == '' || selectedClass == class) && available,
-    'hover:scale-120': (selectedClass == '' || selectedClass == class) && available && !occupied,
-    'hover:scale-90': (selectedClass == '' || selectedClass == class) && available && occupied,
-    'scale-30 rounded-xl hover:scale-50': selectedClass != '' && selectedClass != class && available,
-    'scale-40 rounded-xl hover:scale-60': selectedClass != '' && selectedClass != class && available && occupied,
-    'scale-105': selectedClass == class && available,
+    'rounded-sm scale-105': isHighlighted && class,
+    'hover:scale-120': isHighlighted && class !== SeatClass.OCCUPIED,
+    'hover:scale-90': isHighlighted &&  class === SeatClass.OCCUPIED,
+    'scale-30 rounded-xl hover:scale-50': !isHighlighted,
+    'scale-40 rounded-xl hover:scale-60': !isHighlighted && class === SeatClass.OCCUPIED,
     '!bg-blue-400': isSelected,
     'shake': shake
   }"

@@ -10,7 +10,7 @@ import { SearchParamsGuard, SearchRedirectGuard } from './guards/search-guard';
 
 import { BookingComponent } from '@/app/pages/booking/booking.component';
 import { BookingOverviewComponent } from '@/app/pages/booking/booking-overview/booking-overview.component';
-import { Booking2SeatsComponent } from '@/app/pages/booking/booking2-seats/booking2-seats.component';
+import { BookingSeatsComponent } from '@/app/pages/booking/booking-seats/booking-seats.component';
 import { Booking3ExtraComponent } from '@/app/pages/booking/booking3-extra/booking3-extra.component';
 import { LoginComponent } from '@/app/pages/auth/login/login.component';
 import { RegisterComponent } from '@/app/pages/auth/register/register.component';
@@ -82,7 +82,7 @@ export const routes: Routes = [
       },
       {
         path: 'seats',
-        component: Booking2SeatsComponent,
+        component: BookingSeatsComponent,
         data: { selectedNumber: 2 },
       },
       {

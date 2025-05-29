@@ -1,4 +1,4 @@
-import { IJourney } from "../search/flight";
+import { IFlight } from "@/types/flight";
 
 export enum BookingPhase {
   OVERVIEW = 'overview',
@@ -8,7 +8,7 @@ export enum BookingPhase {
 }
 
 export interface IBookingState {
-  departureJourney: IJourney;
-  returnJourney?: IJourney;
+  departureFlights: IFlight[];
+  returnFlights?: IFlight[];
   phase: BookingPhase;
 }

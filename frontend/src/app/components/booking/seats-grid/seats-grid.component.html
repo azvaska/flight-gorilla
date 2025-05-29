@@ -50,10 +50,8 @@
         <app-square
           [row]="i" [column]="j"
           [isSelected]="selectedSeatRow === i && selectedSeatCol === j"
-          [class]="['economy', 'business', 'first'][seatsMatrix[i][j]]"
-          [selectedClass]="selectedClass"
-          [available]="seatsMatrix[i][j] !== 4"
-          [occupied]="seatsMatrix[i][j] === 3"
+          [class]="seatsMatrix[i][j]"
+          [isHighlighted]="selectedClass === seatsMatrix[i][j] || selectedClass === null"
           (selected)="selectedSeat($event)"
           (selectedOccupied)="selectedOccupied($event)"
         />

@@ -34,6 +34,8 @@ airline_model = api.model('FlightAirline', {
     'economy_class_description': fields.String(required=True, description='Economy class description'),
 })
 
+
+
 flight_model_output = api.model('FlightOutput', {
     'id': fields.String(readonly=True, description='Flight ID'),
     'airline': fields.Nested(airline_model, description='Airline'),
@@ -42,6 +44,10 @@ flight_model_output = api.model('FlightOutput', {
     'arrival_time': fields.DateTime(required=True, description='Arrival time'),
     'departure_airport': fields.Nested(airport_model, description='Departure Airport'),
     'arrival_airport': fields.Nested(airport_model, description='Arrival Airport'),
+    'price_first_class': fields.Float(required=True, description='First class price'),
+    'price_business_class': fields.Float(required=True, description='Business class price'),
+    'price_economy_class': fields.Float(required=True, description='Economy class price'),
+    'price_insurance': fields.Float(required=True, description='Insurance price'),
 })
 
 @api.route('/')
@@ -102,7 +108,7 @@ class FlightResource(Resource):
     def get(self, flight_id):
         """Fetch a flight with nested route and airport/city data"""
         flight = Flight.query.options(
-            joinedload(Flight.route)
+            joinedload(Flight.route),
         ).get_or_404(flight_id)
 
         return marshal(flight_schema.dump(flight), flight_model_output), 200
@@ -167,9 +173,18 @@ class FlightResource(Resource):
         except Exception as e:
             return {'error': str(e)}, 500
 
+
+seats_info_model = api.model('SeatsInfo', {
+    'first_class_seats': fields.List(fields.String, description='First class seats'),
+    'business_class_seats': fields.List(fields.String, description='Business class seats'),
+    'economy_class_seats': fields.List(fields.String, description='Economy class seats'),
+    'booked_seats': fields.List(fields.String, description='Booked seats'),
+})
+
 booked_seats_model = api.model('BookedSeats', {
     'flight_id': fields.String(readonly=True, description='Flight ID'),
-    'booked_seats': fields.List(fields.String, description='List of booked seats')
+    'seats_info': fields.Nested(seats_info_model, description='Seats info'),
+    'rows': fields.Integer(description='Rows of the aircraft'),
 })
 
 extra_flight_model = api.model('FlightExtra', {
@@ -199,9 +214,9 @@ class FlightExtraR(Resource):
         return marshal(flights_extra_schema.dump(q), extra_flight_model), 200
 
 
-@api.route('/booked-seats/<uuid:flight_id>')
+@api.route('/seats/<uuid:flight_id>')
 @api.param('flight_id', 'The flight identifier')
-class FlightBookedSeats(Resource):
+class FlightSeats(Resource):
     @api.doc(security=None)
     @api.response(404, 'Not Found')
     @api.response(500, 'Internal Server Error')
@@ -212,5 +227,6 @@ class FlightBookedSeats(Resource):
 
         return marshal({
             'flight_id': str(flight.id),
-            'booked_seats': flight.booked_seats
+            'seats_info': flight.seats_info,
+            'rows': flight.rows
         }, booked_seats_model), 200

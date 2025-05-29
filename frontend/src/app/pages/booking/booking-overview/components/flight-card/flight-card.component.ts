@@ -3,17 +3,19 @@ import {
   HlmCardDirective,
   HlmCardContentDirective,
 } from '@spartan-ng/ui-card-helm';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import { IJourney } from '@/types/search/flight';
 import prettyMilliseconds from 'pretty-ms';
+import { IFlight } from '@/types/flight';
 
 @Component({
   selector: 'flight-card',
-  imports: [HlmCardDirective, HlmCardContentDirective, HlmButtonDirective],
+  imports: [HlmCardDirective, HlmCardContentDirective],
   templateUrl: './flight-card.component.html',
 })
 export class FlightCardComponent {
-  @Input() journey!: IJourney;
+  @Input() flights!: {
+    details: IFlight;
+    airlineName: string;
+  }[];
   @Input() title: string = "";
 
   protected formatDate(date: string) {

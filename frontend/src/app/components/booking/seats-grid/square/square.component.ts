@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {NgClass} from '@angular/common';
-
+import { SeatClass } from '../seats-grid.component';
 @Component({
   selector: 'app-square',
   imports: [
@@ -10,23 +10,26 @@ import {NgClass} from '@angular/common';
   styleUrls: ['./square.component.css']
 })
 export class SquareComponent implements OnInit {
+
+  SeatClass = SeatClass;
+
   @Input() row: number = -1;
   @Input() column: number = -1;
 
   @Input() isSelected = false;
-  @Input() class = '';
-  @Input() selectedClass = '';
-  @Input() available = true;
-  @Input() occupied = false;
+  @Input() isHighlighted = false;
+  @Input() class: SeatClass = SeatClass.ECONOMY;
 
   @Input() animateOccupied = true;
+  @Output() selected = new EventEmitter<{ row: number, col: number, class: SeatClass.ECONOMY | SeatClass.BUSINESS | SeatClass.FIRST }>();
+  @Output() selectedOccupied = new EventEmitter<{ row: number, col: number}>();
 
   squareStyle: string = '';
 
   ngOnInit() {
-    if(!this.available){
+    if(this.class === SeatClass.UNAVAILABLE){
       this.squareStyle = 'bg-transparent';
-    } else if(this.occupied){
+    } else if(this.class === SeatClass.OCCUPIED){
       this.squareStyle = 'bg-red-600';
     } else {
       switch (this.class) {
@@ -50,8 +53,8 @@ export class SquareComponent implements OnInit {
   shake = false;
 
   onclick(){
-    if(this.available){
-      if(!this.occupied) {
+    if(this.class !== SeatClass.UNAVAILABLE){
+      if(this.class !== SeatClass.OCCUPIED) {
         this.selected.emit({row: this.row, col: this.column, class: this.class });
       } else {
         this.shake = true;
@@ -60,7 +63,4 @@ export class SquareComponent implements OnInit {
       }
     }
   }
-
-  @Output() selected = new EventEmitter<{ row: number, col: number, class: string }>();
-  @Output() selectedOccupied = new EventEmitter<{ row: number, col: number}>();
 }

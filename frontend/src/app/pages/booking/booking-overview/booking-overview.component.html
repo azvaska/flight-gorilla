@@ -45,10 +45,16 @@
       </div>
     </div> -->
 
-  <flight-card [journey]="departureJourney" title="Departure Flights" />
+  <flight-card 
+    [flights]="mappedDepartureFlights" 
+    title="Departure Flights" 
+  />
 
-  @if (returnJourney) {
-  <flight-card [journey]="returnJourney" title="Return Flights" /> 
+  @if (mappedReturnFlights) {
+    <flight-card 
+      [flights]="mappedReturnFlights" 
+      title="Return Flights" 
+    />
   }
   <!--  align the flex to have all items that starts from right -->
   <div class="flex justify-end mt-8">

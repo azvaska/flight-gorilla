@@ -1,4 +1,4 @@
-export interface IFlight {
+interface IFlight {
   id: string;
   flight_number: string;
   airline_name: string;
@@ -15,6 +15,7 @@ export interface IFlight {
   gate: string | null;
   terminal: string | null;
 }
+
 export interface ILayover {
   airport: string;
   duration_minutes: number;

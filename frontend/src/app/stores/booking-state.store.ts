@@ -8,8 +8,14 @@ export class BookingStateStore {
     this.bookingStateSubject.next(state);
   }
 
-  getBookingState(): IBookingState | null {
-    return this.bookingStateSubject.getValue();
+  getBookingState(): IBookingState {
+
+    const state = this.bookingStateSubject.getValue();
+    if (!state) {
+      throw new Error('Booking state not found');
+    }
+
+    return state;
   }
 
   updateBookingState(partialState: Partial<IBookingState>): void {
