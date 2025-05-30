@@ -71,8 +71,8 @@ class SeatSessionList(Resource):
         now = datetime.datetime.now(datetime.UTC)
         session_end = now + datetime.timedelta(minutes=30)  # 15 minute session
         already_session = SeatSession.query.filter(SeatSession.session_end_time > now,SeatSession.user_id == user_id).first()
-        if already_session is not  None:
-            already_session.delete()  # Remove old session if exists
+        if already_session is not None:
+            db.session.delete(already_session);
             db.session.commit()
             #return {'error': 'You already have an active session'}, 409
 

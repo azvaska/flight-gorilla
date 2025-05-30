@@ -84,10 +84,10 @@
       hlmBtn
       variant="outline"
       class="bg-black text-white w-[250px] mx-auto mt-8"
-      (click)="onContinue()"
+      (click)="onSeatConfirmation()"
       [disabled]="selectedSeat === null"
     >
-      Continue
+      Confirm seat
     </button>
   </div>
 
@@ -99,7 +99,7 @@
       [rows]="currentFlightSeats.rows"
       [selectedSeatCol]="selectedSeatCol"
       [selectedSeatRow]="selectedSeatRow"
-      (selected)="seatSelected($event)"
+      (selected)="onSeatSelection($event)"
       [economyClassSeats]="currentFlightSeats.seats_info.economy_class_seats"
       [businessClassSeats]="currentFlightSeats.seats_info.business_class_seats"
       [firstClassSeats]="currentFlightSeats.seats_info.first_class_seats"

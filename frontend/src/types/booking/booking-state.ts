@@ -11,4 +11,5 @@ export interface IBookingState {
   departureFlights: IFlight[];
   returnFlights?: IFlight[];
   phase: BookingPhase;
+  seatSessionId?: string
 }

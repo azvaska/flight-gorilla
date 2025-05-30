@@ -24,7 +24,9 @@ import { LoadingService } from '@/app/services/loading.service';
   providers: [BookingStateStore],
 })
 export class BookingComponent {
-  selectedNumber = 1;
+  protected selectedNumber = 1;
+
+  private _currentPhase: BookingPhase | null = null;
 
   constructor(
     private router: Router,
@@ -78,12 +80,12 @@ export class BookingComponent {
     });
 
     this.bookingStore.getBookingStateObservable().subscribe((state) => {
-      if (!state) {
+      if (!state || state.phase === this._currentPhase) {
         return;
       }
 
-      const phase = state.phase;
-      switch (phase) {
+      this._currentPhase = state.phase;
+      switch (this._currentPhase) {
         case BookingPhase.OVERVIEW:
           this.router.navigate(['/booking/overview']);
           break;

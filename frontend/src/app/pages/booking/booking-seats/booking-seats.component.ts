@@ -14,6 +14,8 @@ import { LoadingService } from '@/app/services/loading.service';
 import { FlightFetchService } from '@/app/services/flight/flight-fetch.service';
 import { IFlightSeats } from '@/types/flight';
 import { BookingPhase } from '@/types/booking/booking-state';
+import { BookingFetchService } from '@/app/services/booking/booking-fetch.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-booking2-seats',
@@ -52,10 +54,12 @@ export class BookingSeatsComponent {
 
   constructor(
     private flightFetchService: FlightFetchService,
+    private bookingFetchService: BookingFetchService,
     private bookingStateStore: BookingStateStore,
     private router: Router,
     private loadingService: LoadingService
   ) {
+    // Fetch initial seats
     this.fetchFlightSeats().then((seats) => {
       if (!seats) {
         throw new Error('No flight seats found');
@@ -63,6 +67,16 @@ export class BookingSeatsComponent {
 
       this.currentFlightSeats = seats;
       console.log('currentFlightSeats', this.currentFlightSeats);
+    });
+
+    // Create seat session
+    this.loadingService.startLoadingTask();
+    this.bookingFetchService.createSeatSession().subscribe((session) => {
+      this.bookingStateStore.updateBookingState({
+        seatSessionId: session.id,
+      });
+      this.loadingService.endLoadingTask();
+      console.log('New session created', session);
     });
   }
 
@@ -106,7 +120,7 @@ export class BookingSeatsComponent {
     }, 200);
   }
 
-  protected seatSelected(
+  protected onSeatSelection(
     event: {
       row: number;
       col: number;
@@ -114,51 +128,57 @@ export class BookingSeatsComponent {
     },
     noToast: boolean = false
   ) {
+    // If we selected the same seat, then deselect it
     if (
       this.selectedSeatCol === event.col &&
       this.selectedSeatRow == event.row
     ) {
-      // deselect
       this.selectedSeatCol = -1;
       this.selectedSeatRow = -1;
-    } else {
-      // select
-      if (this.selectedClassInternal !== event.class) {
-        if (this.selectedClassInternal !== null && !noToast) {
-          this.changeClassToast(
-            this.selectedClassInternal,
-            this.selectedSeatRow,
-            this.selectedSeatCol
-          );
-        }
-        this.toggleSelection(event.class);
-      }
-      this.selectedSeatCol = event.col;
-      this.selectedSeatRow = event.row;
-      this.selectedSeat = this.convertRowColToSeatName(
-        event.row,
-        event.col,
-        this.currentFlightSeats.rows
-      );
+      this.selectedSeat = null;
+      return;
     }
+
+    // If we selected a different class, then alert the user
+    if (this.selectedClassInternal !== event.class) {
+      if (this.selectedClassInternal !== null && !noToast) {
+        this.showClassChangeToast(
+          this.selectedClassInternal,
+          this.selectedSeatRow,
+          this.selectedSeatCol,
+          event.class
+        );
+      }
+      this.toggleSelection(event.class);
+    }
+
+    // Actually save the selection
+    this.selectedSeatCol = event.col;
+    this.selectedSeatRow = event.row;
+    this.selectedSeat = this.convertRowColToSeatName(
+      event.row,
+      event.col,
+      this.currentFlightSeats.rows
+    );
   }
 
-  protected changeClassToast(
+  protected showClassChangeToast(
     oldClass: SeatClass.ECONOMY | SeatClass.BUSINESS | SeatClass.FIRST,
     oldSeatRow: number,
-    oldSeatCol: number
+    oldSeatCol: number,
+    newClass: SeatClass.ECONOMY | SeatClass.BUSINESS | SeatClass.FIRST
   ) {
     toast('You selected a seat from a different class', {
       description:
         'Your class has been changed from ' +
         oldClass +
         ' to ' +
-        this.selectedClassInternal +
+        newClass +
         '.',
       action: {
         label: 'Undo',
         onClick: () =>
-          this.seatSelected(
+          this.onSeatSelection(
             { row: oldSeatRow, col: oldSeatCol, class: oldClass },
             true
           ),
@@ -176,9 +196,30 @@ export class BookingSeatsComponent {
     return rowPart + colChar;
   }
 
-  protected onContinue() {
-    this._currentFlightIndex++;
+  protected async onSeatConfirmation() {
+    const state = this.bookingStateStore.getBookingState();
 
+    if (!state.seatSessionId) {
+      throw new Error('No seat session id found');
+    }
+
+    if (!this.selectedSeat) {
+      throw new Error('No seat selected');
+    }
+
+    // Add the seat to the session
+    this.loadingService.startLoadingTask();
+    await firstValueFrom(
+      this.bookingFetchService.addSeatToSession(
+        state.seatSessionId,
+        this.selectedSeat,
+        this.currentFlight!.id
+      )
+    );
+    this.loadingService.endLoadingTask();
+
+    // If we have more flights, then fetch and go to the next flight. Otherwise, change page
+    this._currentFlightIndex++;
     if (this.currentFlight) {
       this.fetchFlightSeats().then((seats) => {
         if (!seats) {
@@ -193,7 +234,6 @@ export class BookingSeatsComponent {
         this.selectedSeatCol = -1;
       });
     } else {
-      //TODO: Save seat session ids
       this.bookingStateStore.updateBookingState({
         phase: BookingPhase.EXTRAS,
       });
