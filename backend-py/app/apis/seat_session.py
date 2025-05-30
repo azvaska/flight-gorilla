@@ -44,7 +44,7 @@ seat_session_parser.add_argument('seat_number', type=str, required=True,
 class SeatSessionList(Resource):
 
     @jwt_required()
-    @roles_required(['user'])
+    @roles_required('user')
     @api.response(404, 'Seat session not found')
     @api.response(200, 'Get seat sessions', seat_session_model)
     def get(self):
@@ -61,7 +61,7 @@ class SeatSessionList(Resource):
 
     #CATATOIO CONCORRENZA POSTI
     @jwt_required()
-    @roles_required(['user'])
+    @roles_required('user')
     @api.response(404, 'Seat session not found')
     @api.response(201, 'Get new seat sessions', seat_session_model)
     def post(self):
@@ -72,7 +72,9 @@ class SeatSessionList(Resource):
         session_end = now + datetime.timedelta(minutes=30)  # 15 minute session
         already_session = SeatSession.query.filter(SeatSession.session_end_time > now,SeatSession.user_id == user_id).first()
         if already_session is not  None:
-            return {'error': 'You already have an active session'}, 409
+            already_session.delete()  # Remove old session if exists
+            db.session.commit()
+            #return {'error': 'You already have an active session'}, 409
 
         # Create new seat session
         new_session = SeatSession(

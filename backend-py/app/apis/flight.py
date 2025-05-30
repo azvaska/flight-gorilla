@@ -222,7 +222,7 @@ class FlightExtraR(Resource):
         """Get all extra for a specific flight"""
         q = FlightExtra.query.filter_by(flight_id=flight_id).all()
         if not q:
-            return {'error': 'Flight extras not found'}, 404
+            return {'error': 'Flight extras not found for the flight'}, 404
 
         return marshal(flights_extra_schema.dump(q), extra_flight_model), 200
 
