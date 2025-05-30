@@ -18,11 +18,11 @@ export class MonthPickerComponent implements OnChanges {
   @Input() public minDate: Date | undefined = undefined;
   @Input() public maxDate: Date | undefined = undefined;
 
-  protected currentYear: number = new Date().getFullYear();
+  protected currentYear: number = this.selectedDate ? this.selectedDate.getFullYear() : new Date().getFullYear();
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['minDate'] && changes['minDate'].currentValue instanceof Date) {
-      this.currentYear = changes['minDate'].currentValue.getFullYear();
+      this.currentYear = Math.max(this.selectedDate?.getFullYear() ?? 0, changes['minDate'].currentValue.getFullYear());
     }
   }
 

@@ -98,7 +98,6 @@ export class SearchDatesComponent {
       })
       .subscribe((prices) => {
         this.departurePrices = prices;
-        console.log('departure prices', this.departurePrices);
         this.departureLoading = false;
       });
   }
@@ -116,7 +115,6 @@ export class SearchDatesComponent {
       })
       .subscribe((prices) => {
         this.returnPrices = prices;
-        console.log('return prices', this.returnPrices);
         this.returnLoading = false;
       });
   }
