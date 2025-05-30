@@ -114,3 +114,6 @@ class FlightExtra(db.Model):
 
     flight: Mapped[Flight] = relationship(Flight, back_populates='available_extras')
     extra: Mapped[Extra] = relationship(Extra, back_populates='flight_extras', lazy='joined')
+    
+    #i want flight and extra_id to be unique together
+    __table_args__ = (db.UniqueConstraint('flight_id', 'extra_id', name='uq_flight_extra'),)

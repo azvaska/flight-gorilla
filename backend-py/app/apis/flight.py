@@ -237,10 +237,12 @@ class FlightExtraR(Resource):
         """Create new flight extras"""
         data = request.json
         flight = Flight.query.get_or_404(flight_id)
-
+        airline = flight.airline
         # Check if flight belongs to the airline
-        if str(flight.airline_id) != str(airline_id):
+        if airline.id != airline_id:
             return {'error': 'You do not have permission to modify this flight'}, 403
+        
+        extras = [str(extra.id) for extra in airline.extras]
 
         try:
             results = []
@@ -251,6 +253,8 @@ class FlightExtraR(Resource):
                     'price': extra['price'],
                     'limit': extra['limit']
                 }
+                if extra['extra_id'] not in extras:
+                    return {'error': f"Extra {extra['extra_id']} does not belong to airline {airline_id}"}, 403
 
                 new_extra = flight_extra_schema.load(extra_data)
                 db.session.add(new_extra)
@@ -259,9 +263,7 @@ class FlightExtraR(Resource):
             db.session.commit()
             return marshal(flights_extra_schema.dump(results), extra_flight_model), 201
         except ValidationError as err:
-            return {"error": err.messages}, 400
-        except Exception as e:
-            return {"error": str(e)}, 500
+            return {'error':'validation Failed'}
 
 
 @api.route('/seats/<uuid:flight_id>')

@@ -61,8 +61,9 @@ class FlightExtraSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = FlightExtra
         load_instance = True
-        include_fk = True
-        exclude = ("flight_id",)
+        include_fk = True        
+    
+    
 
     name = ma.String(attribute="extra.name",dump_only=True)
     description = ma.String(attribute="extra.description",dump_only=True)
