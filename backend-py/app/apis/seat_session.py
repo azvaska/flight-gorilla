@@ -38,8 +38,6 @@ seat_session_parser.add_argument('flight_id', type=str, required=True,
                                 help='Flight UUID is required', location='json')
 seat_session_parser.add_argument('seat_number', type=str, required=True,
                                 help='Seat number is required', location='json')
-seat_session_parser.add_argument('class_type', type=ClassType, required=True,
-                                help='Class type is required', location='json')
 
 
 @api.route('/')
