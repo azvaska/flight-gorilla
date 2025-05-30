@@ -38,10 +38,10 @@ class Config:
     SECURITY_TRACKABLE = False
     RESTX_VALIDATE = True
     PROPAGATE_EXCEPTIONS = True
-
     # JWT Settings (Flask-JWT-Extended)
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "change-this-jwt-secret")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=120)  # 2 hours
+    JWT_TOKEN_LOCATION = ['headers']  # Allow tokens in headers and cookies
 
     # Optional for logging/debugging
     DEBUG = os.environ.get("FLASK_DEBUG", "0") == "1"
