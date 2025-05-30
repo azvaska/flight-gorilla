@@ -27,6 +27,7 @@ export class SquareComponent implements OnInit {
   squareStyle: string = '';
 
   ngOnInit() {
+    console.log('reder');
     if(this.class === SeatClass.UNAVAILABLE){
       this.squareStyle = 'bg-transparent';
     } else if(this.class === SeatClass.OCCUPIED){

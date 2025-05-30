@@ -35,8 +35,8 @@
   </div>
 
   <!-- Repeat rows -->
-  <ng-container *ngFor="let rowIndex of [].constructor(rows); let i = index">
-    <div class="flex items-center">
+  <ng-container *ngFor="let rowIndex of rowIndices; let i = index; trackBy: trackByRow">
+        <div class="flex items-center">
 
       <!-- Row number -->
       <div class="w-6 text-xs text-gray-700 text-center mr-2 not-italic transition-colors duration-200 rounded-xl"

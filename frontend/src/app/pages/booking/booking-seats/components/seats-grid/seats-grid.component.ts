@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, OnChanges, SimpleChanges} from '@angular/core';
 import {NgClass, NgForOf, NgIf} from "@angular/common";
 import {SquareComponent} from '@/app/pages/booking/booking-seats/components/seats-grid/square/square.component';
 import {HlmToasterComponent} from '@spartan-ng/ui-sonner-helm';
@@ -22,7 +22,7 @@ export enum SeatClass {
   ],
   templateUrl: './seats-grid.component.html'
 })
-export class SeatsGridComponent {
+export class SeatsGridComponent implements OnInit, OnChanges {
   @Input() rows!: number;
 
   @Input() economyClassSeats: string[] = [];
@@ -40,6 +40,11 @@ export class SeatsGridComponent {
   @Input() selectedOccupiedDescription: string = 'This seat is occupied. Please select another one.';
   
   protected seatsMatrix: SeatClass[][] = [];
+
+  protected rowIndices: number[] = [];
+  protected columnIndices: number[] = Array(6).fill(0).map((_, i) => i);
+  protected trackByRow = (index: number, row: number) => row;
+  protected trackByColumn = (index: number, column: number) => column;
 
   SeatClass = SeatClass;
 
@@ -70,6 +75,12 @@ export class SeatsGridComponent {
     for (const seat of this.occupiedSeats) {
       const { row, col } = this.convertSeatNameToRowCol(seat);
       this.seatsMatrix[row][col] = SeatClass.OCCUPIED;
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['rows'] && typeof changes['rows'].currentValue === 'number') {
+      this.rowIndices = Array(changes['rows'].currentValue).fill(0).map((_, i) => i);
     }
   }
 

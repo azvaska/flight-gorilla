@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
 import { BookingStateStore } from '@/app/stores/booking-state.store';
 import { LoadingService } from '@/app/services/loading.service';
 import { FlightFetchService } from '@/app/services/flight/flight-fetch.service';
-import { IFlightSeats } from '@/types/flight';
+import { IFlight, IFlightSeats } from '@/types/flight';
 import { BookingPhase } from '@/types/booking/booking-state';
 import { BookingFetchService } from '@/app/services/booking/booking-fetch.service';
 import { firstValueFrom } from 'rxjs';
@@ -51,6 +51,8 @@ export class BookingSeatsComponent {
   selectedSeatRow: number = -1;
   selectedSeatCol: number = -1;
 
+  protected currentFlight: IFlight | undefined;
+
   constructor(
     private flightFetchService: FlightFetchService,
     private bookingFetchService: BookingFetchService,
@@ -58,6 +60,10 @@ export class BookingSeatsComponent {
     private router: Router,
     private loadingService: LoadingService
   ) {
+
+    const state = this.bookingStateStore.getBookingState();
+    this.currentFlight = getCurrentFlight(state.departureFlights, state.returnFlights, this._currentFlightIndex);
+
     // Fetch initial seats
     this.fetchFlightSeats().then((seats) => {
       if (!seats) {
@@ -76,6 +82,7 @@ export class BookingSeatsComponent {
       this.loadingService.endLoadingTask();
       console.log('New session created', session);
     });
+
   }
 
   private async fetchFlightSeats() {
@@ -86,11 +93,6 @@ export class BookingSeatsComponent {
     this.loadingService.endLoadingTask();
     console.log('Fetched new seats', seats);
     return seats;
-  }
-
-  protected get currentFlight() {
-    const state = this.bookingStateStore.getBookingState();
-    return getCurrentFlight(state.departureFlights, state.returnFlights, this._currentFlightIndex);
   }
 
   protected changeSelectedClass(
@@ -203,12 +205,15 @@ export class BookingSeatsComponent {
 
     // If we have more flights, then fetch and go to the next flight. Otherwise, change page
     this._currentFlightIndex++;
-    if (this.currentFlight) {
+    const newFlight = getCurrentFlight(state.departureFlights, state.returnFlights, this._currentFlightIndex);
+
+    if (newFlight) {
       this.fetchFlightSeats().then((seats) => {
         if (!seats) {
           throw new Error('No flight seats found');
         }
 
+        this.currentFlight = newFlight;
         this.currentFlightSeats = seats;
         this.selectedSeat = null;
         this.selectedClassInternal = null;
