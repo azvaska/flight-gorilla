@@ -4,7 +4,7 @@ import { forkJoin, map, Observable } from 'rxjs';
 import { ICity, ILocation, INation } from '@/types/search/location';
 import { environment } from '@/app/environments/environment';
 import { IFlightSearchParams } from '@/types/search/params';
-import { IFlight, IFlightSeats } from '@/types/flight';
+import { IFlight, IFlightExtra, IFlightSeats } from '@/types/flight';
 
 @Injectable({ providedIn: 'root' })
 export class FlightFetchService {
@@ -16,5 +16,9 @@ export class FlightFetchService {
 
   public getFlightSeats(flightId: string): Observable<IFlightSeats> {
     return this.http.get<IFlightSeats>(`${environment.apiUrl}/flight/seats/${flightId}`);
+  }
+
+  public getFlightExtras(flightId: string): Observable<IFlightExtra[]> {
+    return this.http.get<IFlightExtra[]>(`${environment.apiUrl}/flight/extra/${flightId}`);
   }
 }

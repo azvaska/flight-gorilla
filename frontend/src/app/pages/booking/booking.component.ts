@@ -73,21 +73,27 @@ export class BookingComponent {
         departureFlights,
         returnFlights,
         phase: BookingPhase.OVERVIEW,
+        extraIds: [],
+        hasInsurance: false,
       });
 
-      console.log('booking state', this.bookingStore.getBookingState());
       this.loadingService.endLoadingTask();
     });
 
     this.bookingStore.getBookingStateObservable().subscribe((state) => {
+
+      
+      
       if (!state || state.phase === this._currentPhase) {
         return;
       }
 
+      console.log('New booking state', this.bookingStore.getBookingState());
+
       this._currentPhase = state.phase;
       switch (this._currentPhase) {
         case BookingPhase.OVERVIEW:
-          this.router.navigate(['/booking/overview']);
+          this.router.navigate(['/booking/overview'], { replaceUrl: true });
           break;
         case BookingPhase.SEATS:
           this.router.navigate(['/booking/seats'], { replaceUrl: true });

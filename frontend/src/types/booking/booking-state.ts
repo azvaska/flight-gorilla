@@ -12,4 +12,6 @@ export interface IBookingState {
   returnFlights?: IFlight[];
   phase: BookingPhase;
   seatSessionId?: string
+  extraIds: string[];
+  hasInsurance: boolean;
 }

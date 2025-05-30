@@ -11,17 +11,16 @@ import { SearchParamsGuard, SearchRedirectGuard } from './guards/search-guard';
 import { BookingComponent } from '@/app/pages/booking/booking.component';
 import { BookingOverviewComponent } from '@/app/pages/booking/booking-overview/booking-overview.component';
 import { BookingSeatsComponent } from '@/app/pages/booking/booking-seats/booking-seats.component';
-import { Booking3ExtraComponent } from '@/app/pages/booking/booking3-extra/booking3-extra.component';
+import { BookingExtrasComponent } from '@/app/pages/booking/booking-extras/booking-extras.component';
 import { LoginComponent } from '@/app/pages/auth/login/login.component';
 import { RegisterComponent } from '@/app/pages/auth/register/register.component';
 import {Booking4PaymentComponent} from '@/app/pages/booking/booking4-payment/booking4-payment.component';
 import {Booking5ConfirmationComponent} from '@/app/pages/booking/booking5-confirmation/booking5-confirmation.component';
 import {Booking5ErrorComponent} from '@/app/pages/booking/booking5-error/booking5-error.component';
 import { AuthGuard, GuestGuard } from './auth/auth.guard';
-import {MyReservationsComponent} from '@/app/pages/reservations/my-reservations/my-reservations.component';
-import {CancelReservationComponent} from '@/app/pages/reservations/cancel-reservation/cancel-reservation.component';
-import {MyProfileComponent} from '@/app/pages/my-profile/my-profile.component';
-import {CreditCardListComponent} from '@/app/components/credit-card-list/credit-card-list.component';
+import {MyReservationsComponent} from '@/app/pages/user/reservations/my-reservations/my-reservations.component';
+import {CancelReservationComponent} from '@/app/pages/user/reservations/cancel-reservation/cancel-reservation.component';
+import {MyProfileComponent} from '@/app/pages/user/my-profile/my-profile.component';
 
 export const routes: Routes = [
   {
@@ -30,6 +29,7 @@ export const routes: Routes = [
   },
   {
     path: 'auth',
+    canActivate: [GuestGuard],
     children: [
       {
         path: 'login',
@@ -87,7 +87,7 @@ export const routes: Routes = [
       },
       {
         path: 'extras',
-        component: Booking3ExtraComponent,
+        component: BookingExtrasComponent,
         data: { selectedNumber: 3 },
       },
       {

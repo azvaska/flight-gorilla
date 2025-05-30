@@ -8,8 +8,8 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PopoverComponent } from '@/app/components/popover/popover.component';
-import { PopoverTriggerDirective } from '@/app/components/popover/popover-trigger.directive';
+import { PopoverComponent } from '@/app/components/ui/popover/popover.component';
+import { PopoverTriggerDirective } from '@/app/components/ui/popover/popover-trigger.directive';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCircleX } from '@ng-icons/lucide';
 import Fuse from 'fuse.js';

@@ -1,10 +1,10 @@
 // src/app/my-profile/my-profile.component.ts
 import { Component } from '@angular/core';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import {CreditCardListComponent} from '@/app/components/credit-card-list/credit-card-list.component';
+import {CreditCardListComponent} from '@/app/components/user/credit-card-list/credit-card-list.component';
 import {CreditCard} from '@/types/credit-card';
 import {UserInfo} from '@/types/user-info';
-import {ProfileComponent} from '@/app/components/profile/profile.component';
+import {ProfileComponent} from '@/app/components/user/profile/profile.component';
 import {NgClass} from '@angular/common';
 
 

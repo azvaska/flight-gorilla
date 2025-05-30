@@ -149,7 +149,6 @@ export class SearchFlightsComponent {
     } else {
       this.selectedReturnJourney = journey;
     }
-    console.log(this.selectedDepartureJourney, this.selectedReturnJourney);
     this.router.navigateByUrl('/booking', {
       state: {
         departureJourney: this.selectedDepartureJourney,
@@ -189,7 +188,6 @@ export class SearchFlightsComponent {
   }
 
   protected onPriceChange() {
-    console.log('onPriceChange');
     this.loadingService.startLoadingTask();
     this.fetchFlights(this.searchPhase, 1).then((flights) => {
       this.journeys = flights.journeys;

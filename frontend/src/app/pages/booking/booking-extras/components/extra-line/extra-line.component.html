@@ -32,16 +32,16 @@
   <ng-template #single>
     <div class="flex items-center justify-center w-28">
       <hlm-checkbox
-        [checked]="selected"
-        (checkedChange)="toggleCheckbox()"
+        [(checked)]="isSelected"
+        (checkedChange)="toggleCheckbox($event)"
         class="h-5 w-5"
       />
 
     </div>
   </ng-template>
 
-  <div class="w-16 text-right text-gray-900 select-none">
-    €{{  price }}
-    <ng-container *ngIf="isStackable">/n</ng-container>
+  <div class="w-40 text-right text-gray-900 select-none">
+    {{  price }} €
+    <ng-container *ngIf="isStackable">/piece</ng-container>
   </div>
 </li>

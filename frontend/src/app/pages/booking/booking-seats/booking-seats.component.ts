@@ -3,7 +3,7 @@ import { NgClass, NgForOf, NgIf } from '@angular/common';
 import {
   SeatClass,
   SeatsGridComponent,
-} from '@/app/components/booking/seats-grid/seats-grid.component';
+} from '@/app/pages/booking/booking-seats/components/seats-grid/seats-grid.component';
 
 import { toast } from 'ngx-sonner';
 import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
@@ -16,6 +16,7 @@ import { IFlightSeats } from '@/types/flight';
 import { BookingPhase } from '@/types/booking/booking-state';
 import { BookingFetchService } from '@/app/services/booking/booking-fetch.service';
 import { firstValueFrom } from 'rxjs';
+import { getCurrentFlight } from '@/utils/booking';
 
 @Component({
   selector: 'app-booking2-seats',
@@ -47,8 +48,6 @@ export class BookingSeatsComponent {
     | SeatClass.FIRST
     | null = null;
 
-  gridUpdateTimeout: any;
-
   selectedSeatRow: number = -1;
   selectedSeatCol: number = -1;
 
@@ -66,7 +65,6 @@ export class BookingSeatsComponent {
       }
 
       this.currentFlightSeats = seats;
-      console.log('currentFlightSeats', this.currentFlightSeats);
     });
 
     // Create seat session
@@ -86,38 +84,23 @@ export class BookingSeatsComponent {
       .getFlightSeats(this.currentFlight!.id)
       .toPromise();
     this.loadingService.endLoadingTask();
+    console.log('Fetched new seats', seats);
     return seats;
   }
 
   protected get currentFlight() {
     const state = this.bookingStateStore.getBookingState();
-
-    if (this._currentFlightIndex < state.departureFlights.length) {
-      return state.departureFlights[this._currentFlightIndex];
-    }
-
-    const newIndex = this._currentFlightIndex - state.departureFlights.length;
-
-    if (state.returnFlights && newIndex < state.returnFlights.length) {
-      return state.returnFlights[newIndex];
-    }
-
-    return undefined;
+    return getCurrentFlight(state.departureFlights, state.returnFlights, this._currentFlightIndex);
   }
 
-  protected toggleSelection(
+  protected changeSelectedClass(
     newClass: SeatClass.ECONOMY | SeatClass.BUSINESS | SeatClass.FIRST
   ): void {
     this.selectedClassInternal =
       this.selectedClassInternal === newClass ? null : newClass;
     this.selectedSeatRow = -1;
     this.selectedSeatCol = -1;
-    if (this.gridUpdateTimeout) {
-      clearTimeout(this.gridUpdateTimeout);
-    }
-    this.gridUpdateTimeout = setTimeout(() => {
-      this.selectedClassGrid = this.selectedClassInternal;
-    }, 200);
+    this.selectedClassGrid = this.selectedClassInternal;
   }
 
   protected onSeatSelection(
@@ -149,7 +132,7 @@ export class BookingSeatsComponent {
           event.class
         );
       }
-      this.toggleSelection(event.class);
+      this.changeSelectedClass(event.class);
     }
 
     // Actually save the selection

@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { AnimatedRadioComponent } from '@/app/components/animated-radio/animated-radio.component';
+import { AnimatedRadioComponent } from '@/app/components/ui/animated-radio/animated-radio.component';
 import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
 import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
 import { BrnSelectImports } from '@spartan-ng/brain/select';

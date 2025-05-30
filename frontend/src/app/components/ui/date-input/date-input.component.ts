@@ -5,8 +5,8 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { PopoverComponent } from '@/app/components/popover/popover.component';
-import { PopoverTriggerDirective } from '../popover/popover-trigger.directive';
+import { PopoverComponent } from '@/app/components/ui/popover/popover.component';
+import { PopoverTriggerDirective } from '@/app/components/ui/popover/popover-trigger.directive';
 import { CommonModule } from '@angular/common';
 import { HlmCalendarComponent } from '@spartan-ng/ui-calendar-helm';
 import { MonthPickerComponent } from './month-picker/month-picker.component';

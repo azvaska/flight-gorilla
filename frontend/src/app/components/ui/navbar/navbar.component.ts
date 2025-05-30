@@ -6,8 +6,8 @@ import {
   HlmAvatarFallbackDirective,
 } from '@spartan-ng/ui-avatar-helm';
 import { AuthService } from '@/app/auth/auth.service';
-import { PopoverComponent } from '@/app/components/popover/popover.component';
-import { PopoverTriggerDirective } from '@/app/components/popover/popover-trigger.directive';
+import { PopoverComponent } from '@/app/components/ui/popover/popover.component';
+import { PopoverTriggerDirective } from '@/app/components/ui/popover/popover-trigger.directive';
 import { UserFetchService } from '@/app/services/user/user-fetch.service';
 import { IUser } from '@/types/user';
 import {RouterLink} from '@angular/router';

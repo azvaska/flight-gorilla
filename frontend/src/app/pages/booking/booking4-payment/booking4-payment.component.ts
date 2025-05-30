@@ -2,7 +2,7 @@ import {Component, Input} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { AnimatedRadioComponent } from '@/app/components/animated-radio/animated-radio.component';
+import { AnimatedRadioComponent } from '@/app/components/ui/animated-radio/animated-radio.component';
 import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
 import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
@@ -12,7 +12,7 @@ import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideLoaderCircle } from '@ng-icons/lucide';
 import { HlmIconDirective } from '@spartan-ng/ui-icon-helm';
-import {CreditCardListComponent} from '@/app/components/credit-card-list/credit-card-list.component';
+import {CreditCardListComponent} from '@/app/components/user/credit-card-list/credit-card-list.component';
 import {CreditCard} from '@/types/credit-card';
 
 

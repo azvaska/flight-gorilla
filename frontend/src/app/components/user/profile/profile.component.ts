@@ -7,7 +7,7 @@ import {HlmInputDirective} from '@spartan-ng/ui-input-helm';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmSelectImports } from '@spartan-ng/ui-select-helm';
 
-import {SwitcherComponent} from '@/app/components/switcher/switcher.component';
+import {SwitcherComponent} from '@/app/components/ui/switcher/switcher.component';
 import {NgClass, NgIf} from '@angular/common';
 import {HlmIconDirective} from "@spartan-ng/ui-icon-helm";
 import {NgIcon, provideIcons} from "@ng-icons/core";

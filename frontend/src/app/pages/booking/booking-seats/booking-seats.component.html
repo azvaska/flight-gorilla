@@ -11,7 +11,7 @@
     @if(currentFlightSeats.seats_info.first_class_seats.length > 0) {
     <div
       class="first-class-row group transform flex items-start justify-between p-4 rounded-xl transition-all duration-300 cursor-pointer"
-      (click)="toggleSelection(SeatClass.FIRST)"
+      (click)="changeSelectedClass(SeatClass.FIRST)"
       [ngClass]="{ selected: selectedClassInternal === SeatClass.FIRST }"
     >
       <div>
@@ -35,7 +35,7 @@
     <!-- BUSINESS ROW -->
     <div
       class="row group transform flex items-start justify-between p-4 rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer bg-zinc-200"
-      (click)="toggleSelection(SeatClass.BUSINESS)"
+      (click)="changeSelectedClass(SeatClass.BUSINESS)"
       [ngClass]="{ selected: selectedClassInternal === SeatClass.BUSINESS }"
     >
       <div>
@@ -59,7 +59,7 @@
     <!-- ECONOMY ROW -->
     <div
       class="row group transform flex items-start justify-between p-4 rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer bg-zinc-100"
-      (click)="toggleSelection(SeatClass.ECONOMY)"
+      (click)="changeSelectedClass(SeatClass.ECONOMY)"
       [ngClass]="{ selected: selectedClassInternal === SeatClass.ECONOMY }"
     >
       <div>
@@ -82,8 +82,7 @@
     }
     <button
       hlmBtn
-      variant="outline"
-      class="bg-black text-white w-[250px] mx-auto mt-8"
+      class="bg-black text-white px-10 mx-auto mt-8"
       (click)="onSeatConfirmation()"
       [disabled]="selectedSeat === null"
     >

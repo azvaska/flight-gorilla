@@ -3,7 +3,7 @@ import {NgClass, NgIf} from '@angular/common';
 import { HlmCheckboxComponent } from '@spartan-ng/ui-checkbox-helm';
 
 @Component({
-  selector: 'app-extra-line',
+  selector: 'extra-line',
   standalone: true,
   imports: [
     NgIf,
@@ -19,25 +19,30 @@ export class ExtraLineComponent {
   @Input() description = '';
   @Input() isStackable = false;
   @Input() price = 0;
+  @Input() limit: number = 0;
+
   /** two-way bindings */
   @Input() quantity = 0;
   @Output() quantityChange = new EventEmitter<number>();
-  @Input() selected = false;
-  @Output() selectedChange  = new EventEmitter<boolean>();
-
+  
+  protected isSelected = false;
   /** visual state */
   get isActive() {
     return this.isStackable
       ? this.quantity > 0
-      : this.selected;
+      : this.isSelected;
   }
 
   increment() {
+    if(this.limit > 0 && this.quantity >= this.limit) {
+      //TODO: Show a toast or something like that
+      return;
+    }
+
     this.quantity++;
     this.quantityChange.emit(this.quantity);
-    if (!this.selected) {
-      this.selected = true;
-      this.selectedChange.emit(true);
+    if (!this.isSelected) {
+      this.isSelected = true;
     }
   }
 
@@ -46,14 +51,22 @@ export class ExtraLineComponent {
       this.quantity--;
       this.quantityChange.emit(this.quantity);
       if (this.quantity === 0) {
-        this.selected = false;
-        this.selectedChange.emit(false);
+        this.isSelected = false;
       }
     }
   }
 
-  toggleCheckbox() {
-    this.selected = !this.selected;
-    this.selectedChange.emit(this.selected);
+  toggleCheckbox(checked: boolean | "indeterminate") {
+    if(checked === "indeterminate") {
+      return;
+    }
+
+    if(checked) {
+      this.quantity = 1;
+      this.quantityChange.emit(this.quantity);
+    } else {
+      this.quantity = 0;
+      this.quantityChange.emit(this.quantity);
+    }
   }
 }

@@ -1,8 +1,6 @@
 import { Component } from '@angular/core';
-import { SearchInputComponent } from '@/app/components/search-input/search-input.component';
-import { DateInputComponent } from '@/app/components/date-input/date-input.component';
 import { RouterModule, Router } from '@angular/router';
-import { FlightSearchBarComponent } from '@/app/components/flight-search/search-bar/search-bar.component';
+import { FlightSearchBarComponent } from '@/app/components/search/search-bar/search-bar.component';
 import {
   HlmCardContentDirective,
   HlmCardDescriptionDirective,

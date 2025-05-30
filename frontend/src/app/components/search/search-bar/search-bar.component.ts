@@ -9,8 +9,8 @@ import {
 import {
   SearchInputComponent,
   SearchInputValue,
-} from '@/app/components/search-input/search-input.component';
-import { DateInputComponent } from '@/app/components/date-input/date-input.component';
+} from '@/app/components/ui/search-input/search-input.component';
+import { DateInputComponent } from '@/app/components/ui/date-input/date-input.component';
 import { Router } from '@angular/router';
 import { dateToString } from '@/utils/date';
 import { SearchFetchService } from '@/app/services/search/search-fetch.service';

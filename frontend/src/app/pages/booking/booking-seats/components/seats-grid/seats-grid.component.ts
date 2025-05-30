@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {NgClass, NgForOf, NgIf} from "@angular/common";
-import {SquareComponent} from '@/app/components/booking/seats-grid/square/square.component';
+import {SquareComponent} from '@/app/pages/booking/booking-seats/components/seats-grid/square/square.component';
 import {HlmToasterComponent} from '@spartan-ng/ui-sonner-helm';
 import {toast} from 'ngx-sonner';
 
@@ -71,8 +71,6 @@ export class SeatsGridComponent {
       const { row, col } = this.convertSeatNameToRowCol(seat);
       this.seatsMatrix[row][col] = SeatClass.OCCUPIED;
     }
-
-    console.log(this.seatsMatrix);
   }
 
   private convertSeatNameToRowCol(seatName: string): { row: number, col: number } {

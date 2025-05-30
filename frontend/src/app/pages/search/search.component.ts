@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HlmCardDirective } from '@spartan-ng/ui-card-helm';
-import { PopoverComponent } from '@/app/components/popover/popover.component';
-import { PopoverTriggerDirective } from '@/app/components/popover/popover-trigger.directive';
-import { FlightSearchBarComponent } from '@/app/components/flight-search/search-bar/search-bar.component';
+import { PopoverComponent } from '@/app/components/ui/popover/popover.component';
+import { PopoverTriggerDirective } from '@/app/components/ui/popover/popover-trigger.directive';
+import { FlightSearchBarComponent } from '@/app/components/search/search-bar/search-bar.component';
 import { SearchParamsGuard } from '@/app/guards/search-guard';
 import { parseSpecificFlightSearchParams } from '@/utils/parsers/flight-search.parse';
 import { forkJoin, Observable, of } from 'rxjs';
@@ -56,7 +56,7 @@ export class SearchComponent {
   ) {
     this.searchParamsGuard.params$.subscribe((params) => {
       this.params = params;
-      console.log('refined params', this.params);
+      console.log('refined search params', this.params);
       this.loadingService.startLoadingTask();
       this.state$ = forkJoin({
         departure: this.getDepartureInfo(this.params),

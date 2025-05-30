@@ -1,6 +1,17 @@
 import { IAirline } from "./airline";
 import { IAirport } from "./airport";
 
+export interface IFlightExtra {
+  id: string;
+  name: string;
+  description: string;
+  extra_id: string;
+  price: number;
+  limit: number;
+  stackable: boolean;
+  required_on_all_segments: boolean;
+}
+
 export interface IFlightSeats {
   flight_id: string;
   seats_info: {
