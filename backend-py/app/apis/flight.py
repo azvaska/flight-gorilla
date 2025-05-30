@@ -189,14 +189,27 @@ booked_seats_model = api.model('BookedSeats', {
 
 extra_flight_model = api.model('FlightExtra', {
     'id': fields.String(readonly=True, description='Flight Extra ID'),
-    'name': fields.String(required=True, description='Name of the extra'),
-    'description': fields.String(required=True, description='Description of the extra'),
+    'name': fields.String(readonly=True,required=True, description='Name of the extra'),
+    'description': fields.String(readonly=True,required=True, description='Description of the extra'),
     'extra_id': fields.String(required=True, description='Extra ID'),
     'price': fields.Float(required=True, description='Price of the extra'),
-    'limit': fields.Integer(required=True, description='Limit of the extra'),
-    'stackable': fields.Boolean(required=True, description='Is the extra stackable'),
-    'required_on_all_segments': fields.Boolean(required=True, description='Is the extra required on all segments'),
+    'limit': fields.Integer(readonly=True,required=True, description='Limit of the extra'),
+    'stackable': fields.Boolean(readonly=True,required=True, description='Is the extra stackable'),
+    'required_on_all_segments': fields.Boolean(readonly=True,required=True, description='Is the extra required on all segments'),
 })
+
+
+
+
+extra_flight_input_model = api.model('FlightExtraInput', {
+    'extras': fields.List(fields.Nested(api.model('ExtraItem', {
+        'extra_id': fields.String(required=True, description='Extra ID'),
+        'price': fields.Float(required=True, description='Price of the extra'),
+        'limit': fields.Integer(required=True, description='Limit of the extra'),
+    })), required=True, description='List of extras to add to the flight')
+})
+
+
 
 @api.route('/extra/<uuid:flight_id>')
 @api.param('flight_id', 'The flight identifier')
@@ -212,6 +225,43 @@ class FlightExtraR(Resource):
             return {'error': 'Flight extras not found'}, 404
 
         return marshal(flights_extra_schema.dump(q), extra_flight_model), 200
+
+    @jwt_required()
+    @roles_required('airline-admin')
+    @airline_id_from_user()
+    @api.response(403, 'Forbidden')
+    @api.response(400, 'Bad Request')
+    @api.response(201, 'Created', extra_flight_model)
+    @api.expect(extra_flight_input_model)
+    def post(self, flight_id, airline_id):
+        """Create new flight extras"""
+        data = request.json
+        flight = Flight.query.get_or_404(flight_id)
+
+        # Check if flight belongs to the airline
+        if str(flight.airline_id) != str(airline_id):
+            return {'error': 'You do not have permission to modify this flight'}, 403
+
+        try:
+            results = []
+            for extra in data['extras']:
+                extra_data = {
+                    'flight_id': str(flight_id),
+                    'extra_id': extra['extra_id'],
+                    'price': extra['price'],
+                    'limit': extra['limit']
+                }
+
+                new_extra = flight_extra_schema.load(extra_data)
+                db.session.add(new_extra)
+                results.append(new_extra)
+
+            db.session.commit()
+            return marshal(flights_extra_schema.dump(results), extra_flight_model), 201
+        except ValidationError as err:
+            return {"error": err.messages}, 400
+        except Exception as e:
+            return {"error": str(e)}, 500
 
 
 @api.route('/seats/<uuid:flight_id>')

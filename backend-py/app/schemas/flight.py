@@ -64,10 +64,10 @@ class FlightExtraSchema(ma.SQLAlchemyAutoSchema):
         include_fk = True
         exclude = ("flight_id",)
 
-    name = ma.String(attribute="extra.name")
-    description = ma.String(attribute="extra.description")
-    stackable = ma.Boolean(attribute="extra.stackable")
-    required_on_all_segments = ma.Boolean(attribute="extra.required_on_all_segments")
+    name = ma.String(attribute="extra.name",dump_only=True)
+    description = ma.String(attribute="extra.description",dump_only=True)
+    stackable = ma.Boolean(attribute="extra.stackable",dump_only=True)
+    required_on_all_segments = ma.Boolean(attribute="extra.required_on_all_segments",dump_only=True)
 
 
 
