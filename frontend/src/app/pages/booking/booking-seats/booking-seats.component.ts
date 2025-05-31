@@ -87,9 +87,9 @@ export class BookingSeatsComponent {
 
   private async fetchFlightSeats() {
     this.loadingService.startLoadingTask();
-    const seats = await this.flightFetchService
+    const seats = await firstValueFrom(this.flightFetchService
       .getFlightSeats(this.currentFlight!.id)
-      .toPromise();
+    );
     this.loadingService.endLoadingTask();
     console.log('Fetched new seats', seats);
     return seats;

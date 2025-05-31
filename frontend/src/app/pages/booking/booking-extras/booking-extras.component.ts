@@ -13,6 +13,7 @@ import {
   HlmCardContentDirective,
 } from '@spartan-ng/ui-card-helm';
 import { BookingPhase } from '@/types/booking/booking-state';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'booking-extras',
@@ -49,9 +50,9 @@ export class BookingExtrasComponent {
 
   private async fetchFlightExtras() {
     this.loadingService.startLoadingTask();
-    const extras = await this.flightFetchService
+    const extras = await firstValueFrom(this.flightFetchService
       .getFlightExtras(this.currentFlight!.id)
-      .toPromise();
+    );
     this.loadingService.endLoadingTask();
     console.log('Fetched new extras', extras);
     return extras;

@@ -5,6 +5,8 @@ export enum BookingPhase {
   SEATS = 'seats',
   EXTRAS = 'extras',
   PAYMENT = 'payment',
+  CONFIRMED = 'confirmed',
+  ERROR = 'error',
 }
 
 export interface IBookingState {

@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {HlmButtonDirective} from "@spartan-ng/ui-button-helm";
-import {UserInfo} from '@/types/user-info';
+import {UserInfo} from '@/types/user/user-info';
 import { lucideLoaderCircle } from '@ng-icons/lucide';
 import {FormsModule} from '@angular/forms';
 import {HlmInputDirective} from '@spartan-ng/ui-input-helm';

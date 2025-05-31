@@ -1,20 +1,18 @@
-import {Component, Input} from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-import { AnimatedRadioComponent } from '@/app/components/ui/animated-radio/animated-radio.component';
-import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
-import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
-import { BrnSelectImports } from '@spartan-ng/brain/select';
-import { HlmSelectImports } from '@spartan-ng/ui-select-helm';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideLoaderCircle } from '@ng-icons/lucide';
-import { HlmIconDirective } from '@spartan-ng/ui-icon-helm';
-import {CreditCardListComponent} from '@/app/components/user/credit-card-list/credit-card-list.component';
-import {CreditCard} from '@/types/credit-card';
-
+import { CreditCardListComponent } from '@/app/components/user/credit-card-list/credit-card-list.component';
+import { IPayementCard } from '@/types/user/payement-card';
+import { LoadingService } from '@/app/services/loading.service';
+import { UserFetchService } from '@/app/services/user/user-fetch.service';
+import { BookingFetchService } from '@/app/services/booking/booking-fetch.service';
+import { BookingStateStore } from '@/app/stores/booking-state.store';
+import { firstValueFrom } from 'rxjs';
+import { BookingPhase } from '@/types/booking/booking-state';
 
 @Component({
   selector: 'app-booking4-payment',
@@ -23,7 +21,6 @@ import {CreditCard} from '@/types/credit-card';
     CommonModule,
     FormsModule,
     HlmButtonDirective,
-    RouterLink,
     CreditCardListComponent,
   ],
   templateUrl: './booking4-payment.component.html',
@@ -32,8 +29,62 @@ import {CreditCard} from '@/types/credit-card';
 export class Booking4PaymentComponent {
   selectedCardId: number | 'new' = 1;
 
-  cards: CreditCard[] = [
-    { id: 1, name: 'Card1', last4: '1236', circuit: 'mastercard', expiry: '08/24', holder: 'Jane Doe', type: 'debit' },
-    { id: 2, name: 'Card2', last4: '5421', circuit: 'visa',       expiry: '11/25', holder: 'John Smith', type: 'credit' },
-  ];
+  protected cards: IPayementCard[] | undefined;
+
+  constructor(
+    private router: Router,
+    private loadingService: LoadingService,
+    private userFetchService: UserFetchService,
+    private bookingFetchService: BookingFetchService,
+    private bookingStateStore: BookingStateStore
+  ) {
+    this.fetchCards().then((cards) => {
+      this.cards = cards;
+    });
+  }
+
+  private async fetchCards() {
+    this.loadingService.startLoadingTask();
+    const cards = await firstValueFrom(
+      this.userFetchService.getPayementCards()
+    );
+    this.loadingService.endLoadingTask();
+    return cards;
+  }
+
+  private async createBooking() {
+    this.loadingService.startLoadingTask();
+
+    const state = this.bookingStateStore.getBookingState();
+
+    const booking = await firstValueFrom(
+      this.bookingFetchService.createBooking({
+        sessionId: state.seatSessionId!,
+        departureFlightIds: state.departureFlights.map((flight) => flight.id),
+        returnFlightIds: state.returnFlights?.map((flight) => flight.id) ?? [],
+        extraIds: state.extraIds ?? [],
+        hasInsurance: state.hasInsurance,
+      })
+    );
+
+    this.loadingService.endLoadingTask();
+
+    return booking;
+  }
+
+  protected onContinue() {
+    try {
+      this.createBooking().then((booking) => {
+        console.log('Successfully created booking', booking);
+        this.bookingStateStore.updateBookingState({
+          phase: BookingPhase.CONFIRMED,
+        });
+      });
+    } catch (error) {
+      console.error('Error creating booking', error);
+      this.bookingStateStore.updateBookingState({
+        phase: BookingPhase.ERROR,
+      });
+    }
+  }
 }

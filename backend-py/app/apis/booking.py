@@ -164,10 +164,13 @@ class BookingList(Resource):
             200,
         )
 
+
     @api.expect(booking_model_input)
     @jwt_required()
     @roles_required(["user"])
-    @api.response(201, "Created", booking_model_output)
+    @api.response(201, "Created", api.model("BookingCreationResponse", {
+        "id": fields.String(readonly=True, description="Booking ID")
+    }))
     @api.response(400, "Bad Request")
     @api.response(404, "Not Found")
     def post(self):
@@ -277,10 +280,8 @@ class BookingList(Resource):
             sql_session.commit()
             sql_session.delete(seat_session)
             sql_session.commit()
-            
-            #connection.rollback()
 
-            return {"message": "Booking created successfully", "code": 201}, 201
+            return {"id": str(booking.id)}, 201
 
 
 @api.route("/<uuid:booking_id>")

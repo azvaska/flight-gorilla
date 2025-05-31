@@ -104,6 +104,12 @@ export class BookingComponent {
         case BookingPhase.PAYMENT:
           this.router.navigate(['/booking/payment'], { replaceUrl: true });
           break;
+        case BookingPhase.CONFIRMED:
+          this.router.navigate(['/booking/confirmed'], { replaceUrl: true });
+          break;
+        case BookingPhase.ERROR:
+          this.router.navigate(['/booking/error'], { replaceUrl: true });
+          break;
       }
     });
   }

@@ -4,17 +4,32 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, marshal, reqparse
 from marshmallow import ValidationError
 from app.core.auth import roles_required
-from app.models.user import User, PayementCard
+from app.models.user import User, PayementCard, CardType
 from app.schemas.user import UserSchema, user_schema, users_schema, debit_card_schema, debit_cards_schema
+from app.extensions import db
 
 api = Namespace('user', description='User related operations')
 
+card_type_values = [member.value.upper() for member in CardType]
+
 # --- RESTx Models ---
-debit_card_model = api.model('DebitCard', {
+payement_card_model_input = api.model('DebitCard', {
+    'holder_name': fields.String(required=True, description='Card holder full name'),
+    'card_name': fields.String(required=True, description='Card name'),
+    'last_4_digits': fields.String(required=True, description='Last 4 digits of card'),
+    'expiration_date': fields.String(required=True, description='Card expiration date'),
+    'circuit': fields.String(required=True, description='Card circuit'),
+    'card_type': fields.String(required=True, description='Card type', enum=card_type_values),
+})
+
+payement_card_model_output = api.model('DebitCardOutput', {
     'id': fields.Integer(readonly=True, description='Card ID'),
-    'last_4_card': fields.String(required=True, description='Last 4 digits of card'),
-    'credit_card_expiration': fields.String(required=True, description='Card expiration date'),
-    'circuits': fields.String(required=True, description='Card circuit')
+    'holder_name': fields.String(required=True, description='Card holder full name'),
+    'card_name': fields.String(required=True, description='Card name'),
+    'last_4_digits': fields.String(required=True, description='Last 4 digits of card'),
+    'expiration_date': fields.String(required=True, description='Card expiration date'),
+    'circuit': fields.String(required=True, description='Card circuit'),
+    'card_type': fields.String(required=True, description='Card type', enum=card_type_values),
 })
 
 user_model = api.model('User', {
@@ -131,7 +146,6 @@ class UserResource(Resource):
     def delete(self, user_id):
         """Delete a user given its identifier (admin only)"""
         user = User.query.get_or_404(user_id)
-
         # Prevent deleting the last admin
         if user.has_role('admin'):
             admin_count = User.query.join(User.roles).filter(User.roles.any(name='admin')).count()
@@ -153,16 +167,21 @@ class CurrentUser(Resource):
         return user_schema.dump(user), 200
 
 @api.route('/cards')
+@api.response(500, 'Internal Server Error')
 class UserCardsList(Resource):
     @jwt_required()
+    @api.response(200, 'OK', payement_card_model_output)
+    @api.response(404, 'Not Found')
     def get(self):
         """Get all credit cards for the current user"""
         user_id = get_jwt_identity()
         user = User.query.get_or_404(user_id)
-        return debit_cards_schema.dump(user.cards), 200
+        return marshal(debit_cards_schema.dump(user.cards), payement_card_model_output), 200
 
     @jwt_required()
-    @api.expect(debit_card_model)
+    @api.expect(payement_card_model_input)
+    @api.response(201, 'Created', payement_card_model_output)
+    @api.response(400, 'Bad Request')
     def post(self):
         """Add a new credit card for the current user"""
         user_id = get_jwt_identity()
@@ -170,27 +189,35 @@ class UserCardsList(Resource):
 
         new_card = PayementCard(
             user_id=user_id,
-            last_4_card=data['last_4_card'],
-            credit_card_expiration=data['credit_card_expiration'],
-            circuits=data['circuits']
+            card_name=data['card_name'],
+            holder_name=data['holder_name'],
+            last_4_digits=data['last_4_digits'],
+            expiration_date=data['expiration_date'],
+            circuit=data['circuit'],
+            card_type=CardType[data['card_type'].upper()]
         )
 
         db.session.add(new_card)
         db.session.commit()
 
-        return debit_card_schema.dump(new_card), 201
+        return marshal(debit_card_schema.dump(new_card), payement_card_model_output), 201
 
 @api.route('/cards/<int:card_id>')
 @api.param('card_id', 'The card identifier')
+@api.response(500, 'Internal Server Error')
 class UserCardResource(Resource):
     @jwt_required()
+    @api.response(200, 'OK', payement_card_model_output)
+    @api.response(404, 'Not Found')
     def get(self, card_id):
         """Get a specific credit card"""
         user_id = get_jwt_identity()
         card = PayementCard.query.filter_by(id=card_id, user_id=user_id).first_or_404()
-        return debit_card_schema.dump(card), 200
+        return marshal(debit_card_schema.dump(card), payement_card_model_output), 200
 
     @jwt_required()
+    @api.response(200, 'OK')
+    @api.response(404, 'Not Found')
     def delete(self, card_id):
         """Delete a credit card"""
         user_id = get_jwt_identity()

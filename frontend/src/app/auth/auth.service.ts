@@ -26,7 +26,7 @@ export class AuthService {
 
   refreshToken() {
     const rt = localStorage.getItem(this.refreshTokenKey);
-    return this.http.post<AuthResp>(`${this.authUrl}/refresh`, { refreshToken: rt })
+    return this.http.post<AuthResp>(`${this.authUrl}/refresh/`, { refreshToken: rt })
       .pipe(tap(res => this.storeTokens(res)));
   }
 

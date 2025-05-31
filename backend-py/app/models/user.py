@@ -33,8 +33,11 @@ class User(sqla.FsUserMixin,db.Model):
     bookings: Mapped[List['Booking']] = relationship('Booking', back_populates='user', cascade='all, delete-orphan')
     cards: Mapped[List['PayementCard']] = relationship('PayementCard', back_populates='user', cascade='all, delete-orphan')
 
+
 class PayementCard(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    card_name: Mapped[str] = mapped_column(db.String(255), nullable=False)
+    holder_name: Mapped[str] = mapped_column(db.String(255), nullable=False)
     user_id: Mapped[uuid.UUID] = mapped_column(db.UUID, db.ForeignKey(User.id), nullable=False)
     last_4_digits: Mapped[str] = mapped_column(db.String(255), nullable=False)
     expiration_date: Mapped[str] = mapped_column(db.String(255), nullable=False)

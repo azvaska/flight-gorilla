@@ -1,12 +1,21 @@
 <div class="flex justify-center">
   <div class="p-6 bg-white rounded-lg shadow w-full max-w-4xl">
     <h2 class="text-xl font-semibold mb-6">Choose a payment method</h2>
-
-    <app-credit-card-list [cards]="cards" (selectedCardId)="selectedCardId = $event"  />
+    @if (cards) {
+    <app-credit-card-list
+      [cards]="cards"
+      (selectedCardId)="selectedCardId = $event"
+    />
+    }
     <div class="w-full max-w-4xl flex justify-end">
-      <button hlmBtn variant='outline' class="bg-black text-white w-[250px] ml-auto mt-4"
-              [routerLink]="['../confirmed']
-              ">Continue</button>
+      <button
+        hlmBtn
+        [disabled]="selectedCardId === 'new'"
+        class="bg-black text-white w-[250px] ml-auto mt-4"
+        (click)="onContinue()"
+      >
+        Continue
+      </button>
     </div>
   </div>
 </div>
