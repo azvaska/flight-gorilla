@@ -1,28 +1,30 @@
-import {Component, EventEmitter, Input, OnInit, Output, OnChanges, SimpleChanges} from '@angular/core';
-import {NgClass, NgForOf, NgIf} from "@angular/common";
-import {SquareComponent} from '@/app/pages/booking/booking-seats/components/seats-grid/square/square.component';
-import {HlmToasterComponent} from '@spartan-ng/ui-sonner-helm';
-import {toast} from 'ngx-sonner';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
+import { NgClass, NgForOf, NgIf } from '@angular/common';
+import { SquareComponent } from '@/app/pages/booking/booking-seats/components/seats-grid/square/square.component';
+import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
+import { toast } from 'ngx-sonner';
 
 export enum SeatClass {
   ECONOMY = 'economy',
   BUSINESS = 'business',
   FIRST = 'first',
   OCCUPIED = 'occupied',
-  UNAVAILABLE = 'unavailable'
+  UNAVAILABLE = 'unavailable',
 }
 @Component({
   selector: 'app-seats-grid',
-  imports: [
-    NgForOf,
-    SquareComponent,
-    NgIf,
-    HlmToasterComponent,
-    NgClass
-  ],
-  templateUrl: './seats-grid.component.html'
+  imports: [NgForOf, SquareComponent, NgIf, HlmToasterComponent, NgClass],
+  templateUrl: './seats-grid.component.html',
 })
-export class SeatsGridComponent implements OnInit, OnChanges {
+export class SeatsGridComponent implements OnChanges {
   @Input() rows!: number;
 
   @Input() economyClassSeats: string[] = [];
@@ -33,25 +35,51 @@ export class SeatsGridComponent implements OnInit, OnChanges {
 
   @Input() selectedSeatRow: number = -1;
   @Input() selectedSeatCol: number = -1;
-  
-  @Input() selectedClass: SeatClass.ECONOMY | SeatClass.BUSINESS | SeatClass.FIRST | null = null;
-  
+
+  @Input() selectedClass:
+    | SeatClass.ECONOMY
+    | SeatClass.BUSINESS
+    | SeatClass.FIRST
+    | null = null;
+
   @Input() selectedOccupiedTitle: string = 'Occupied Seat';
-  @Input() selectedOccupiedDescription: string = 'This seat is occupied. Please select another one.';
-  
+  @Input() selectedOccupiedDescription: string =
+    'This seat is occupied. Please select another one.';
+
   protected seatsMatrix: SeatClass[][] = [];
 
   protected rowIndices: number[] = [];
-  protected columnIndices: number[] = Array(6).fill(0).map((_, i) => i);
+  protected columnIndices: number[] = Array(6)
+    .fill(0)
+    .map((_, i) => i);
   protected trackByRow = (index: number, row: number) => row;
   protected trackByColumn = (index: number, column: number) => column;
 
   SeatClass = SeatClass;
 
-  ngOnInit() {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['rows'] && typeof changes['rows'].currentValue === 'number') {
+      this.rowIndices = Array(changes['rows'].currentValue)
+        .fill(0)
+        .map((_, i) => i);
+    }
 
+    // Handle change of selectedClass
+    if (
+      changes['economyClassSeats'] ||
+      changes['businessClassSeats'] ||
+      changes['firstClassSeats'] ||
+      changes['occupiedSeats']
+    ) {
+      this.initializeSeatsMatrix();
+    }
+  }
+
+  private initializeSeatsMatrix() {
     // initialize the seats matrix with 0s, "rows" rows and 6 columns
-    this.seatsMatrix = Array.from({ length: this.rows }, () => Array(6).fill(SeatClass.UNAVAILABLE));
+    this.seatsMatrix = Array.from({ length: this.rows }, () =>
+      Array(6).fill(SeatClass.UNAVAILABLE)
+    );
 
     // economyClassSeats
     for (const seat of this.economyClassSeats) {
@@ -78,13 +106,10 @@ export class SeatsGridComponent implements OnInit, OnChanges {
     }
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['rows'] && typeof changes['rows'].currentValue === 'number') {
-      this.rowIndices = Array(changes['rows'].currentValue).fill(0).map((_, i) => i);
-    }
-  }
-
-  private convertSeatNameToRowCol(seatName: string): { row: number, col: number } {
+  private convertSeatNameToRowCol(seatName: string): {
+    row: number;
+    col: number;
+  } {
     const colChar = seatName.charAt(seatName.length - 1); // last character is the column letter
     const rowPart = seatName.slice(0, -1); // everything except the last character
 
@@ -94,16 +119,23 @@ export class SeatsGridComponent implements OnInit, OnChanges {
     return { row, col };
   }
 
-  selectedSeat(event: {row: number, col: number, class: SeatClass.ECONOMY | SeatClass.BUSINESS | SeatClass.FIRST}) {
+  selectedSeat(event: {
+    row: number;
+    col: number;
+    class: SeatClass.ECONOMY | SeatClass.BUSINESS | SeatClass.FIRST;
+  }) {
     this.selected.emit(event);
   }
 
-  selectedOccupied(event: {row: number, col: number}) {
+  selectedOccupied(event: { row: number; col: number }) {
     toast(this.selectedOccupiedTitle, {
       description: this.selectedOccupiedDescription,
-    })
+    });
   }
 
-  @Output() selected = new EventEmitter<{ row: number, col: number, class: SeatClass.ECONOMY | SeatClass.BUSINESS | SeatClass.FIRST }>();
-
+  @Output() selected = new EventEmitter<{
+    row: number;
+    col: number;
+    class: SeatClass.ECONOMY | SeatClass.BUSINESS | SeatClass.FIRST;
+  }>();
 }

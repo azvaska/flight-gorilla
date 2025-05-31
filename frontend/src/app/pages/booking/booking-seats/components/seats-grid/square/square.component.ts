@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
 import {NgClass} from '@angular/common';
 import { SeatClass } from '../seats-grid.component';
 @Component({
@@ -9,7 +9,7 @@ import { SeatClass } from '../seats-grid.component';
   templateUrl: './square.component.html',
   styleUrls: ['./square.component.css']
 })
-export class SquareComponent implements OnInit {
+export class SquareComponent implements OnChanges {
 
   SeatClass = SeatClass;
 
@@ -26,27 +26,27 @@ export class SquareComponent implements OnInit {
 
   squareStyle: string = '';
 
-  ngOnInit() {
-    console.log('reder');
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['class']) {
+      this.squareStyle = this.getSquareStyle();
+    }
+  }
+
+  private getSquareStyle(): string {
     if(this.class === SeatClass.UNAVAILABLE){
-      this.squareStyle = 'bg-transparent';
+      return 'bg-transparent';
     } else if(this.class === SeatClass.OCCUPIED){
-      this.squareStyle = 'bg-red-600';
+      return 'bg-red-600';
     } else {
       switch (this.class) {
         case 'economy':
-          this.squareStyle = 'bg-zinc-300';
-          break;
+          return 'bg-zinc-300';
         case 'business':
-          this.squareStyle = 'bg-zinc-400';
-          break;
+          return 'bg-zinc-400';
         case 'first':
-          this.squareStyle = 'bg-stone-700';
-          break;
+          return 'bg-stone-700';
         default:
-          this.squareStyle = 'bg-pink-600';   // this is an error
-          console.log("Error: class not found on seat " +
-            this.row + ["A", "B", "C", "D", "E", "F"][this.column]);
+          return ''
       }
     }
   }
