@@ -3,7 +3,7 @@
     Select your departure country
   </h1>
 
-  <div class="flex flex-row flex-wrap gap-4">
+  <div class="flex flex-row flex-wrap gap-4 items-center justify-center">
     @for (nation of nations; track nation.id) { 
     <country-card
       [handleCountrySelection]="handleCountrySelection.bind(this)"

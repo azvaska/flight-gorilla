@@ -20,7 +20,7 @@ import { dateToString } from '@/utils/date';
   ],
   templateUrl: './landing-page.component.html',
   host: {
-    class: 'block w-full h-full', // oppure qualsiasi combinazione tu voglia
+    class: 'block w-full h-full',
   },
   standalone: true,
 })

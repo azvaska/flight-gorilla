@@ -38,7 +38,7 @@ interface SearchState {
   ],
   templateUrl: './search.component.html',
   host: {
-    class: 'pb-10 h-fit w-full',
+    class: 'h-fit w-full',
   },
 })
 export class SearchComponent {

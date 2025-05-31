@@ -18,8 +18,8 @@ import {Booking4PaymentComponent} from '@/app/pages/booking/booking4-payment/boo
 import {Booking5ConfirmationComponent} from '@/app/pages/booking/booking5-confirmation/booking5-confirmation.component';
 import {Booking5ErrorComponent} from '@/app/pages/booking/booking5-error/booking5-error.component';
 import { AuthGuard, GuestGuard } from './auth/auth.guard';
-import {MyReservationsComponent} from '@/app/pages/user/reservations/my-reservations/my-reservations.component';
-import {CancelReservationComponent} from '@/app/pages/user/reservations/cancel-reservation/cancel-reservation.component';
+import {BookingsComponent} from '@/app/pages/user/bookings/bookings.component';
+import {CancelReservationComponent} from '@/app/pages/user/bookings/cancel-reservation/cancel-reservation.component';
 import {MyProfileComponent} from '@/app/pages/user/my-profile/my-profile.component';
 
 export const routes: Routes = [
@@ -108,9 +108,9 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'reservations',
+    path: 'bookings',
     canActivate: [AuthGuard],
-    component: MyReservationsComponent
+    component: BookingsComponent
   },
   {
     path: 'profile',
