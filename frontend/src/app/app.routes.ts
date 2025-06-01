@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
-import { LandingPageComponent } from '@/app/pages/landing-page/landing-page.component';
+import { LandingPageComponent as UserLandingPage } from '@/app/pages/landing-page/landing-page.component';
+import { LandingPageComponent as AirlineLandingPage } from '@/app/pages/airline/landing-page/landing-page.component';
 import { SearchComponent } from '@/app/pages/search/search.component';
 import { SearchCountryComponent } from '@/app/pages/search/search-country/search-country.component';
 import { SearchCityComponent } from '@/app/pages/search/search-city/search-city.component';
@@ -26,7 +27,7 @@ import { BookingDetailsComponent } from './pages/user/bookings/booking-details/b
 export const routes: Routes = [
   {
     path: '',
-    component: LandingPageComponent,
+    component: UserLandingPage,
   },
   {
     path: 'auth',
@@ -107,6 +108,10 @@ export const routes: Routes = [
         data: { selectedNumber: 5 },
       },
     ],
+  },
+  {
+    path: 'airlines',
+    component: AirlineLandingPage,
   },
   {
     path: 'bookings',

@@ -20,7 +20,7 @@ export class FlightCardComponent {
 
   protected formatDate(date: string) {
     return new Date(date).toISOString().slice(11, 16);
-  } 
+  }
 
   protected formatDuration(minutes: number) {
     return prettyMilliseconds(minutes * 60 * 1000);
