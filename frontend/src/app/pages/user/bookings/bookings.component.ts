@@ -31,4 +31,8 @@ export class BookingsComponent {
       this.loadingService.endLoadingTask();
     });
   }
+
+  protected navigateToBooking(bookingId: string) {
+    this.router.navigate(['/bookings', bookingId]);
+  }
 }

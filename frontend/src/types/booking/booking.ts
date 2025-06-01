@@ -17,6 +17,7 @@ export interface IBookingSegment {
 
 export interface IBooking {
   id: string;
+  booking_number: string;
   departure_flights: IBookingSegment[];
   return_flights: IBookingSegment[];
   total_price: number;

@@ -14,13 +14,14 @@ import { BookingSeatsComponent } from '@/app/pages/booking/booking-seats/booking
 import { BookingExtrasComponent } from '@/app/pages/booking/booking-extras/booking-extras.component';
 import { LoginComponent } from '@/app/pages/auth/login/login.component';
 import { RegisterComponent } from '@/app/pages/auth/register/register.component';
-import {Booking4PaymentComponent} from '@/app/pages/booking/booking4-payment/booking4-payment.component';
-import {Booking5ConfirmationComponent} from '@/app/pages/booking/booking5-confirmation/booking5-confirmation.component';
-import {Booking5ErrorComponent} from '@/app/pages/booking/booking5-error/booking5-error.component';
+import { BookingPaymentComponent } from '@/app/pages/booking/booking-payment/booking-payment.component';
+import { BookingConfirmationComponent } from '@/app/pages/booking/booking-confirmation/booking-confirmation.component';
+import { BookingErrorComponent } from '@/app/pages/booking/booking-error/booking-error.component';
 import { AuthGuard, GuestGuard } from './auth/auth.guard';
-import {BookingsComponent} from '@/app/pages/user/bookings/bookings.component';
-import {CancelReservationComponent} from '@/app/pages/user/bookings/cancel-reservation/cancel-reservation.component';
-import {MyProfileComponent} from '@/app/pages/user/my-profile/my-profile.component';
+import { BookingsComponent } from '@/app/pages/user/bookings/bookings.component';
+import { BookingCancelledComponent } from '@/app/pages/user/bookings/booking-cancelled/booking-cancelled.component';
+import { MyProfileComponent } from '@/app/pages/user/my-profile/my-profile.component';
+import { BookingDetailsComponent } from './pages/user/bookings/booking-details/booking-details.component';
 
 export const routes: Routes = [
   {
@@ -92,34 +93,43 @@ export const routes: Routes = [
       },
       {
         path: 'payment',
-        component: Booking4PaymentComponent,
+        component: BookingPaymentComponent,
         data: { selectedNumber: 4 },
       },
       {
         path: 'confirmed',
-        component: Booking5ConfirmationComponent,
+        component: BookingConfirmationComponent,
         data: { selectedNumber: 5 },
       },
       {
         path: 'error',
-        component: Booking5ErrorComponent,
+        component: BookingErrorComponent,
         data: { selectedNumber: 5 },
-      }
+      },
     ],
   },
   {
     path: 'bookings',
     canActivate: [AuthGuard],
-    component: BookingsComponent
+    children: [
+      {
+        path: '',
+        component: BookingsComponent,
+      },
+      {
+        path: 'cancelled',
+        component: BookingCancelledComponent,
+      },
+      {
+        path: ':bookingId',
+        component: BookingDetailsComponent,
+      },
+    ],
   },
+
   {
     path: 'profile',
     component: MyProfileComponent,
-  },
-  {
-    path: 'cancel-reservation',
-    canActivate: [AuthGuard],
-    component: CancelReservationComponent
   },
   {
     path: 'not-found',

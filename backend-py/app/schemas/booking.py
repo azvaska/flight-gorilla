@@ -82,6 +82,7 @@ class BookingOutputSchema(ma.SQLAlchemySchema):
     departure_flights = ma.List(ma.Nested(BookedFlightSchema()))
     return_flights = ma.List(ma.Nested(BookedFlightSchema()))
     total_price = ma.Method("get_total_price")
+    booking_number = ma.String(attribute="booking_number")
     is_insurance_purchased = ma.Boolean(attribute="has_booking_insurance")
 
     def get_total_price(self, obj):

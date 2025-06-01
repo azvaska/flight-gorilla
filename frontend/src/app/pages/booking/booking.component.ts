@@ -19,7 +19,7 @@ import { LoadingService } from '@/app/services/loading.service';
   imports: [ProgressWidgetComponent, RouterOutlet],
   templateUrl: './booking.component.html',
   host: {
-    class: 'block w-full h-full',
+    class: 'block w-full h-fit',
   },
   providers: [BookingStateStore],
 })

@@ -1,6 +1,18 @@
-<div class="flex flex-col gap-8 items-center">
+<div class="flex flex-col gap-8 items-center h-full">
   <h1 class="text-xl font-semibold text-gray-700">Your bookings</h1>
-  <div class="flex flex-col gap-4 w-full">
-    <booking-card *ngFor="let booking of bookings" [booking]="booking"></booking-card>
+  <div class="flex flex-col gap-4 w-full h-full">
+    @if (bookings.length > 0) {
+    <booking-card
+      *ngFor="let booking of bookings"
+      [booking]="booking"
+      (click)="navigateToBooking(booking.id)"
+      ></booking-card>
+    } @else {
+    <div
+      class="text-gray-500 text-center text-lg italic h-full flex items-center justify-center"
+    >
+      You have no bookings yet
+    </div>
+    }
   </div>
 </div>

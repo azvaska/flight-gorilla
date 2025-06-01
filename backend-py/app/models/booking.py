@@ -15,6 +15,7 @@ from app.models.user import User
 
 class Booking(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    booking_number: Mapped[str] = mapped_column(db.String(6), nullable=False, unique=True)
     user_id: Mapped[uuid.UUID] = mapped_column(db.UUID, db.ForeignKey(User.id), nullable=False)
     payment_confirmed: Mapped[bool] = mapped_column(db.Boolean, default=False)
     departure_checkin: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=True)

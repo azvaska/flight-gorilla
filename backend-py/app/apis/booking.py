@@ -1,3 +1,5 @@
+import random
+import string
 from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, marshal, reqparse
@@ -78,6 +80,7 @@ booking_model_output = api.model(
     "BookingOutput",
     {
         "id": fields.String(readonly=True, description="Booking ID"),
+        "booking_number": fields.String(readonly=True, description="Booking number"),
         "departure_flights": fields.List(
             fields.Nested(booked_flight_model_output), description="Departure flights"
         ),
@@ -103,7 +106,13 @@ booking_list_parser.add_argument(
     "class_type", type=str, help="Filter by class type", location="args"
 )
 
-
+def generate_unique_booking_number(session):
+    while True:
+        candidate = "".join(random.choices(string.ascii_uppercase, k=6))
+        exists = session.query(Booking).filter_by(booking_number=candidate).first()
+        if not exists:
+            return candidate
+        
 @api.route("/")
 @api.response(500, "Internal Server Error")
 class BookingList(Resource):
@@ -211,6 +220,7 @@ class BookingList(Resource):
                 user_id=user_id,
                 payment_confirmed=True,
                 has_booking_insurance=validated_data["has_booking_insurance"],
+                booking_number=generate_unique_booking_number(sql_session),
             )
             sql_session.add(booking)
             sql_session.commit()

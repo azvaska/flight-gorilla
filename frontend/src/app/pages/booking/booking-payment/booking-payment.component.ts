@@ -15,7 +15,7 @@ import { firstValueFrom } from 'rxjs';
 import { BookingPhase } from '@/types/booking/booking-state';
 
 @Component({
-  selector: 'app-booking4-payment',
+  selector: 'booking-payment',
   standalone: true,
   imports: [
     CommonModule,
@@ -23,10 +23,10 @@ import { BookingPhase } from '@/types/booking/booking-state';
     HlmButtonDirective,
     CreditCardListComponent,
   ],
-  templateUrl: './booking4-payment.component.html',
+  templateUrl: './booking-payment.component.html',
   providers: [provideIcons({ lucideLoaderCircle })],
 })
-export class Booking4PaymentComponent {
+export class BookingPaymentComponent {
   selectedCardId: number | 'new' = 1;
 
   protected cards: IPayementCard[] | undefined;
