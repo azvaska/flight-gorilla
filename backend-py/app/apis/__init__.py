@@ -1,6 +1,6 @@
 from flask_restx import Api
 
-from .login import api as userNSA
+from .auth import api as userNSA
 from .airport import api as AirportNSA
 from .location import api as CityNSA
 from .airline import api as AirlineNSA

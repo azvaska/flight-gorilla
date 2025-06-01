@@ -1,3 +1,4 @@
+from flask_apscheduler import APScheduler
 from flask_marshmallow import Marshmallow
 from flask_security import SQLAlchemySessionUserDatastore
 from flask_security.models import sqla
@@ -14,4 +15,6 @@ db_session = scoped_session(sessionmaker(autocommit=False,
                                          bind=engine))
 db = SQLAlchemy(model_class=Base)  # ✅ set at creation
 ma = Marshmallow()
+scheduler = APScheduler()
+
 sqla.FsModels.set_db_info(base_model=Base)

@@ -37,6 +37,7 @@ class Config:
     SECURITY_CONFIRMABLE = False           # disable email confirmation
     SECURITY_TRACKABLE = False
     RESTX_VALIDATE = True
+    SCHEDULER_API_ENABLED = True
     PROPAGATE_EXCEPTIONS = True
     # JWT Settings (Flask-JWT-Extended)
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "change-this-jwt-secret")
