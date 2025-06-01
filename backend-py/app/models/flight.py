@@ -16,7 +16,7 @@ from app.models.extra import Extra
 
 class Route(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    flight_number: Mapped[str] = mapped_column(db.String(255), nullable=False)
+    flight_number: Mapped[str] = mapped_column(db.String(255), nullable=False,unique=True)
     departure_airport_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Airport.id), nullable=False)
     arrival_airport_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Airport.id), nullable=False)
     airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id), nullable=False)
@@ -27,6 +27,17 @@ class Route(db.Model):
     arrival_airport: Mapped[Airport] = relationship(Airport, foreign_keys=[arrival_airport_id], lazy='joined')
     airline: Mapped[Airline] = relationship(Airline, back_populates='routes', foreign_keys=[airline_id], lazy='joined')
     flights: Mapped[List['Flight']] = relationship('Flight', back_populates='route', cascade='all, delete-orphan')
+    __table_args__ = (
+        db.CheckConstraint('period_start <= period_end', name='ck_route_period'),
+        #check that departure and arrival airports are not the same
+        db.CheckConstraint('departure_airport_id != arrival_airport_id', name='ck_route_different_airports'),
+        #check that period_start is in the future
+        db.CheckConstraint('period_start > now()', name='ck_route_period_start_future'),
+        #check flight_number is not empty
+        db.CheckConstraint('flight_number != \'\'', name='ck_route_flight_number_not_empty'),
+    )
+
+
 
 class Flight(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

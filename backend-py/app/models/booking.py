@@ -50,6 +50,7 @@ class BookingFlightExtra(db.Model):
     extra_original: Mapped[Extra] = relationship(Extra, secondary="flight_extra",
                                                  primaryjoin="BookingFlightExtra.extra_id==FlightExtra.id",
                                                  secondaryjoin="FlightExtra.extra_id==Extra.id", viewonly=True)
+
 class BookingDepartureFlight(db.Model):
     booking_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Booking.id), nullable=False, primary_key=True)
     flight_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Flight.id), nullable=False, primary_key=True)
@@ -67,6 +68,9 @@ class BookingDepartureFlight(db.Model):
     )
     booking: Mapped[Booking] = relationship(Booking, back_populates='departure_flights', foreign_keys=[booking_id], lazy='joined')
     flight: Mapped[Flight] = relationship(Flight, back_populates='departure_bookings', foreign_keys=[flight_id], lazy='joined')
+    _table_args = (
+        db.UniqueConstraint('flight_id', 'seat_number', name='uq_booking_departure_flight')
+    )
 
 class BookingReturnFlight(db.Model):
     booking_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Booking.id), nullable=False, primary_key=True)
@@ -86,5 +90,8 @@ class BookingReturnFlight(db.Model):
 
     booking: Mapped[Booking] = relationship(Booking, back_populates='return_flights', foreign_keys=[booking_id], lazy='joined')
     flight: Mapped[Flight] = relationship(Flight, back_populates='return_bookings', foreign_keys=[flight_id], lazy='joined')
+    _table_args = (
+        db.UniqueConstraint('flight_id', 'seat_number', name='uq_booking_departure_flight')
+    )
 
 

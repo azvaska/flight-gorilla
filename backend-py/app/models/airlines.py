@@ -36,7 +36,7 @@ class AirlineAircraft(db.Model):
     tail_number: Mapped[str] = mapped_column(db.String(255), nullable=False, unique=True)
     airline: Mapped[Airline] = relationship(Airline, back_populates='aircrafts', foreign_keys=[airline_id])
     aircraft = relationship('Aircraft', back_populates='airline_aircrafts', foreign_keys=[aircraft_id])
-    flights: Mapped[List['Flight']] = relationship('Flight', back_populates='aircraft', cascade='all, delete-orphan')
+    flights: Mapped[List['Flight']] = relationship('Flight', back_populates='aircraft', cascade='all, delete-orphan') #TODO ha senso che cancelli anche i voli?
     
     @property
     def first_class_seats(self) -> List[str]:
