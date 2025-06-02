@@ -1,0 +1,66 @@
+<div class="flex justify-center w-full">
+  <div class="flex max-w-4xl space-x-12">
+    <div class="flex w-[500px]">
+      <brn-popover [state]="state()" (stateChanged)="stateChanged($event)" sideOffset="5">
+        <button class="w-[500px] justify-between" id="edit-profile" variant="outline" brnPopoverTrigger hlmBtn>
+          {{ currentModel()?.name ?? 'Select aircraft model...' }}
+          <ng-icon hlm size="sm" name="lucideChevronsUpDown"/>
+        </button>
+        <hlm-command *brnPopoverContent="let ctx" hlmPopoverContent class="p-0 w-[350px]">
+          <hlm-command-search>
+            <ng-icon hlm name="lucideSearch"/>
+            <input placeholder="Search aircraft model..." hlm-command-search-input/>
+          </hlm-command-search>
+          <div *brnCommandEmpty hlmCommandEmpty>No results found.</div>
+          <hlm-command-list>
+            <hlm-command-group>
+              <button
+                *ngFor="let aircraft of aircrafts"
+                hlm-command-item
+                [value]="aircraft.id.toString()"
+                (selected)="commandSelected(aircraft)"
+              >
+                <ng-icon hlm
+                         [class.opacity-0]="currentModel()?.id?.toString() !== aircraft.id.toString()"
+                         name="lucideCheck"
+                         hlmCommandIcon
+                />
+                {{ aircraft.name }}
+              </button>
+            </hlm-command-group>
+          </hlm-command-list>
+        </hlm-command>
+      </brn-popover>
+    </div>
+    <div class="w-36">
+      <div class="relative">
+        <input
+          hlmInput
+          id="cardHolder"
+          type="text"
+          [placeholder]="'Tail number'"
+          class="w-full !placeholder-gray-800"
+        />
+<!--        <div-->
+<!--          *ngIf="newCardForm.get('holder')?.invalid && newCardForm.get('holder')?.touched"-->
+<!--          class="absolute top-[-10px] right-0 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"-->
+<!--        >-->
+<!--          Must be non-empty, letters &amp; spaces only.-->
+<!--        </div>-->
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--<div class="relative">-->
+<!--  <label hlmLabel class="block">-->
+<!--    Cardholder-->
+<!--    <input-->
+<!--      hlmInput-->
+<!--      id="cardHolder"-->
+<!--      type="text"-->
+<!--      class="mt-1 w-full"-->
+<!--    />-->
+<!--  </label>-->
+<!--</div>-->

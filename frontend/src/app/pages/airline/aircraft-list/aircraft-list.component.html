@@ -2,7 +2,7 @@
   Aircrafts Management
 </div>
 
-<div class="flex justify-center items-center">
+<div class="flex flex-col justify-center items-center">
   <div class="w-full max-w-4xl border border-zinc-300 rounded-lg shadow-md bg-white custom-scrollbar">
     <!-- Scrollable container -->
     <div class="overflow-y-auto max-h-[600px]">
@@ -19,7 +19,7 @@
         <tr *ngFor="let ac of aircrafts" class="even:bg-zinc-100">
           <td class="px-4 py-3">{{ ac.model }}</td>
           <td class="px-4 py-3">{{ ac.tailNumber }}</td>
-          <td class="px-4 py-3">{{ ac.seats }}</td>
+          <td class="px-4 py-3">{{ ac.firstClassSeats.length + ac.businessClassSeats.length + ac.economyClassSeats.length }}</td>
           <td class="px-4 py-3 text-center space-x-2">
             <button type="button" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded hover:bg-gray-100">
               <img ngSrc="/assets/editing.png" alt="Duplicate" class="h-5 w-5" height="64" width="64"/>
@@ -35,5 +35,14 @@
         </tbody>
       </table>
     </div>
+  </div>
+  <div class="flex w-full max-w-4xl justify-end">
+    <button
+      hlmBtn
+      class="bg-black text-white px-10 mt-4"
+      [routerLink]="'/manage-aircraft/add'"
+    >
+      + Add new Airline
+    </button>
   </div>
 </div>

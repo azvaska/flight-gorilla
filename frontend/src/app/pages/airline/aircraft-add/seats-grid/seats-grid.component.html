@@ -1,0 +1,67 @@
+<!-- Grid container -->
+<div class="flex flex-col ">
+
+  <!-- Column Headers -->
+  <div class="flex items-center space-x-1.5 ml-9">
+    <!-- First 3 headers -->
+    <ng-container *ngFor="let col of ['A', 'B', 'C']; let index = index">
+      <div
+        class="w-6 h-6 flex items-center justify-center text-xs text-gray-700 font-semibold not-italic text-center rounded-xl transition-colors duration-200"
+        [ngClass]="{
+      'font-extrabold scale-120 bg-blue-300': selectedSeatCol === index,
+      'font-semibold bg-transparent': selectedSeatCol !== index
+    }"
+      >
+        {{ col }}
+      </div>
+    </ng-container>
+
+    <!-- Spacer -->
+    <div class="w-4"></div>
+
+    <!-- Last 3 headers -->
+    <ng-container *ngFor="let col of ['D', 'E', 'F']; let index = index">
+      <div
+        class="w-6 h-6 flex items-center justify-center text-xs text-gray-700 font-semibold not-italic text-center rounded-xl transition-colors duration-200"
+        [ngClass]="{
+      'font-extrabold scale-120 bg-blue-300': selectedSeatCol === index + 3,
+      'font-semibold bg-transparent': selectedSeatCol !== index + 3
+    }"
+      >
+        {{ col }}
+      </div>
+    </ng-container>
+
+  </div>
+
+  <!-- Repeat rows -->
+  <ng-container *ngFor="let rowIndex of rowIndices; let i = index; trackBy: trackByRow">
+        <div class="flex items-center">
+
+      <!-- Row number -->
+      <div class="w-6 text-xs text-gray-700 text-center mr-2 not-italic transition-colors duration-200 rounded-xl"
+           [ngClass]="{
+           'font-extrabold scale-120 bg-blue-300': selectedSeatRow === i ,
+           'font-semibold bg-transparent': selectedSeatRow !== i
+      }">{{ i + 1 }}</div>
+
+      <!-- First 3 squares -->
+      <ng-container *ngFor="let columnIndex of [].constructor(6); let j = index">
+        <app-square
+          [row]="i" [column]="j"
+          [isSelected]="selectedSeatRow === i && selectedSeatCol === j"
+          [class]="seatsMatrix[i][j]"
+          [isHighlighted]="selectedClass === seatsMatrix[i][j] || selectedClass === null"
+          (selected)="selectedSeat($event)"
+          (selectedOccupied)="selectedOccupied($event)"
+        />
+        <div
+          *ngIf="j === 2"
+          class="w-4"
+        ></div>
+      </ng-container>
+
+    </div>
+  </ng-container>
+</div>
+<hlm-toaster />

@@ -23,7 +23,8 @@ import { BookingsComponent } from '@/app/pages/user/bookings/bookings.component'
 import { BookingCancelledComponent } from '@/app/pages/user/bookings/booking-cancelled/booking-cancelled.component';
 import { MyProfileComponent } from '@/app/pages/user/my-profile/my-profile.component';
 import { BookingDetailsComponent } from './pages/user/bookings/booking-details/booking-details.component';
-import { AircraftListComponent } from '@/app/pages/airline/aircrafts-list/aircraft-list.component';
+import { AircraftListComponent } from '@/app/pages/airline/aircraft-list/aircraft-list.component';
+import {AircraftAddComponent} from '@/app/pages/airline/aircraft-add/aircraft-add.component';
 
 export const routes: Routes = [
   {
@@ -117,6 +118,10 @@ export const routes: Routes = [
   {
     path: 'manage-aircraft',
     component: AircraftListComponent
+  },
+  {
+    path: 'manage-aircraft/add',
+    component: AircraftAddComponent,
   },
   {
     path: 'bookings',

@@ -1,4 +1,4 @@
-import { IAirline } from "./airline";
+import { IAirline } from "./airline/airline";
 import { IAirport } from "./airport";
 
 export interface IFlightExtra {
