@@ -7,11 +7,6 @@ import {RouterLink} from '@angular/router';
 @Component({
   selector: 'app-landing-page',
   imports: [
-    HlmButtonDirective,
-    HlmCardContentDirective,
-    HlmCardDirective,
-    NgOptimizedImage,
-    NgClass,
     RouterLink
   ],
   templateUrl: './landing-page.component.html',
