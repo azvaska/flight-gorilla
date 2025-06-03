@@ -25,6 +25,8 @@ import { MyProfileComponent } from '@/app/pages/user/my-profile/my-profile.compo
 import { BookingDetailsComponent } from './pages/user/bookings/booking-details/booking-details.component';
 import { AircraftListComponent } from '@/app/pages/airline/aircraft-list/aircraft-list.component';
 import {AircraftAddComponent} from '@/app/pages/airline/aircraft-add/aircraft-add.component';
+import {RouteListComponent} from '@/app/pages/airline/route-list/route-list.component';
+import { RouteAddComponent } from './pages/airline/route-add/route-add.component';
 
 export const routes: Routes = [
   {
@@ -122,6 +124,14 @@ export const routes: Routes = [
   {
     path: 'manage-aircraft/add',
     component: AircraftAddComponent,
+  },
+  {
+    path: 'manage-routes',
+    component: RouteListComponent,
+  },
+  {
+    path: 'manage-routes/add',
+    component: RouteAddComponent,
   },
   {
     path: 'bookings',

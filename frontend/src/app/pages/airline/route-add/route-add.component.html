@@ -1,0 +1,61 @@
+<div class="flex w-full justify-center mb-16 text-3xl font-bold">
+  Add Route
+</div>
+
+<div class="flex space-x-3">
+  <div class="relative col-span-2">
+    <label hlmLabel class="block">
+      Departure airport
+      <input
+        hlmInput
+        id="cardName"
+        type="text"
+        class="mt-1 w-full"
+      />
+    </label>
+  </div>
+  <div class="relative col-span-2">
+    <label hlmLabel class="block">
+      Arrival airport
+      <input
+        hlmInput
+        id="cardName"
+        type="text"
+        class="mt-1 w-full"
+      />
+    </label>
+  </div>
+</div>
+<div class="flex space-x-3 mt-2">
+  <div class="relative col-span-2">
+    <label hlmLabel class="block">
+      Period start
+      <input
+        hlmInput
+        id="cardName"
+        type="text"
+        class="mt-1 w-full"
+      />
+    </label>
+  </div>
+  <div class="relative col-span-2">
+    <label hlmLabel class="block">
+      Period end
+      <input
+        hlmInput
+        id="cardName"
+        type="text"
+        class="mt-1 w-full"
+      />
+    </label>
+  </div>
+</div>
+<div class="flex w-full justify-center">
+  <button
+    hlmBtn
+    class="bg-black text-white px-10 mt-4"
+    [routerLink]="'/airlines'"
+  >
+    + Add Route
+  </button>
+</div>

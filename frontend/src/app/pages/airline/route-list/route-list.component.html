@@ -1,0 +1,45 @@
+<div class="flex w-full justify-center mb-16 text-3xl font-bold">
+  Route Management
+</div>
+<div class="flex flex-col justify-center items-center">
+  <div class="w-full max-w-4xl border border-zinc-300 rounded-lg shadow-md bg-white custom-scrollbar">
+    <div class="overflow-y-auto max-h-[600px]">
+      <table class="min-w-full">
+        <thead class="sticky top-0 bg-zinc-200">
+        <tr>
+          <th class="px-4 py-2 text-left">Departure Airport</th>
+          <th class="px-4 py-2 text-left">Arrival Airport</th>
+          <th class="px-4 py-2 text-left">Period Start</th>
+          <th class="px-4 py-2 text-center">Period End</th>
+          <th class="px-4 py-2 text-center">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let rt of routes" class="even:bg-zinc-100">
+          <td class="px-4 py-3">{{ rt.flight_number }}</td>
+          <td class="px-4 py-3">{{ rt.departure_airport }}</td>
+          <td class="px-4 py-3">{{ dateToString(rt.period_start, 'flexible') }}</td>
+          <td class="px-4 py-3">{{ dateToString(rt.period_end, 'flexible') }}</td>
+          <td class="px-4 py-3 text-center space-x-2">
+            <button type="button" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded hover:bg-gray-100">
+              <img ngSrc="/assets/editing.png" alt="Duplicate" class="h-5 w-5" height="64" width="64"/>
+            </button>
+            <button type="button" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded hover:bg-gray-100">
+              <img ngSrc="/assets/trash.png" alt="Delete" class="h-5 w-5" height="128" width="128"/>
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="flex w-full max-w-4xl justify-end">
+    <button
+      hlmBtn
+      class="bg-black text-white px-10 mt-4"
+      [routerLink]="'/manage-routes/add'"
+    >
+      + Add new Route
+    </button>
+  </div>
+</div>
