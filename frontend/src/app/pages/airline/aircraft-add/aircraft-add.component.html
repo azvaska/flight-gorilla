@@ -39,6 +39,7 @@
           id="cardHolder"
           type="text"
           [placeholder]="'Tail number'"
+          [(ngModel)]="tailNumber"
           class="w-full !placeholder-gray-800 bg-white"
         />
 <!--        <div-->
@@ -54,9 +55,9 @@
 
 <div class="flex w-full justify-center pt-12">
   <div class="w-full">
-    <a class="font-bold">Total seats: </a><a>{{currentModel()?currentModel()!.rows*6:''}}</a><br>
-    <a class="font-bold">Assigned seats: </a><a>{{currentModel()?nAssignedSeats:''}}</a><br>
-    <a class="font-bold">Remaining seats: </a><a>{{currentModel()?currentModel()!.rows*6-nAssignedSeats:''}}</a>
+    <a class="font-bold">Total seats: </a><a>{{nTotalSeats}}</a><br>
+    <a class="font-bold">Assigned seats: </a><a>{{nAssignedSeats}}</a><br>
+    <a class="font-bold">Remaining seats: </a><a>{{remainingSeats}}</a>
     <div></div>
     <div class="mt-2">Assign mode</div>
     <div class="flex space-x-4 mt-2">
@@ -119,6 +120,14 @@
         <a>Deselect all</a>
       </div>
     </div>
+    <button
+      hlmBtn
+      class="bg-black text-white px-10 mx-auto mt-8 transition-opacity duration-300"
+      [class.opacity-0]="!currentModel()"
+      [disabled]="!currentModel() || tailNumber=='' || remainingSeats != 0"
+    >
+      Confirm seats
+    </button>
   </div>
   <app-seats-grid
     class="w-1/2 flex bg-white rounded-xl py-3 justify-center"

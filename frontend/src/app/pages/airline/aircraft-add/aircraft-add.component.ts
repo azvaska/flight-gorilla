@@ -90,7 +90,9 @@ export class AircraftAddComponent {
     | SeatClass.ECONOMY
     | SeatClass.BUSINESS
     | SeatClass.FIRST = SeatClass.ECONOMY;
+
   seatsMatrix!: SeatClass[][];
+  tailNumber: string = '';
 
   selectModeChangeHandler(newMode: SeatClass.ECONOMY | SeatClass.BUSINESS | SeatClass.FIRST) {
     this.selectedClass = newMode;
@@ -144,6 +146,15 @@ export class AircraftAddComponent {
 
   get nAssignedSeats(): number {
     return this.seatsMatrix.flat().filter(seat => seat !== SeatClass.UNASSIGNED && seat !== SeatClass.UNAVAILABLE).length;
+  }
+
+  get nTotalSeats(): number {
+    // do not count UNAVAILABLE seats
+    return this.seatsMatrix.flat().filter(seat => seat !== SeatClass.UNAVAILABLE).length;
+  }
+
+  get remainingSeats(): number {
+    return this.nTotalSeats - this.nAssignedSeats;
   }
 
   convertSeatNameToRowCol(seatName: string): { row: number; col: number } {
