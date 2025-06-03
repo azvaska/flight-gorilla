@@ -1,67 +1,69 @@
-<!-- Grid container -->
-<div class="flex flex-col ">
+<!--
+  Grid of all seats. Manager can either:
+    • be “in selection mode” (selectedClass===null) → click toggles highlight
+    • be “in assignment mode” (selectedClass in {economy, business, first}):
+        clicking immediately assigns/unassigns to/from that class
+-->
 
-  <!-- Column Headers -->
+<div class="flex flex-col">
+  <!-- Column headers: A B C   (spacer)   D E F -->
   <div class="flex items-center space-x-1.5 ml-9">
-    <!-- First 3 headers -->
-    <ng-container *ngFor="let col of ['A', 'B', 'C']; let index = index">
+    <ng-container *ngFor="let col of ['A', 'B', 'C']; let idx = index">
       <div
-        class="w-6 h-6 flex items-center justify-center text-xs text-gray-700 font-semibold not-italic text-center rounded-xl transition-colors duration-200"
-        [ngClass]="{
-      'font-extrabold scale-120 bg-blue-300': selectedSeatCol === index,
-      'font-semibold bg-transparent': selectedSeatCol !== index
-    }"
+        class="
+          w-6 h-6 flex items-center justify-center
+          text-xs text-gray-700 font-semibold
+          rounded-xl
+        "
       >
         {{ col }}
       </div>
     </ng-container>
 
-    <!-- Spacer -->
+    <!-- spacer between seats C and D -->
     <div class="w-4"></div>
 
-    <!-- Last 3 headers -->
-    <ng-container *ngFor="let col of ['D', 'E', 'F']; let index = index">
+    <ng-container *ngFor="let col of ['D', 'E', 'F']; let idx = index">
       <div
-        class="w-6 h-6 flex items-center justify-center text-xs text-gray-700 font-semibold not-italic text-center rounded-xl transition-colors duration-200"
-        [ngClass]="{
-      'font-extrabold scale-120 bg-blue-300': selectedSeatCol === index + 3,
-      'font-semibold bg-transparent': selectedSeatCol !== index + 3
-    }"
+        class="
+          w-6 h-6 flex items-center justify-center
+          text-xs text-gray-700 font-semibold
+          rounded-xl
+        "
       >
         {{ col }}
       </div>
     </ng-container>
-
   </div>
 
-  <!-- Repeat rows -->
-  <ng-container *ngFor="let rowIndex of rowIndices; let i = index; trackBy: trackByRow">
-        <div class="flex items-center">
-
+  <!-- Rows of seats -->
+  <ng-container
+    *ngFor="let _ of rowIndices; let i = index;"
+  >
+    <div class="flex items-center">
       <!-- Row number -->
-      <div class="w-6 text-xs text-gray-700 text-center mr-2 not-italic transition-colors duration-200 rounded-xl"
-           [ngClass]="{
-           'font-extrabold scale-120 bg-blue-300': selectedSeatRow === i ,
-           'font-semibold bg-transparent': selectedSeatRow !== i
-      }">{{ i + 1 }}</div>
+      <div
+        class="
+          w-6 text-[15px] text-gray-700 text-center mr-2 font-semibold border-transparent
+          transition-all duration-300 border-1 hover:border-black hover:scale-130
+          rounded-3xl cursor-pointer select-none
+        "
+        (click)="selectRow(i)"
+      >
+        {{ i + 1 }}
+      </div>
 
-      <!-- First 3 squares -->
-      <ng-container *ngFor="let columnIndex of [].constructor(6); let j = index">
+      <!-- 6 seats per row -->
+      <ng-container *ngFor="let __ of [].constructor(columnCount); let j = index">
         <app-square
-          [row]="i" [column]="j"
-          [isSelected]="selectedSeatRow === i && selectedSeatCol === j"
-          [class]="seatsMatrix[i][j]"
-          [isHighlighted]="selectedClass === seatsMatrix[i][j] || selectedClass === null"
+          [row]="i"
+          [column]="j"
+          [status]="seatsMatrix[i][j]"
           (selected)="selectedSeat($event)"
-          (selectedOccupied)="selectedOccupied($event)"
-        />
-        <div
-          *ngIf="j === 2"
-          class="w-4"
-        ></div>
+        ></app-square>
+        <!-- Insert spacer after the 3rd seat -->
+        <div *ngIf="j === 2" class="w-4"></div>
       </ng-container>
-
     </div>
   </ng-container>
 </div>
-<hlm-toaster />

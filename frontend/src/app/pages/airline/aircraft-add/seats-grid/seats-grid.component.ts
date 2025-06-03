@@ -1,141 +1,100 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-  OnChanges,
-  SimpleChanges,
-} from '@angular/core';
-import { NgClass, NgForOf, NgIf } from '@angular/common';
-import { SquareComponent } from '@/app/pages/booking/booking-seats/components/seats-grid/square/square.component';
-import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
-import { toast } from 'ngx-sonner';
+import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges,} from '@angular/core';
+import {NgForOf, NgIf} from '@angular/common';
+import {SquareComponent} from '../seats-grid/square/square.component';
+import {SeatClass} from '@/app/pages/airline/aircraft-add/aircraft-add.component';
 
-export enum SeatClass {
-  ECONOMY = 'economy',
-  BUSINESS = 'business',
-  FIRST = 'first',
-  OCCUPIED = 'occupied',
-  UNAVAILABLE = 'unavailable',
-}
 @Component({
   selector: 'app-seats-grid',
-  imports: [NgForOf, SquareComponent, NgIf, HlmToasterComponent, NgClass],
+  standalone: true,
+  imports: [NgForOf, SquareComponent, NgIf],
   templateUrl: './seats-grid.component.html',
 })
 export class SeatsGridComponent implements OnChanges {
+  /** Number of rows */
   @Input() rows!: number;
 
-  @Input() economyClassSeats: string[] = [];
-  @Input() businessClassSeats: string[] = [];
-  @Input() firstClassSeats: string[] = [];
+  /**
+   * Two‐way‐bound matrix of SeatClass.
+   * Parent can pass in an initial 2D array, or the grid will initialize it as all UNASSIGNED.
+   */
+  @Input() seatsMatrix!: SeatClass[][];
 
-  @Input() occupiedSeats: string[] = [];
+  /**
+   * Whenever we modify seatsMatrix internally (on click), emit the new full matrix so
+   * that parent always has the up‐to‐date structure.
+   */
+  @Output() seatsMatrixChange = new EventEmitter<SeatClass[][]>();
 
-  @Input() selectedSeatRow: number = -1;
-  @Input() selectedSeatCol: number = -1;
+  /**
+   * “Assignment mode”: parent tells us which class to assign on click.
+   * If null, clicks do nothing.
+   */
+  @Input({required: true}) selectedClass: SeatClass = SeatClass.ECONOMY;
 
-  @Input() selectedClass:
-    | SeatClass.ECONOMY
-    | SeatClass.BUSINESS
-    | SeatClass.FIRST
-    | null = null;
-
-  @Input() selectedOccupiedTitle: string = 'Occupied Seat';
-  @Input() selectedOccupiedDescription: string =
-    'This seat is occupied. Please select another one.';
-
-  protected seatsMatrix: SeatClass[][] = [];
-
+  /** Helper array [0,1,2,…,rows−1] for the template */
   protected rowIndices: number[] = [];
-  protected columnIndices: number[] = Array(6)
-    .fill(0)
-    .map((_, i) => i);
-  protected trackByRow = (index: number, row: number) => row;
-  protected trackByColumn = (index: number, column: number) => column;
 
-  SeatClass = SeatClass;
+  /** Always 6 columns (A–F) in our example */
+  protected columnCount = 6;
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['rows'] && typeof changes['rows'].currentValue === 'number') {
-      this.rowIndices = Array(changes['rows'].currentValue)
+    // 1) If rows changed, rebuild rowIndices. Also, if seatsMatrix is missing or wrong size, initialize it.
+    if (changes['rows'] && typeof this.rows === 'number') {
+      this.rowIndices = Array(this.rows)
         .fill(0)
         .map((_, i) => i);
+
+      // If parent didn't pass a matrix or its length differs, create a new one full of UNASSIGNED
+      if (
+        !Array.isArray(this.seatsMatrix) ||
+        this.seatsMatrix.length !== this.rows
+      ) {
+        this.seatsMatrix = Array.from({ length: this.rows }, () =>
+          Array(this.columnCount).fill(SeatClass.UNASSIGNED)
+        );
+        // immediately tell parent that we have created a fresh matrix
+        this.seatsMatrixChange.emit(this.seatsMatrix);
+      }
     }
 
-    // Handle change of selectedClass
-    if (
-      changes['economyClassSeats'] ||
-      changes['businessClassSeats'] ||
-      changes['firstClassSeats'] ||
-      changes['occupiedSeats']
-    ) {
-      this.initializeSeatsMatrix();
-    }
+    // 2) If parent replaced the matrix entirely (e.g. parent does [seatsMatrix]="…"), we don't need to do anything here,
+    //    because Angular will re‐render rows via rowIndices and seatsMatrix[i][j] will reflect the new values.
   }
 
-  private initializeSeatsMatrix() {
-    // initialize the seats matrix with 0s, "rows" rows and 6 columns
-    this.seatsMatrix = Array.from({ length: this.rows }, () =>
-      Array(6).fill(SeatClass.UNAVAILABLE)
-    );
-
-    // economyClassSeats
-    for (const seat of this.economyClassSeats) {
-      const { row, col } = this.convertSeatNameToRowCol(seat);
-      this.seatsMatrix[row][col] = SeatClass.ECONOMY;
+  /**
+   * Called whenever a <app-square> emits a click (row/col).
+   * If selectedClass is non‐null, toggle that seat between “that class” and “UNASSIGNED.”
+   * Then emit the full updated seatsMatrix back to parent.
+   */
+  selectedSeat(event: { row: number; col: number }) {
+    const { row, col } = event;
+    if (this.selectedClass === null) {
+      // If parent hasn't chosen a class, we do nothing.
+      return;
     }
 
-    // businessSeats
-    for (const seat of this.businessClassSeats) {
-      const { row, col } = this.convertSeatNameToRowCol(seat);
-      this.seatsMatrix[row][col] = SeatClass.BUSINESS;
+    // Toggle: if already that class, unassign; otherwise assign
+    if (this.seatsMatrix[row][col] === this.selectedClass) {
+      this.seatsMatrix[row][col] = SeatClass.UNASSIGNED;
+    } else {
+      this.seatsMatrix[row][col] = this.selectedClass;
     }
 
-    // firstClassSeats
-    for (const seat of this.firstClassSeats) {
-      const { row, col } = this.convertSeatNameToRowCol(seat);
-      this.seatsMatrix[row][col] = SeatClass.FIRST;
+    // Emit the entire updated matrix
+    this.seatsMatrixChange.emit(this.seatsMatrix);
+  }
+
+  selectRow(row: number) {
+    // Selects all seats in the given row, toggling them to the selected class
+    if (this.selectedClass === null) {
+      return; // If no class is selected, do nothing
     }
 
-    // occupiedSeats
-    for (const seat of this.occupiedSeats) {
-      const { row, col } = this.convertSeatNameToRowCol(seat);
-      this.seatsMatrix[row][col] = SeatClass.OCCUPIED;
+    for (let col = 0; col < this.columnCount; col++) {
+      this.seatsMatrix[row][col] = this.selectedClass;
     }
+
+    // Emit the updated matrix after toggling the row
+    this.seatsMatrixChange.emit(this.seatsMatrix);
   }
-
-  private convertSeatNameToRowCol(seatName: string): {
-    row: number;
-    col: number;
-  } {
-    const colChar = seatName.charAt(seatName.length - 1); // last character is the column letter
-    const rowPart = seatName.slice(0, -1); // everything except the last character
-
-    const row = parseInt(rowPart, 10) - 1; // zero-based row
-    const col = colChar.toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0); // zero-based column
-
-    return { row, col };
-  }
-
-  selectedSeat(event: {
-    row: number;
-    col: number;
-    class: SeatClass.ECONOMY | SeatClass.BUSINESS | SeatClass.FIRST;
-  }) {
-    this.selected.emit(event);
-  }
-
-  selectedOccupied(event: { row: number; col: number }) {
-    toast(this.selectedOccupiedTitle, {
-      description: this.selectedOccupiedDescription,
-    });
-  }
-
-  @Output() selected = new EventEmitter<{
-    row: number;
-    col: number;
-    class: SeatClass.ECONOMY | SeatClass.BUSINESS | SeatClass.FIRST;
-  }>();
 }

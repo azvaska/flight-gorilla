@@ -1,16 +1,12 @@
+<!-- square.component.html -->
 <div
   class="
     w-6 h-6 m-1
-    transition-transform duration-300
-    {{squareStyle}}"
+    transition-all duration-200 rounded-sm
+    {{ squareStyle }}
+  "
   [ngClass]="{
-    'rounded-sm scale-105': isHighlighted && class,
-    'hover:scale-120': isHighlighted && class !== SeatClass.OCCUPIED,
-    'hover:scale-90': isHighlighted &&  class === SeatClass.OCCUPIED,
-    'scale-30 rounded-xl hover:scale-50': !isHighlighted,
-    'scale-40 rounded-xl hover:scale-60': !isHighlighted && class === SeatClass.OCCUPIED,
-    '!bg-blue-400': isSelected,
-    'shake': shake
+    'hover:scale-110': status !== SeatClass.UNAVAILABLE
   }"
   (click)="onclick()"
 ></div>

@@ -1,67 +1,65 @@
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
-import {NgClass} from '@angular/common';
-import { SeatClass } from '../seats-grid.component';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
+import { NgClass } from '@angular/common';
+import {SeatClass} from '@/app/pages/airline/aircraft-add/aircraft-add.component';
+
 @Component({
   selector: 'app-square',
-  imports: [
-    NgClass
-  ],
+  standalone: true,
+  imports: [NgClass],
   templateUrl: './square.component.html',
-  styleUrls: ['./square.component.css']
 })
 export class SquareComponent implements OnChanges {
-
-  SeatClass = SeatClass;
-
+  /** Which row/column this square represents */
   @Input() row: number = -1;
   @Input() column: number = -1;
 
-  @Input() isSelected = false;
-  @Input() isHighlighted = false;
-  @Input() class: SeatClass = SeatClass.ECONOMY;
+  /** The seat’s current assignment/status (unassigned, economy, business, first, or unavailable) */
+  @Input() status: SeatClass = SeatClass.UNASSIGNED;
 
-  @Input() animateOccupied = true;
-  @Output() selected = new EventEmitter<{ row: number, col: number, class: SeatClass.ECONOMY | SeatClass.BUSINESS | SeatClass.FIRST }>();
-  @Output() selectedOccupied = new EventEmitter<{ row: number, col: number}>();
+  /** Emits whenever this square is clicked (unless UNAVAILABLE) */
+  @Output() selected = new EventEmitter<{ row: number; col: number }>();
 
-  squareStyle: string = '';
+  /** Computed Tailwind class for background color / appearance */
+  squareStyle = '';
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['class']) {
+    // Whenever status changes, recompute the background class:
+    if (changes['status']) {
       this.squareStyle = this.getSquareStyle();
     }
   }
 
   private getSquareStyle(): string {
-    if(this.class === SeatClass.UNAVAILABLE){
-      return 'bg-transparent';
-    } else if(this.class === SeatClass.OCCUPIED){
-      return 'bg-red-600';
-    } else {
-      switch (this.class) {
-        case 'economy':
-          return 'bg-zinc-300';
-        case 'business':
-          return 'bg-zinc-400';
-        case 'first':
-          return 'bg-stone-700';
-        default:
-          return ''
-      }
+    switch (this.status) {
+      case SeatClass.UNAVAILABLE:
+        // Unavailable seats are “transparent” but not clickable
+        return 'bg-transparent pointer-events-none';
+      case SeatClass.UNASSIGNED:
+        return 'bg-gray-200';
+      case SeatClass.ECONOMY:
+        return 'bg-green-300';
+      case SeatClass.BUSINESS:
+        return 'bg-purple-300';
+      case SeatClass.FIRST:
+        return 'bg-red-300';
+      default:
+        return '';
     }
   }
 
-  shake = false;
-
-  onclick(){
-    if(this.class !== SeatClass.UNAVAILABLE){
-      if(this.class !== SeatClass.OCCUPIED) {
-        this.selected.emit({row: this.row, col: this.column, class: this.class });
-      } else {
-        this.shake = true;
-        setTimeout(() => this.shake = false, 300);
-        this.selectedOccupied.emit({row: this.row, col: this.column});
-      }
+  onclick() {
+    // Only emit if the seat is not "unavailable"
+    if (this.status !== SeatClass.UNAVAILABLE) {
+      this.selected.emit({ row: this.row, col: this.column });
     }
   }
+
+  protected readonly SeatClass = SeatClass;
 }

@@ -28,7 +28,6 @@ import { firstValueFrom } from 'rxjs';
     HlmCardContentDirective,
   ],
   templateUrl: './booking-extras.component.html',
-  styleUrls: ['./booking-extras.component.css'],
 })
 export class BookingExtrasComponent {
   private _currentFlightIndex: number = 0;

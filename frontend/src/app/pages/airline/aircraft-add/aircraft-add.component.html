@@ -2,7 +2,7 @@
   <div class="flex max-w-4xl space-x-12">
     <div class="flex w-[500px]">
       <brn-popover [state]="state()" (stateChanged)="stateChanged($event)" sideOffset="5">
-        <button class="w-[500px] justify-between" id="edit-profile" variant="outline" brnPopoverTrigger hlmBtn>
+        <button class="w-[500px] bg-white justify-between" id="edit-profile" variant="outline" brnPopoverTrigger hlmBtn>
           {{ currentModel()?.name ?? 'Select aircraft model...' }}
           <ng-icon hlm size="sm" name="lucideChevronsUpDown"/>
         </button>
@@ -39,7 +39,7 @@
           id="cardHolder"
           type="text"
           [placeholder]="'Tail number'"
-          class="w-full !placeholder-gray-800"
+          class="w-full !placeholder-gray-800 bg-white"
         />
 <!--        <div-->
 <!--          *ngIf="newCardForm.get('holder')?.invalid && newCardForm.get('holder')?.touched"-->
@@ -52,6 +52,81 @@
   </div>
 </div>
 
+<div class="flex w-full justify-center pt-12">
+  <div class="w-full">
+    <a class="font-bold">Total seats: </a><a>{{currentModel()?currentModel()!.rows*6:''}}</a><br>
+    <a class="font-bold">Assigned seats: </a><a>{{currentModel()?nAssignedSeats:''}}</a><br>
+    <a class="font-bold">Remaining seats: </a><a>{{currentModel()?currentModel()!.rows*6-nAssignedSeats:''}}</a>
+    <div></div>
+    <div class="mt-2">Assign mode</div>
+    <div class="flex space-x-4 mt-2">
+      <div class="flex space-x-4 border-1 border-zinc-300 not-hover:bg-white hover:bg-zinc-200 rounded-lg px-3 py-1 cursor-pointer"
+            (click)="selectModeChangeHandler(SeatClass.FIRST)"
+      >
+        <app-animated-radio
+          class="pointer-events-none"
+          name="assignMode"
+          [value]="SeatClass.FIRST"
+          [(ngModel)]="this.selectedClass"
+        />
+        <a>First Class</a>
+      </div>
+      <div class="flex space-x-4 border-1 border-zinc-300 not-hover:bg-white hover:bg-zinc-200 rounded-lg px-3 py-1 cursor-pointer"
+            (click)="selectModeChangeHandler(SeatClass.BUSINESS)"
+      >
+        <app-animated-radio
+          class="pointer-events-none"
+          name="assignMode"
+          [value]="SeatClass.BUSINESS"
+          [(ngModel)]="this.selectedClass"
+        />
+        <a>Business Class</a>
+      </div>
+      <div class="flex space-x-4 border-1 border-zinc-300 not-hover:bg-white hover:bg-zinc-200 rounded-lg px-3 py-1 cursor-pointer"
+            (click)="selectModeChangeHandler(SeatClass.ECONOMY)"
+      >
+        <app-animated-radio
+          class="pointer-events-none"
+          name="assignMode"
+          [value]="SeatClass.ECONOMY"
+          [(ngModel)]="this.selectedClass"
+        />
+        <a>Economy Class</a>
+      </div>
+    </div>
+    <div class="mt-3 transition-opacity duration-300" [class.opacity-0]="!currentModel()">Selection utils</div>
+    <div class="flex space-x-4 mt-2 transition-opacity duration-300" [class.opacity-0]="!currentModel()">
+      <div class="flex space-x-4 border-1 border-zinc-300 not-hover:bg-white hover:bg-zinc-200 rounded-lg px-3 py-1 cursor-pointer"
+           (click)="assignAllSeats(SeatClass.FIRST)"
+      >
+        <a>Assign all to First class</a>
+      </div>
+      <div class="flex space-x-4 border-1 border-zinc-300 not-hover:bg-white hover:bg-zinc-200 rounded-lg px-3 py-1 cursor-pointer"
+           (click)="assignAllSeats(SeatClass.BUSINESS)"
+      >
+        <a>Assign all to Business class</a>
+      </div>
+      <div class="flex space-x-4 border-1 border-zinc-300 not-hover:bg-white hover:bg-zinc-200 rounded-lg px-3 py-1 cursor-pointer"
+           (click)="assignAllSeats(SeatClass.ECONOMY)"
+      >
+        <a>Assign all to Economy class</a>
+      </div>
+    </div>
+    <div class="flex space-x-4 mt-2 transition-opacity duration-300" [class.opacity-0]="!currentModel()">
+      <div class="flex space-x-4 border-1 border-zinc-300 not-hover:bg-white hover:bg-zinc-200 rounded-lg px-3 py-1 cursor-pointer"
+           (click)="deselectAllSeats()"
+      >
+        <a>Deselect all</a>
+      </div>
+    </div>
+  </div>
+  <app-seats-grid
+    class="w-1/2 flex bg-white rounded-xl py-3 justify-center"
+    [rows]="currentModel()? currentModel()!.rows : 0"
+    [selectedClass]="this.selectedClass"
+    [(seatsMatrix)]="seatsMatrix"
+  />
+</div>
 
 <!--<div class="relative">-->
 <!--  <label hlmLabel class="block">-->
