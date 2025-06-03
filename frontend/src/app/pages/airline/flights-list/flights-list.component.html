@@ -1,0 +1,206 @@
+<div class="flex w-full justify-center mb-16 text-3xl font-bold">
+  Flights List
+</div>
+
+<div class="flex flex-col justify-center items-center">
+  <div class="w-full max-w-5xl border border-zinc-300 rounded-lg shadow-md bg-white custom-scrollbar">
+    <div class="overflow-y-auto max-h-[600px]">
+      <table class="min-w-full">
+        <thead class="sticky top-0 bg-zinc-200">
+        <tr>
+          <th class="px-4 py-2 text-left">Aircraft ID</th>
+          <th class="px-4 py-2 text-left">Departure Airport</th>
+          <th class="px-4 py-2 text-left">Arrival Airport</th>
+          <th class="px-4 py-2 text-left">Departure Time</th>
+          <th class="px-4 py-2 text-left">Arrival Time</th>
+          <th class="px-4 py-2 text-center">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let fl of flights" class="even:bg-zinc-100">
+          <td class="px-4 py-3">{{ fl.aircraft_id }}</td>
+          <td class="px-4 py-3">{{ fl.departure_airport }}</td>
+          <td class="px-4 py-3">{{ fl.arrival_airport }}</td>
+          <td class="px-4 py-3">
+            {{ formatTime(fl.departure_time) + ' ' + dateToString(fl.departure_time, 'specific') }}
+          </td>
+          <td class="px-4 py-3">
+            {{ formatTime(fl.arrival_time)   + ' ' + dateToString(fl.arrival_time, 'specific') }}
+          </td>
+          <td class="px-4 py-3 text-center space-x-2">
+            <!-- Info button: opens popup -->
+            <button
+              type="button"
+              (click)="openDetails(fl)"
+              class="inline-flex items-center px-2 py-1 border border-gray-300 rounded hover:bg-gray-100"
+            >
+              <img
+                ngSrc="/assets/info.png"
+                alt="Info"
+                class="h-5 w-5"
+                height="128"
+                width="128"
+              />
+            </button>
+
+            <!-- Edit & Delete buttons remain the same -->
+            <button type="button" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded hover:bg-gray-100">
+              <img
+                ngSrc="/assets/editing.png"
+                alt="Edit"
+                class="h-5 w-5 -translate-y-[1px]"
+                height="64"
+                width="64"
+              />
+            </button>
+            <button type="button" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded hover:bg-gray-100">
+              <img
+                ngSrc="/assets/trash.png"
+                alt="Delete"
+                class="h-5 w-5"
+                height="128"
+                width="128"
+              />
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="flex w-full max-w-4xl justify-end">
+    <button
+      hlmBtn
+      class="bg-black text-white px-10 mt-4"
+      [routerLink]="'/manage-flights/add'"
+    >
+      + Add new Flight
+    </button>
+  </div>
+</div>
+
+<!-- Popover / Modal: only present when selectedFlight is non-null -->
+<div
+  *ngIf="selectedFlight"
+  class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+>
+  <!-- The white card -->
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 relative">
+    <!-- Header with title and close button -->
+    <div class="flex justify-between items-center border-b border-zinc-200 px-6 py-4">
+      <h2 class="text-2xl font-semibold">Flight Details</h2>
+      <button
+        (click)="closeDetails()"
+        class="text-zinc-500 hover:text-zinc-800 font-bold text-xl"
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </div>
+
+    <!-- Body: all fields, one row each (start/end pairs grouped) -->
+    <div class="px-6 py-6 space-y-4">
+      <!-- ID -->
+      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
+        <span class="font-bold">ID:</span>
+        <span>{{ selectedFlight.id }}</span>
+      </div>
+
+      <!-- Route ID -->
+      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
+        <span class="font-bold">Route ID:</span>
+        <span>{{ selectedFlight.route_id }}</span>
+      </div>
+
+      <!-- Aircraft ID -->
+      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
+        <span class="font-bold">Aircraft ID:</span>
+        <span>{{ selectedFlight.aircraft_id }}</span>
+      </div>
+
+      <!-- Departure / Arrival Times -->
+      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
+        <div>
+          <span class="font-bold">Departure:</span><br />
+          <span>
+            {{ formatTime(selectedFlight.departure_time) }}
+            {{ dateToString(selectedFlight.departure_time, 'specific') }}
+          </span>
+        </div>
+        <div>
+          <span class="font-bold text-right w-full inline-block">Arrival:</span><br />
+          <span>
+            {{ formatTime(selectedFlight.arrival_time) }}
+            {{ dateToString(selectedFlight.arrival_time, 'specific') }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Check-in Start / End -->
+      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
+        <div>
+          <span class="font-bold">Check-in Start:</span><br />
+          <span>
+            {{ formatTime(selectedFlight.checkin_start) }}
+            {{ dateToString(selectedFlight.checkin_start, 'specific') }}
+          </span>
+        </div>
+        <div>
+          <span class="font-bold text-right w-full inline-block">Check-in End:</span><br />
+          <span>
+            {{ formatTime(selectedFlight.checkin_end) }}
+            {{ dateToString(selectedFlight.checkin_end, 'specific') }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Boarding Start / End -->
+      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
+        <div>
+          <span class="font-bold">Boarding Start:</span><br />
+          <span>
+            {{ formatTime(selectedFlight.boarding_start) }}
+            {{ dateToString(selectedFlight.boarding_start, 'specific') }}
+          </span>
+        </div>
+        <div>
+          <span class="font-bold text-right w-full inline-block">Boarding End:</span><br />
+          <span>
+            {{ formatTime(selectedFlight.boarding_end) }}
+            {{ dateToString(selectedFlight.boarding_end, 'specific') }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Gate / Terminal -->
+      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
+        <div>
+          <span class="font-bold">Gate:</span><br />
+          <span>{{ selectedFlight.gate }}</span>
+        </div>
+        <div>
+          <span class="font-bold">Terminal:</span><br />
+          <span class="w-full text-right inline-block">{{ selectedFlight.terminal }}</span>
+        </div>
+      </div>
+
+      <!-- Prices -->
+      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
+        <div>
+          <span class="font-bold">First Class Price:</span><br />
+          <span>${{ selectedFlight.price_first_class }}</span>
+        </div>
+        <div>
+          <span class="font-bold">Business Class Price:</span><br />
+          <span>${{ selectedFlight.price_business_class }}</span>
+        </div>
+      </div>
+
+      <div class="flex justify-between">
+        <span class="font-bold">Insurance Price:</span>
+        <span>${{ selectedFlight.price_insurance }}</span>
+      </div>
+    </div>
+  </div>
+</div>
