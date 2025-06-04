@@ -3,8 +3,8 @@
 </div>
 
 
-<div class="flex flex-col justify-between w-full space-y-1">
-  <div class="flex max-w-4xl space-x-12 mb-6">
+<div class="flex flex-col justify-between w-[550px] space-y-1">
+  <div class="flex max-w-4xl space-x-12 mb-6 justify-center">
     <div class="flex w-[500px]">
       <brn-popover [state]="state()" (stateChanged)="stateChanged($event)" sideOffset="5">
         <button class="w-[500px] bg-white justify-between" id="edit-profile" variant="outline" brnPopoverTrigger hlmBtn>
@@ -38,44 +38,186 @@
       </brn-popover>
     </div>
   </div>
+  <div class="flex justify-between items-center w-full px-4 transition-opacity duration-300"
+       [class.!opacity-0]="!currentModel()"
+  >
+    <button hlmBtn aria-label="Previous page" class="not-hover:bg-zinc-300 text-black hover:bg-zinc-200"
+            (click)="page = 'forms'"
+    >&lt;</button>
+    <div class="flex space-x-2 transition-colors duration-300">
+      <span
+        class="block h-2 w-2 rounded-full"
+        [ngClass]="page === 'forms' ? 'bg-black' : 'bg-gray-400'"
+      ></span>
+      <span
+        class="block h-2 w-2 rounded-full"
+        [ngClass]="page === 'extras' ? 'bg-black' : 'bg-gray-400'"
+      ></span>
+    </div>
+    <button hlmBtn aria-label="Next page" class="not-hover:bg-zinc-300 text-black hover:bg-zinc-200"
+            (click)="page = 'extras'"
+    >&gt;</button>
+  </div>
+  <div class="flex flex-col justify-center space-y-1 w-[550px] h-[460px] absolute top-[260px] transition-all duration-300"
+       [class.!opacity-0]="!currentModel()"
+       [ngClass]="{
+       'opacity-100 ': page === 'extras',
+       'opacity-0 translate-x-[20px]': page === 'forms'}"
+  >
+<!--    dummy -->
+    <app-credit-card-list/>
+  </div>
+  <div class="flex flex-col justify-center space-y-1 w-[550px] h-[500px] absolute top-[240px] transition-all duration-300"
+       [class.!opacity-0]="!currentModel()"
+       [ngClass]="{
+       'opacity-100 ': page === 'forms',
+       'opacity-0 -translate-x-[20px]': page === 'extras'}"
+  >
+<!--    FLIGHT DATE-->
+    <div class="relative col-span-2">
+      <label hlmLabel class="block">
+        Flight date
+        <input
+          hlmInput
+          type="text"
+          class="mt-1 w-full"
+        />
+      </label>
+    </div>
 
-  <div class="flex space-x-3 w-full justify-between transition-opacity duration-300" [class.opacity-0]="!currentModel()">
-    <div class="relative col-span-2">
-      <label hlmLabel class="block">
-        Departure time
-        <input
-          hlmInput
-          type="text"
-          class="mt-1 w-full"
-        />
-      </label>
+<!--    DEPARTURE/ARRIVAL TIME -->
+    <div class="flex space-x-3 w-full justify-between ">
+      <div class="relative col-span-2">
+        <label hlmLabel class="block">
+          Departure time
+          <input
+            hlmInput
+            type="text"
+            class="mt-1 w-full"
+          />
+        </label>
+      </div>
+      <div class="relative col-span-2">
+        <label hlmLabel class="block">
+          Flight duration
+          <input
+            hlmInput
+            type="text"
+            class="mt-1 w-full"
+          />
+        </label>
+      </div>
     </div>
-    <div class="relative col-span-2">
-      <label hlmLabel class="block">
-        Arrival time
-        <input
-          hlmInput
-          type="text"
-          class="mt-1 w-full"
-        />
-      </label>
+    <!--  CHECK-IN-->
+    <div class="flex space-x-3 w-full justify-between ">
+      <div class="relative col-span-2">
+        <label hlmLabel class="block">
+          Check-in start time
+          <input
+            hlmInput
+            type="text"
+            class="mt-1 w-full"
+          />
+        </label>
+      </div>
+      <div class="relative col-span-2">
+        <label hlmLabel class="block">
+          Check-in end time
+          <input
+            hlmInput
+            type="text"
+            class="mt-1 w-full"
+          />
+        </label>
+      </div>
     </div>
-  </div>
-<!--  CHECK-IN-->
-  <div class="flex space-x-3 w-full justify-between transition-opacity duration-300" [class.opacity-0]="!currentModel()">
-    <div class="relative col-span-2">
-      <label hlmLabel class="block">
-        Check-in start time
-        <input
-          hlmInput
-          type="text"
-          class="mt-1 w-full"
-        />
-      </label>
+
+    <!--  BOARDING -->
+    <div class="flex space-x-3 w-full justify-between ">
+      <div class="relative col-span-2">
+        <label hlmLabel class="block">
+          Boarding start time
+          <input
+            hlmInput
+            type="text"
+            class="mt-1 w-full"
+          />
+        </label>
+      </div>
+      <div class="relative col-span-2">
+        <label hlmLabel class="block">
+          Boarding end time
+          <input
+            hlmInput
+            type="text"
+            class="mt-1 w-full"
+          />
+        </label>
+      </div>
     </div>
-    <div class="relative col-span-2">
+
+    <!--  GATE - TERMINAL -->
+    <div class="flex space-x-3 w-full justify-between ">
+      <div class="relative col-span-2">
+        <label hlmLabel class="block">
+          Gate
+          <input
+            hlmInput
+            type="text"
+            class="mt-1 w-full"
+          />
+        </label>
+      </div>
+      <div class="relative col-span-2">
+        <label hlmLabel class="block">
+          Terminal
+          <input
+            hlmInput
+            type="text"
+            class="mt-1 w-full"
+          />
+        </label>
+      </div>
+    </div>
+
+    <!--  FIRST/BUSINESS/ECONOMY PRICE-->
+    <div class="flex w-full space-x-2 justify-between ">
+      <div class="w-1/3">
+        <label hlmLabel class="block">
+          First Class price
+          <input
+            hlmInput
+            type="text"
+            class="mt-1 w-full"
+          />
+        </label>
+      </div>
+      <div class="w-1/3">
+        <label hlmLabel class="block">
+          Business Class price
+          <input
+            hlmInput
+            type="text"
+            class="mt-1 w-full"
+          />
+        </label>
+
+      </div>
+      <div class="w-1/3">
+        <label hlmLabel class="block">
+          Economy Class price
+          <input
+            hlmInput
+            type="text"
+            class="mt-1 w-full w-"
+          />
+        </label>
+      </div>
+    </div>
+    <!--   INSURANCE PRICE -->
+    <div class="relative col-span-2 ">
       <label hlmLabel class="block">
-        Check-in end time
+        Insurance price
         <input
           hlmInput
           type="text"
@@ -85,57 +227,16 @@
     </div>
   </div>
 
-<!--  BOARDING -->
-  <div class="flex space-x-3 w-full justify-between transition-opacity duration-300" [class.opacity-0]="!currentModel()">
-    <div class="relative col-span-2">
-      <label hlmLabel class="block">
-        Boarding start time
-        <input
-          hlmInput
-          type="text"
-          class="mt-1 w-full"
-        />
-      </label>
-    </div>
-    <div class="relative col-span-2">
-      <label hlmLabel class="block">
-        Boarding end time
-        <input
-          hlmInput
-          type="text"
-          class="mt-1 w-full"
-        />
-      </label>
-    </div>
-  </div>
 
-<!--  GATE - TERMINAL -->
-  <div class="flex space-x-3 w-full justify-between transition-opacity duration-300" [class.opacity-0]="!currentModel()">
-    <div class="relative col-span-2">
-      <label hlmLabel class="block">
-        Gate
-        <input
-          hlmInput
-          type="text"
-          class="mt-1 w-full"
-        />
-      </label>
-    </div>
-    <div class="relative col-span-2">
-      <label hlmLabel class="block">
-        Terminal
-        <input
-          hlmInput
-          type="text"
-          class="mt-1 w-full"
-        />
-      </label>
-    </div>
-  </div>
+
+
+
+  <div class="h-[460px]"></div>
+<!--  SAVE FLIGHT  -->
   <button
     hlmBtn
     class="bg-black text-white px-10 mx-auto mt-8 transition-opacity duration-300"
-    [class.opacity-0]="!currentModel()"
+    [disabled]="true"
   >
 <!--    [disabled]="!currentModel()"-->
     Save Flight

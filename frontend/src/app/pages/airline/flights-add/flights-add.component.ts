@@ -13,7 +13,8 @@ import {
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {lucideCheck, lucideChevronsUpDown, lucideSearch} from '@ng-icons/lucide';
 import {BrnCommandEmptyDirective} from '@spartan-ng/brain/command';
-import {NgForOf} from '@angular/common';
+import {NgClass, NgForOf} from '@angular/common';
+import {CreditCardListComponent} from '@/app/components/user/credit-card-list/credit-card-list.component';
 
 interface Route {
   id: number;
@@ -40,7 +41,9 @@ interface Route {
     BrnCommandEmptyDirective,
     HlmCommandEmptyDirective,
     HlmCommandSearchInputComponent,
-    NgForOf
+    NgForOf,
+    NgClass,
+    CreditCardListComponent
   ],
   providers: [provideIcons({ lucideChevronsUpDown, lucideSearch, lucideCheck })],
   templateUrl: './flights-add.component.html'
@@ -60,6 +63,8 @@ export class FlightsAddComponent {
   public currentModel = signal<Route | undefined>(undefined);
   public state = signal<'closed' | 'open'>('closed');
 
+  protected page: 'forms' | 'extras' = 'forms';
+
   stateChanged(state: 'open' | 'closed') {
     this.state.set(state);
   }
@@ -69,5 +74,12 @@ export class FlightsAddComponent {
       this.currentModel.set(route);
     }
     this.state.set('closed');
+  }
+
+  get showForms() {
+    return this.page === 'forms' && this.currentModel();
+  }
+  get showExtras(){
+    return this.page === 'extras' && this.currentModel();
   }
 }
