@@ -12,7 +12,6 @@ import {RouterLink} from '@angular/router';
     FormsModule,
     HlmInputDirective,
     HlmLabelDirective,
-    NgIf,
     ReactiveFormsModule,
     HlmButtonDirective,
     RouterLink

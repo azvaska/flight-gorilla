@@ -1,0 +1,144 @@
+<div class="flex w-full justify-center mb-16 text-3xl font-bold">
+  Add Flight
+</div>
+
+
+<div class="flex flex-col justify-between w-full space-y-1">
+  <div class="flex max-w-4xl space-x-12 mb-6">
+    <div class="flex w-[500px]">
+      <brn-popover [state]="state()" (stateChanged)="stateChanged($event)" sideOffset="5">
+        <button class="w-[500px] bg-white justify-between" id="edit-profile" variant="outline" brnPopoverTrigger hlmBtn>
+          {{ currentModel()?.name ?? 'Select route...' }}
+          <ng-icon hlm size="sm" name="lucideChevronsUpDown"/>
+        </button>
+        <hlm-command *brnPopoverContent="let ctx" hlmPopoverContent class="p-0 w-[350px]">
+          <hlm-command-search>
+            <ng-icon hlm name="lucideSearch"/>
+            <input placeholder="Search route..." hlm-command-search-input/>
+          </hlm-command-search>
+          <div *brnCommandEmpty hlmCommandEmpty>No results found.</div>
+          <hlm-command-list>
+            <hlm-command-group>
+              <button
+                *ngFor="let route of this.routes"
+                hlm-command-item
+                [value]="route.id.toString()"
+                (selected)="commandSelected(route)"
+              >
+                <ng-icon hlm
+                         [class.opacity-0]="currentModel()?.id?.toString() !== route.id.toString()"
+                         name="lucideCheck"
+                         hlmCommandIcon
+                />
+                {{ route.name }}
+              </button>
+            </hlm-command-group>
+          </hlm-command-list>
+        </hlm-command>
+      </brn-popover>
+    </div>
+  </div>
+
+  <div class="flex space-x-3 w-full justify-between transition-opacity duration-300" [class.opacity-0]="!currentModel()">
+    <div class="relative col-span-2">
+      <label hlmLabel class="block">
+        Departure time
+        <input
+          hlmInput
+          type="text"
+          class="mt-1 w-full"
+        />
+      </label>
+    </div>
+    <div class="relative col-span-2">
+      <label hlmLabel class="block">
+        Arrival time
+        <input
+          hlmInput
+          type="text"
+          class="mt-1 w-full"
+        />
+      </label>
+    </div>
+  </div>
+<!--  CHECK-IN-->
+  <div class="flex space-x-3 w-full justify-between transition-opacity duration-300" [class.opacity-0]="!currentModel()">
+    <div class="relative col-span-2">
+      <label hlmLabel class="block">
+        Check-in start time
+        <input
+          hlmInput
+          type="text"
+          class="mt-1 w-full"
+        />
+      </label>
+    </div>
+    <div class="relative col-span-2">
+      <label hlmLabel class="block">
+        Check-in end time
+        <input
+          hlmInput
+          type="text"
+          class="mt-1 w-full"
+        />
+      </label>
+    </div>
+  </div>
+
+<!--  BOARDING -->
+  <div class="flex space-x-3 w-full justify-between transition-opacity duration-300" [class.opacity-0]="!currentModel()">
+    <div class="relative col-span-2">
+      <label hlmLabel class="block">
+        Boarding start time
+        <input
+          hlmInput
+          type="text"
+          class="mt-1 w-full"
+        />
+      </label>
+    </div>
+    <div class="relative col-span-2">
+      <label hlmLabel class="block">
+        Boarding end time
+        <input
+          hlmInput
+          type="text"
+          class="mt-1 w-full"
+        />
+      </label>
+    </div>
+  </div>
+
+<!--  GATE - TERMINAL -->
+  <div class="flex space-x-3 w-full justify-between transition-opacity duration-300" [class.opacity-0]="!currentModel()">
+    <div class="relative col-span-2">
+      <label hlmLabel class="block">
+        Gate
+        <input
+          hlmInput
+          type="text"
+          class="mt-1 w-full"
+        />
+      </label>
+    </div>
+    <div class="relative col-span-2">
+      <label hlmLabel class="block">
+        Terminal
+        <input
+          hlmInput
+          type="text"
+          class="mt-1 w-full"
+        />
+      </label>
+    </div>
+  </div>
+  <button
+    hlmBtn
+    class="bg-black text-white px-10 mx-auto mt-8 transition-opacity duration-300"
+    [class.opacity-0]="!currentModel()"
+  >
+<!--    [disabled]="!currentModel()"-->
+    Save Flight
+  </button>
+</div>
+

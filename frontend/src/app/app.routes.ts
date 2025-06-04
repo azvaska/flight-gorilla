@@ -28,6 +28,7 @@ import {AircraftAddComponent} from '@/app/pages/airline/aircraft-add/aircraft-ad
 import {RouteListComponent} from '@/app/pages/airline/route-list/route-list.component';
 import { RouteAddComponent } from './pages/airline/route-add/route-add.component';
 import {FlightsListComponent} from '@/app/pages/airline/flights-list/flights-list.component';
+import {FlightsAddComponent} from '@/app/pages/airline/flights-add/flights-add.component';
 
 export const routes: Routes = [
   {
@@ -137,6 +138,10 @@ export const routes: Routes = [
   {
     path: 'manage-flights',
     component: FlightsListComponent,
+  },
+  {
+    path: 'manage-flights/add',
+    component: FlightsAddComponent,
   },
   {
     path: 'bookings',
