@@ -114,7 +114,6 @@ export class ProfileComponent implements OnInit {
       oldPassword?: string;
     } = this.profileForm.value;
     
-    console.log("updatedUser", updatedUser);
     
     this.isLoading = true;
 
@@ -127,7 +126,7 @@ export class ProfileComponent implements OnInit {
       })
     );
 
-    await firstValueFrom(
+    const newUser = await firstValueFrom(
       this.userFetchService.updateUser(this.user.id, changedValues)
     );
 
@@ -153,6 +152,7 @@ export class ProfileComponent implements OnInit {
     }
 
     this.isLoading = false;
+    this.userChange.emit(newUser);
     this.toggleEditMode();
   }
 }

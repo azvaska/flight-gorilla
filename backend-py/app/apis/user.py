@@ -6,7 +6,7 @@ from flask_security import hash_password
 from marshmallow import ValidationError
 from app.core.auth import roles_required
 from app.models.user import User, PayementCard, CardType
-from app.schemas.user import UserSchema, UserUpdateSchema, user_schema, users_schema, debit_card_schema, debit_cards_schema
+from app.schemas.user import UserSchema, user_schema, users_schema, debit_card_schema, debit_cards_schema
 from app.extensions import db
 
 api = Namespace('user', description='User related operations')
