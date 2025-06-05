@@ -14,6 +14,7 @@ class ExtraSchema(ma.SQLAlchemyAutoSchema):
         include_fk = True
 
 
+
 class AirlineAircraftSchema(ma.SQLAlchemyAutoSchema):
     airline_id = ma.UUID(dump_only=True)
     first_class_seats = ma.List(ma.String(), dump_only=True)

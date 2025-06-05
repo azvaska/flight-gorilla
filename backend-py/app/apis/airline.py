@@ -264,6 +264,7 @@ class AirlineExtrasList(Resource):
 
         return marshal(extra_schema.dump(new_extra),extra_model), 201
 
+
 @api.route('/extras/<uuid:extra_id>')
 @api.param('extra_id', 'The extra identifier')
 class ExtraResource(Resource):

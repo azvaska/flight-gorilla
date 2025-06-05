@@ -242,7 +242,8 @@ class FlightExtraR(Resource):
         if airline.id != airline_id:
             return {'error': 'You do not have permission to modify this flight'}, 403
         
-        extras = [str(extra.id) for extra in airline.extras]
+        # Create a dictionary of airline extras for faster lookup
+        airline_extras = {str(extra.id): extra for extra in airline.extras}
 
         try:
             results = []
@@ -253,8 +254,17 @@ class FlightExtraR(Resource):
                     'price': extra['price'],
                     'limit': extra['limit']
                 }
-                if extra['extra_id'] not in extras:
+                
+                # Check if extra belongs to airline
+                if extra['extra_id'] not in airline_extras:
                     return {'error': f"Extra {extra['extra_id']} does not belong to airline {airline_id}"}, 403
+
+                # Get the original extra to check if it's stackable
+                extra_original = airline_extras[extra['extra_id']]
+                
+                # Check if extra is stackable and if limit is appropriate
+                if not extra_original.stackable and extra['limit'] > 1:
+                    return {'error': f"Extra {extra_original.name} is not stackable, limit must be 1"}, 400
 
                 new_extra = flight_extra_schema.load(extra_data)
                 db.session.add(new_extra)
@@ -263,7 +273,7 @@ class FlightExtraR(Resource):
             db.session.commit()
             return marshal(flights_extra_schema.dump(results), extra_flight_model), 201
         except ValidationError as err:
-            return {'error':'validation Failed'}
+            return {'error': 'validation Failed'},400
 
 
 @api.route('/seats/<uuid:flight_id>')
