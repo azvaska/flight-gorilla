@@ -45,6 +45,21 @@ user_model = api.model('User', {
     'active': fields.Boolean(description='Account active status'),
 })
 
+user_output_model = api.model('UserOutput', {
+    'id': fields.String(readonly=True, description='User ID'),
+    'email': fields.String(required=True, description='Email address'),
+    'name': fields.String(required=True, description='First name'),
+    'surname': fields.String(required=True, description='Last name'),
+    'address': fields.String(description='Address'),
+    'zip': fields.String(description='ZIP/postal code'),
+    'nation_id': fields.Integer(description='Nation ID'),
+    'airline_id': fields.String(description='Airline ID'),
+    'active': fields.Boolean(description='Account active status'),
+    'cards': fields.List(fields.Nested(payement_card_model_output), description='List of cards'),
+    'type': fields.String(required=True, description='User type (airline or user)',enum=['airline','user']),
+
+})
+
 user_put_model = api.model('UserUpdate', {
     'email': fields.String(required=False, description='Email address'),
     'name': fields.String(required=False, description='First name'),
@@ -67,7 +82,7 @@ class UserList(Resource):
     @jwt_required()
     @roles_required(['admin'])
     @api.expect(user_list_parser)
-    @api.response(200, 'OK', user_model)
+    @api.response(200, 'OK', user_output_model)
     @api.response(403, 'Forbidden')
     @api.response(500, 'Internal Server Error')
     def get(self):
@@ -85,7 +100,7 @@ class UserList(Resource):
         if args['role']:
             query = query.join(User.roles).filter(User.roles.any(name=args['role']))
 
-        return marshal(users_schema.dump(query.all()),user_model), 200
+        return marshal(users_schema.dump(query.all()),user_output_model), 200
 
 @api.route('/<uuid:user_id>')
 @api.param('user_id', 'The user identifier')
@@ -203,14 +218,14 @@ class UpdatePassword(Resource):
 class CurrentUser(Resource):
     @jwt_required()
     @roles_required(['user', 'airline-admin'])
-    @api.response(200, 'OK', user_model)
+    @api.response(200, 'OK', user_output_model)
     @api.response(404, 'Not Found')
     @api.response(500, 'Internal Server Error')
     def get(self):
         """Get current user profile"""
         user_id = get_jwt_identity()
         user = User.query.get_or_404(user_id)
-        return user_schema.dump(user), 200
+        return marshal(user_schema.dump(user),user_output_model), 200
 
 
 

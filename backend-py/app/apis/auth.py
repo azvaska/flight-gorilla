@@ -22,7 +22,7 @@ login_model_input  = api.model('Login', {
     'password': fields.String(required=True, description='Password'),
 })
 
-user_model = api.model('User', {
+user_login_model = api.model('UserLoginModel', {
     'id': fields.String(required=True, description='User ID'),
     'active': fields.Boolean(required=True, description='User active status'),
     'type': fields.String(required=True, description='User type (airline or user)',enum=['airline','user']),
@@ -31,7 +31,7 @@ user_model = api.model('User', {
 login_model_output = api.model('LoginOutput', {
     'access_token': fields.String(required=True, description='Access Token'),
     'refresh_token': fields.String(required=True, description='Refresh Token'),
-    'user': fields.Nested(user_model, required=True, description='User')
+    'user': fields.Nested(user_login_model, required=True, description='User')
 })
 
 register_model = api.model('Register', {
