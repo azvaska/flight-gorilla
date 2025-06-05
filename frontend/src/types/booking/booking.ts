@@ -5,6 +5,7 @@ export interface IBookingExtra {
   name: string;
   description: string;
   extra_price: number;
+  quantity: number;
 }
 
 export interface IBookingSegment {
@@ -22,4 +23,5 @@ export interface IBooking {
   return_flights: IBookingSegment[];
   total_price: number;
   is_insurance_purchased: boolean;
+  insurance_price: number;
 }

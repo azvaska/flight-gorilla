@@ -73,7 +73,7 @@ export class BookingComponent {
         departureFlights,
         returnFlights,
         phase: BookingPhase.OVERVIEW,
-        extraIds: [],
+        extras: [],
         hasInsurance: false,
       });
 

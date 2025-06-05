@@ -25,6 +25,18 @@ class Booking(db.Model):
     departure_flights: Mapped[List['BookingDepartureFlight']] = relationship('BookingDepartureFlight', back_populates='booking', cascade='all, delete-orphan')
     return_flights: Mapped[List['BookingReturnFlight']] = relationship('BookingReturnFlight', back_populates='booking', cascade='all, delete-orphan')
     created_at: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False, default=datetime.datetime.now(datetime.UTC))
+    booking_flight_extras: Mapped[List['BookingFlightExtra']] = relationship(
+        'BookingFlightExtra',
+        back_populates='booking',
+        cascade='all, delete-orphan',
+        lazy='joined',
+        primaryjoin="Booking.id==BookingFlightExtra.booking_id"
+    )
+
+
+    @property
+    def insurance_price(self) -> float:
+        return sum(flight.flight.price_insurance for flight in self.departure_flights) + sum(flight.flight.price_insurance for flight in self.return_flights)
 
     @property
     def total_price(self) -> float:
@@ -37,12 +49,14 @@ class Booking(db.Model):
             total += flight.price
             for extra in flight.extras:
                 total += extra.extra_price
+        total += self.insurance_price
         return round(total,2)
 
 class BookingFlightExtra(db.Model):
     booking_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Booking.id), nullable=False, primary_key=True)
     flight_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Flight.id), nullable=False, primary_key=True)
-    extra_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey("flight_extra.id"), nullable=False, )
+    extra_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey("flight_extra.id"), nullable=False, primary_key=True)
+    quantity: Mapped[int] = mapped_column(db.Integer, nullable=False)
     extra_price: Mapped[float] = mapped_column(db.Float, nullable=False)
 
     booking: Mapped[Booking] = relationship(Booking, foreign_keys=[booking_id])

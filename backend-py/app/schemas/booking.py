@@ -10,12 +10,15 @@ from app.models.flight import Flight, FlightExtra
 from app.models.extra import Extra
 from app.schemas.flight import FlightSchema
 
+class ExtraInputSchema(Schema):
+    id = ma_fields.UUID(required=True)
+    quantity = ma_fields.Integer(required=True)
 
 class BookingInputSchema(Schema):
     session_id = ma_fields.UUID(required=True)
     departure_flights = ma_fields.List(ma_fields.UUID, required=True)
     return_flights = ma_fields.List(ma_fields.UUID, required=True)
-    extras_id = ma_fields.List(ma_fields.UUID(), required=True)
+    extras = ma_fields.List(ma_fields.Nested(ExtraInputSchema()), required=True)
     has_booking_insurance = ma_fields.Boolean(required=True)
 
 
@@ -41,13 +44,13 @@ class BookingInputSchema(Schema):
         if not session:
             raise ValidationError(f"Session with ID {session_id} not found")
 
-    @validates('extras_id')
-    def validate_extras_exist(self, extras_id, **kwargs):
-        if extras_id:
-            for extra_id in extras_id:
-                extra = FlightExtra.query.get(extra_id)
-                if not extra:
-                    raise ValidationError(f"Extra with ID {extra_id} not found")
+    @validates('extras')
+    def validate_extras_exist(self, extras, **kwargs):
+        if extras:
+            for extra in extras:
+                res = FlightExtra.query.get(extra['id'])
+                if not res:
+                    raise ValidationError(f"Extra with ID {extra['id']} not found")
 
 
 
@@ -61,6 +64,7 @@ class BookingFlightExtraSchema(ma.SQLAlchemyAutoSchema):
     description = ma.String(attribute="extra_original.description")
     extra_price = ma.Float(attribute="extra_price")
     extra_id = ma.UUID(attribute="extra_id")
+    quantity = ma.Integer(attribute="quantity")
 
 class BookedFlightSchema(ma.Schema):
 
@@ -84,6 +88,7 @@ class BookingOutputSchema(ma.SQLAlchemySchema):
     total_price = ma.Method("get_total_price")
     booking_number = ma.String(attribute="booking_number")
     is_insurance_purchased = ma.Boolean(attribute="has_booking_insurance")
+    insurance_price = ma.Float(attribute="insurance_price")
 
     def get_total_price(self, obj):
         return obj.total_price

@@ -49,8 +49,8 @@ export class BookingExtrasComponent {
 
   private async fetchFlightExtras() {
     this.loadingService.startLoadingTask();
-    const extras = await firstValueFrom(this.flightFetchService
-      .getFlightExtras(this.currentFlight!.id)
+    const extras = await firstValueFrom(
+      this.flightFetchService.getFlightExtras(this.currentFlight!.id)
     );
     this.loadingService.endLoadingTask();
     console.log('Fetched new extras', extras);
@@ -100,17 +100,14 @@ export class BookingExtrasComponent {
 
     // Add new extras to old extras. For extras with multiple quantity, me duplicate ids
     const state = this.bookingStateStore.getBookingState();
-    const oldExtraIds = state.extraIds;
-    const extraIds = this.extras.reduce((acc, extra) => {
-      for (let i = 0; i < extra.quantity; i++) {
-        acc.push(extra.id);
-      }
-
-      return acc;
-    }, oldExtraIds);
+    const oldExtras = state.extras;
+    const newExtras = this.extras.map((extra) => ({
+      id: extra.id,
+      quantity: extra.quantity,
+    })).filter((extra) => extra.quantity > 0);
 
     this.bookingStateStore.updateBookingState({
-      extraIds,
+      extras: [...oldExtras, ...newExtras],
     });
 
     this._currentFlightIndex++;
@@ -125,7 +122,7 @@ export class BookingExtrasComponent {
     } else {
       console.log(
         'No more flights, going to payment with these extras',
-        this.bookingStateStore.getBookingState().extraIds,
+        this.bookingStateStore.getBookingState().extras,
         'hasInsurance',
         this.isInsuranceSelected
       );

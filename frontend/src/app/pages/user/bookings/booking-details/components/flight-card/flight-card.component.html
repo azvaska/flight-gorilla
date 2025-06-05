@@ -1,0 +1,55 @@
+<div hlmCard class="p-6 pb-8 flex flex-col gap-4 relative">
+  <div class="flex flex-col justify-between items-center gap-6">
+    <div class="flex flex-row justify-between items-center w-full pb-5 border-b">
+      <div class="flex flex-col">
+        <span class="text-2xl font-bold text-gray-900">{{
+          formatDate(segment.flight.departure_time)
+        }}</span>
+        <span class="text-sm text-gray-500">{{
+          segment.flight.departure_airport.name
+        }} ({{ segment.flight.departure_airport.iata_code }})</span>
+      </div>
+
+      <div
+        class="absolute left-1/2 -translate-x-1/2 flex flex-col items-center text-center gap-1"
+      >
+        <span class="text-sm text-muted-foreground"></span>
+        <span class="text-sm font-medium">{{
+          segment.flight.airline.name
+        }}</span>
+      </div>
+
+      <div class="flex flex-col items-end">
+        <span class="text-2xl font-bold text-gray-900">{{
+          formatDate(segment.flight.arrival_time)
+        }}</span>
+        <span class="text-sm text-gray-500">{{
+          segment.flight.arrival_airport.name
+        }} ({{ segment.flight.arrival_airport.iata_code }})
+        </span>
+      </div>
+    </div>
+    <div class="w-full flex flex-col gap-1 text-sm text-gray-600">
+      <span class="text-base font-semibold text-gray-800"> Details: </span>
+      <div>
+        <span class="font-semibold">Class:</span> {{ segment.class_type }}
+      </div>
+      <div>
+        <span class="font-semibold">Seat:</span> {{ segment.seat_number }}
+      </div>
+    </div>
+    <div
+      *ngIf="segment.extras.length"
+      class="w-full flex flex-col gap-1 text-sm text-gray-600"
+    >
+      <span class="text-base font-semibold text-gray-800"> Extras: </span>
+      <ul class="list-disc list-inside">
+        @for (extra of segment.extras; track extra.extra_id) {
+        <li>
+          {{ extra.quantity }}x {{ extra.name }} - {{ extra.extra_price }}€ 
+        </li>
+        }
+      </ul>
+    </div>
+  </div>
+</div>

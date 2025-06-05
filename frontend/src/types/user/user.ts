@@ -11,4 +11,5 @@ export interface IUser {
   zip: string | null;
   airline_id: string | null;
   cards: IPayementCard[];
+  type: 'admin' | 'user' | 'airline';
 }

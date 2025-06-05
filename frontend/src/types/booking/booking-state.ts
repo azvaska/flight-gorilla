@@ -1,4 +1,4 @@
-import { IFlight } from "@/types/flight";
+import { IFlight } from '@/types/flight';
 
 export enum BookingPhase {
   OVERVIEW = 'overview',
@@ -13,7 +13,10 @@ export interface IBookingState {
   departureFlights: IFlight[];
   returnFlights?: IFlight[];
   phase: BookingPhase;
-  seatSessionId?: string
-  extraIds: string[];
+  seatSessionId?: string;
+  extras: {
+    id: string;
+    quantity: number;
+  }[];
   hasInsurance: boolean;
 }

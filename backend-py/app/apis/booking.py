@@ -30,6 +30,13 @@ api = Namespace("booking", description="Booking related operations")
 
 # --- RESTx Models ---
 
+extra_model_input = api.model(
+    "ExtraInput",
+    {
+        "id": fields.String(required=True, description="Extra ID"),
+        "quantity": fields.Integer(required=True, description="Quantity"),
+    },
+)
 
 booking_model_input = api.model(
     "BookingInput",
@@ -41,8 +48,8 @@ booking_model_input = api.model(
         "return_flights": fields.List(
             fields.String, required=True, description="Return flights ID"
         ),
-        "extras_id": fields.List(
-            fields.String, required=True, description="List of extra ID selected"
+        "extras": fields.List(
+            fields.Nested(extra_model_input), required=True, description="List of extras selected"
         ),
         "has_booking_insurance": fields.Boolean(
             required=True, description="Whether insurance was purchased"
@@ -57,6 +64,7 @@ booked_flight_extra_model_output = api.model(
         "extra_price": fields.Float(required=True, description="Price"),
         "name": fields.String(required=True, description="Name"),
         "description": fields.String(required=True, description="Description"),
+        "quantity": fields.Integer(required=True, description="Quantity"),
     },
 )
 
@@ -91,6 +99,7 @@ booking_model_output = api.model(
         "is_insurance_purchased": fields.Boolean(
             description="Whether insurance was purchased"
         ),
+        "insurance_price": fields.Float(required=True, description="Insurance price"),
     },
 )
 
@@ -227,7 +236,8 @@ class BookingList(Resource):
 
             departure_flights = validated_data["departure_flights"]
             return_flights = validated_data["return_flights"]
-            extras_id = validated_data["extras_id"]
+            
+            extras = validated_data["extras"]
 
             for flight_id in departure_flights:
                 for seat in all_seats:
@@ -267,10 +277,12 @@ class BookingList(Resource):
                         )
                         sql_session.add(booking_flight)
 
-            for extra in extras_id:
+            for extra in extras:
+                extra_id = extra["id"]
+                quantity = extra["quantity"]
                 extra_obj = (
                     sql_session.query(FlightExtra)
-                    .filter(FlightExtra.id == extra)
+                    .filter(FlightExtra.id == extra_id)
                     .first()
                 )
                 if extra_obj:
@@ -284,7 +296,8 @@ class BookingList(Resource):
                         booking_id=booking.id,
                         flight_id=extra_obj.flight_id,
                         extra_id=extra_obj.id,
-                        extra_price=extra_obj.price,
+                        extra_price=extra_obj.price * quantity,
+                        quantity=quantity,
                     )
                     sql_session.add(booking_flight_extra)
             sql_session.commit()

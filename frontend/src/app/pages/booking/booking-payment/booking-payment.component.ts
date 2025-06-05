@@ -62,7 +62,7 @@ export class BookingPaymentComponent {
         sessionId: state.seatSessionId!,
         departureFlightIds: state.departureFlights.map((flight) => flight.id),
         returnFlightIds: state.returnFlights?.map((flight) => flight.id) ?? [],
-        extraIds: state.extraIds ?? [],
+        extras: state.extras ?? [],
         hasInsurance: state.hasInsurance,
       })
     );

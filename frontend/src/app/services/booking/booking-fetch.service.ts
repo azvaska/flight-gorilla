@@ -12,13 +12,16 @@ export class BookingFetchService {
     sessionId,
     departureFlightIds,
     returnFlightIds,
-    extraIds,
+    extras,
     hasInsurance,
   }: {
     sessionId: string;
     departureFlightIds: string[];
     returnFlightIds: string[];
-    extraIds: string[];
+    extras: {
+      id: string;
+      quantity: number;
+    }[];
     hasInsurance: boolean;
   }) {
     return this.http.post<{
@@ -29,7 +32,7 @@ export class BookingFetchService {
         session_id: sessionId,
         departure_flights: departureFlightIds,
         return_flights: returnFlightIds,
-        extras_id: extraIds,
+        extras,
         has_booking_insurance: hasInsurance,
       }
     );

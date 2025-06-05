@@ -1,3 +1,147 @@
 @if (booking) {
-<p>booking-details works! {{ booking.booking_number }}</p>
+<div class="flex flex-col items-center space-y-8 w-full">
+  <div class="flex flex-row justify-between w-full">
+    <button
+      hlmBtn
+      variant="outline"
+      size="sm"
+      class="bg-white"
+      [routerLink]="['/bookings']"
+    >
+      <ng-icon name="lucideArrowLeft" size="sm" hlm></ng-icon>
+    </button>
+    <h1 class="text-2xl font-semibold text-gray-800">
+      Your trip to
+      {{
+        booking.departure_flights[booking.departure_flights.length - 1].flight
+          .arrival_airport.city.name
+      }}
+    </h1>
+    <app-popover
+      #popover="appPopover"
+      [popoverWidth]="'200px'"
+      [popoverRelativePosition]="{
+        top: 0,
+        right: 0
+      }"
+    >
+      <button
+        hlmBtn
+        variant="outline"
+        size="sm"
+        class="bg-white"
+        popover-trigger
+      >
+        <ng-icon name="lucideEllipsis" size="sm" hlm></ng-icon>
+      </button>
+
+      <div popover-content class="p-1 flex flex-col gap-1">
+        <ul>
+          <hlm-alert-dialog>
+            <button
+              class="py-2 px-4 w-full text-left rounded-sm hover:bg-gray-100 cursor-pointer"
+              brnAlertDialogTrigger
+            >
+              Delete booking
+            </button>
+            <hlm-alert-dialog-content *brnAlertDialogContent="let ctx">
+              <hlm-alert-dialog-header>
+                <h3 hlmAlertDialogTitle>
+                  Are you sure you want to cancel this booking?
+                </h3>
+                <p hlmAlertDialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your booking from your account.
+                </p>
+              </hlm-alert-dialog-header>
+              <hlm-alert-dialog-footer>
+                <button hlmAlertDialogCancel (click)="ctx.close()">
+                  Cancel
+                </button>
+                <button
+                  hlmAlertDialogAction
+                  (click)="cancelBooking(booking.id, ctx)"
+                >
+                  @if(isCancelBookingLoading) {
+                  <hlm-spinner size="sm" />
+                  } @else { Cancel booking }
+                </button>
+              </hlm-alert-dialog-footer>
+            </hlm-alert-dialog-content>
+          </hlm-alert-dialog>
+        </ul>
+      </div>
+    </app-popover>
+  </div>
+  <div class="w-full">
+    <div class="flex flex-col gap-10 w-full">
+      <section class="w-full flex flex-col gap-4">
+        <div class="flex flex-col gap-0.5">
+          <h2 class="text-xl font-semibold text-gray-700">Booking details</h2>
+        </div>
+        <div hlmCard class="w-full p-4 grid grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1">
+            <span class="text-xl font-semibold text-gray-800"
+              >Booking number</span
+            >
+            <span class="text-sm text-gray-500">{{
+              booking.booking_number
+            }}</span>
+          </div>
+          <div class="flex flex-col gap-1 text-right">
+            <span class="text-xl font-semibold text-gray-800">Total price</span>
+            <span class="text-sm text-gray-500"
+              >{{ booking.total_price }}€</span
+            >
+          </div>
+          @if (booking.is_insurance_purchased) {
+          <div class="flex flex-col gap-1">
+            <span class="text-xl font-semibold text-gray-800"
+              >Insurance price</span
+            >
+            <span class="text-sm text-gray-500"
+              >{{ booking.insurance_price }}€</span
+            >
+          </div>
+          }
+        </div>
+      </section>
+      <section class="w-full flex flex-col gap-4">
+        <div class="flex flex-col gap-0.5">
+          <h2 class="text-xl font-semibold text-gray-700">Departure Flights</h2>
+          <span class="text-sm text-gray-500">
+            {{
+              formatDate(
+                booking.departure_flights[booking.departure_flights.length - 1]
+                  .flight.arrival_time
+              )
+            }}
+          </span>
+        </div>
+        <div class="flex flex-col gap-4 w-full">
+          @for (segment of booking.departure_flights; track segment.flight.id) {
+          <flight-card [segment]="segment" />
+          }
+        </div>
+      </section>
+
+      <section
+        *ngIf="booking.return_flights.length > 0"
+        class="w-full flex flex-col gap-4"
+      >
+        <div class="flex flex-col gap-0.5">
+          <h2 class="text-xl font-semibold text-gray-700">Return Flights</h2>
+          <span class="text-sm text-gray-500">
+            {{ formatDate(booking.return_flights[0].flight.departure_time) }}
+          </span>
+        </div>
+        <div class="flex flex-col gap-4 w-full">
+          @for (segment of booking.return_flights; track segment.flight.id) {
+          <flight-card [segment]="segment" />
+          }
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
 }
