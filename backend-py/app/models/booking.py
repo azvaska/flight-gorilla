@@ -42,7 +42,7 @@ class Booking(db.Model):
 class BookingFlightExtra(db.Model):
     booking_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Booking.id), nullable=False, primary_key=True)
     flight_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Flight.id), nullable=False, primary_key=True)
-    extra_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey("flight_extra.id"), nullable=False, primary_key=True)
+    extra_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey("flight_extra.id"), nullable=False, )
     extra_price: Mapped[float] = mapped_column(db.Float, nullable=False)
 
     booking: Mapped[Booking] = relationship(Booking, foreign_keys=[booking_id])
