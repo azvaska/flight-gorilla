@@ -6,7 +6,7 @@ from flask_security import hash_password
 from marshmallow import ValidationError
 from app.core.auth import roles_required
 from app.models.user import User, PayementCard, CardType
-from app.schemas.user import UserSchema, user_schema, users_schema, debit_card_schema, debit_cards_schema
+from app.schemas.user import UserSchema, UserUpdateSchema, user_schema, users_schema, debit_card_schema, debit_cards_schema
 from app.extensions import db
 
 api = Namespace('user', description='User related operations')
@@ -44,6 +44,16 @@ user_model = api.model('User', {
     'airline_id': fields.String(description='Airline ID'),
     'active': fields.Boolean(description='Account active status'),
 })
+
+user_put_model = api.model('UserUpdate', {
+    'email': fields.String(required=False, description='Email address'),
+    'name': fields.String(required=False, description='First name'),
+    'surname': fields.String(required=False, description='Last name'),
+    'address': fields.String(required=False, description='Address'),
+    'zip': fields.String(required=False, description='ZIP/postal code'),
+    'nation_id': fields.Integer(required=False, description='Nation ID'),
+})
+
 
 # --- Request Parsers ---
 user_list_parser = reqparse.RequestParser()
@@ -95,7 +105,10 @@ class UserResource(Resource):
         return marshal(user_schema.dump(user),user_model), 200
 
     @jwt_required()
-    @api.expect(user_model)
+    @api.expect(user_put_model)
+    @api.response(200, 'User updated successfully', user_model)
+    @api.response(400, 'Bad Request')
+    @api.response(403, 'Forbidden')
     def put(self, user_id):
         """Update a user given its identifier"""
         current_user_id = get_jwt_identity()
@@ -124,8 +137,8 @@ class UserResource(Resource):
 
         try:
             # Validate with schema
-            partial_schema = UserSchema(partial=True)
-            validated_data = partial_schema.load(data)
+            partial_schema = UserSchema()
+            validated_data = partial_schema.load(data,partial=True)
 
             # Update user fields
             for key, value in data.items():
@@ -134,7 +147,7 @@ class UserResource(Resource):
 
 
             db.session.commit()
-            return user_schema.dump(user), 200
+            return marshal(user_schema.dump(user),user_model), 200
 
         except ValidationError as err:
             return {"errors": err.messages, "code": 400}, 400
