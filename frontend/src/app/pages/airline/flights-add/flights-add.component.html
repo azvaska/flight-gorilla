@@ -6,9 +6,9 @@
 <div class="flex flex-col justify-between w-[550px] space-y-1">
   <div class="flex max-w-4xl space-x-12 mb-6 justify-center">
     <div class="flex w-[500px]">
-      <brn-popover [state]="state()" (stateChanged)="stateChanged($event)" sideOffset="5">
+      <brn-popover [state]="state1()" (stateChanged)="state1Changed($event)" sideOffset="5">
         <button class="w-[500px] bg-white justify-between" id="edit-profile" variant="outline" brnPopoverTrigger hlmBtn>
-          {{ currentModel()?.name ?? 'Select route...' }}
+          {{ currentRoute()?.name ?? 'Select route...' }}
           <ng-icon hlm size="sm" name="lucideChevronsUpDown"/>
         </button>
         <hlm-command *brnPopoverContent="let ctx" hlmPopoverContent class="p-0 w-[350px]">
@@ -22,11 +22,11 @@
               <button
                 *ngFor="let route of this.routes"
                 hlm-command-item
-                [value]="route.id.toString()"
-                (selected)="commandSelected(route)"
+                [value]="route.name"
+                (selected)="command1Selected(route)"
               >
                 <ng-icon hlm
-                         [class.opacity-0]="currentModel()?.id?.toString() !== route.id.toString()"
+                         [class.opacity-0]="currentRoute()?.name !== route.name"
                          name="lucideCheck"
                          hlmCommandIcon
                 />
@@ -39,7 +39,7 @@
     </div>
   </div>
   <div class="flex justify-between items-center w-full px-4 transition-opacity duration-300"
-       [class.!opacity-0]="!currentModel()"
+       [class.!opacity-0]="!currentRoute()"
   >
     <button hlmBtn aria-label="Previous page" class="not-hover:bg-zinc-300 text-black hover:bg-zinc-200"
             (click)="page = 'forms'"
@@ -58,22 +58,65 @@
             (click)="page = 'extras'"
     >&gt;</button>
   </div>
-  <div class="flex flex-col justify-center space-y-1 w-[550px] h-[460px] absolute top-[260px] transition-all duration-300"
-       [class.!opacity-0]="!currentModel()"
+
+<!--  EXTRAS  -->
+  <div class="flex flex-col space-y-1 w-[550px] h-[460px] absolute top-[260px] transition-all duration-300"
+       [class.!opacity-0]="!currentRoute()"
        [ngClass]="{
-       'opacity-100 ': page === 'extras',
+       'opacity-100 z-10': page === 'extras',
        'opacity-0 translate-x-[20px]': page === 'forms'}"
   >
-<!--    dummy -->
-    <app-credit-card-list/>
+    <div class="flex w-full justify-center mb-4 text-xl font-bold">
+      Extras
+    </div>
+    <div class="w-full max-w-4xl border border-zinc-300 rounded-lg shadow-md bg-white custom-scrollbar">
+      <!-- Scrollable container -->
+      <div class="overflow-y-auto max-h-[350px]">
+        <table class="min-w-full">
+          <thead class="sticky top-0 bg-zinc-200">
+          <tr>
+            <th class="px-4 py-2 text-left">Name</th>
+            <th class="px-4 py-2 text-left">Price</th>
+            <th class="px-4 py-2 text-left">Limit</th>
+            <th class="px-4 py-2 text-center">Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let ex of extras; let i = index" class="even:bg-zinc-100">
+            <td class="px-4 py-3">{{ ex.name }}</td>
+            <td class="px-4 py-3">€{{ ex.price }}</td>
+            <td class="px-4 py-3">{{ ex.limit }}</td>
+            <td class="px-4 py-3 text-center space-x-2">
+              <button type="button" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded hover:bg-gray-100">
+                <img ngSrc="/assets/editing.png" alt="Duplicate" class="h-5 w-5" height="64" width="64" (click)="openDetails(i)"/>
+              </button>
+              <button type="button" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded hover:bg-gray-100">
+                <img ngSrc="/assets/trash.png" alt="Delete" class="h-5 w-5" height="128" width="128"/>
+              </button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="flex w-full justify-end">
+      <button
+        hlmBtn
+        class="bg-black text-white px-10 mt-2"
+        (click)="openDetails('new')"
+      >
+<!--        [routerLink]="'/manage-aircraft/add'"-->
+        + Add new extra
+      </button>
+    </div>
   </div>
   <div class="flex flex-col justify-center space-y-1 w-[550px] h-[500px] absolute top-[240px] transition-all duration-300"
-       [class.!opacity-0]="!currentModel()"
+       [class.!opacity-0]="!currentRoute()"
        [ngClass]="{
-       'opacity-100 ': page === 'forms',
+       'opacity-100 z-10': page === 'forms',
        'opacity-0 -translate-x-[20px]': page === 'extras'}"
   >
-<!--    FLIGHT DATE-->
+    <!--    FLIGHT DATE-->
     <div class="relative col-span-2">
       <label hlmLabel class="block">
         Flight date
@@ -85,7 +128,7 @@
       </label>
     </div>
 
-<!--    DEPARTURE/ARRIVAL TIME -->
+    <!--    DEPARTURE/ARRIVAL TIME -->
     <div class="flex space-x-3 w-full justify-between ">
       <div class="relative col-span-2">
         <label hlmLabel class="block">
@@ -232,14 +275,138 @@
 
 
   <div class="h-[460px]"></div>
-<!--  SAVE FLIGHT  -->
+  <!--  SAVE FLIGHT  -->
   <button
     hlmBtn
     class="bg-black text-white px-10 mx-auto mt-8 transition-opacity duration-300"
     [disabled]="true"
   >
-<!--    [disabled]="!currentModel()"-->
+    <!--    [disabled]="!currentModel()"-->
     Save Flight
   </button>
+</div>
+
+
+
+<!--EXTRAS POPUP -->
+
+<div
+  class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 transition-opacity duration-300"
+  [ngClass]="{
+    'opacity-100': extrasDetail !== null,
+    'opacity-0 pointer-events-none': extrasDetail == null
+  }"
+>
+  <!-- The white card -->
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 relative">
+    <!-- Header with title and close button -->
+    <div class="flex justify-between items-center border-b border-zinc-200 px-6 py-4">
+      <h2 class="text-2xl font-semibold">Extra Details</h2>
+      <button
+        (click)="closeDetails()"
+        class="text-zinc-500 hover:text-zinc-800 font-bold text-xl"
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </div>
+
+    <!-- Body: all fields, one row each (start/end pairs grouped) -->
+    <div class="px-6 py-6 flex flex-col space-y-4">
+      <brn-popover [state]="state2()" (stateChanged)="state2Changed($event)" sideOffset="5">
+        <button class="w-full bg-white justify-between" id="edit-profile" variant="outline" brnPopoverTrigger hlmBtn
+                [disabled]="extrasDetail !== 'new'">
+          {{ currentExtra()?.name ?? 'Select type of extra...' }}
+          <ng-icon hlm size="sm" name="lucideChevronsUpDown"/>
+        </button>
+        <hlm-command *brnPopoverContent="let ctx" hlmPopoverContent class="p-0 w-[350px]">
+          <hlm-command-search>
+            <ng-icon hlm name="lucideSearch"/>
+            <input placeholder="Search route..." hlm-command-search-input/>
+          </hlm-command-search>
+          <div *brnCommandEmpty hlmCommandEmpty>No results found.</div>
+          <hlm-command-list>
+            <hlm-command-group>
+              <button
+                *ngFor="let extra of this.availableExtras"
+                hlm-command-item
+                [value]="extra.name"
+                (selected)="command2Selected(extra)"
+              >
+                <ng-icon hlm
+                         [class.opacity-0]="currentExtra()?.name !== extra.name"
+                         name="lucideCheck"
+                         hlmCommandIcon
+                />
+                {{ extra.name }}
+              </button>
+            </hlm-command-group>
+          </hlm-command-list>
+        </hlm-command>
+      </brn-popover>
+      <div class="flex space-x-3 w-full justify-between transition-opacity duration-300 select-none"
+           [ngClass]="{
+             'opacity-60 pointer-events-none': !currentExtra(),
+           }"
+      >
+        <div class="relative flex-[2]">
+          <label hlmLabel class="block">
+            Price
+            <div class="relative mt-1 w-full">
+              <!-- € symbol -->
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">€</span>
+
+              <!-- input with padding-left to make space for € -->
+              <input
+                hlmInput
+                type="number"
+                class="pl-7 w-full select-auto"
+                [(ngModel)]="extraPrice"
+              />
+            </div>
+          </label>
+        </div>
+        <div class="relative flex-[1]">
+          <label hlmLabel class="block">
+            Limit
+            <div class="flex mt-1 w-full rounded-md border border-input bg-white overflow-hidden"
+                 [ngClass]="{
+             'opacity-60 !pointer-events-none': !currentExtra()?.stackable,
+           }"
+            >
+              <button
+                type="button"
+                class="px-3 text-xl text-zinc-600 hover:bg-zinc-100 transition-colors"
+                (click)="extraLimit = Math.max(extraLimit - 1, 1)"
+              >−</button>
+              <input
+                hlmInput
+                type="text"
+                readonly
+                [(ngModel)]="extraLimit"
+                class="w-full text-center
+                 bg-transparent border-none outline-none ring-0 focus:ring-0
+                 focus:outline-none focus:border-none focus-visible:ring-0 rounded-none px-0"
+              />
+              <button
+                type="button"
+                class="px-3 text-xl text-zinc-600 hover:bg-zinc-100 transition-colors"
+                (click)="extraLimit = extraLimit + 1"
+              >+</button>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <button
+        hlmBtn
+        class="bg-black text-white px-10 mx-auto mt-8 transition-opacity duration-300"
+        [disabled]="!currentExtra()"
+        (click)="saveExtra()"
+      >
+        Save Extra
+      </button>
+    </div>
+  </div>
 </div>
 
