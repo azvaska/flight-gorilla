@@ -1,0 +1,32 @@
+<div class="flex justify-center">
+  @if(user) {
+  <div class="space-y-8 mt-16 w-full max-w-4xl mb-40">
+    <div class="p-6 bg-white rounded-lg shadow w-full max-w-4xl">
+      <!-- Header -->
+      <div class="text-xl font-semibold text-gray-700 mb-4">My Profile</div>
+
+      <!-- User fields -->
+
+      <app-profile [(user)]="user" (isEditModeChange)="toggleEditProfile()" />
+    </div>
+
+    <div
+      class="p-6 bg-white rounded-lg shadow w-full max-w-4xl transition-opacity duration-300"
+      [ngClass]="{
+        'opacity-0': isEditingProfile,
+        'opacity-100': !isEditingProfile
+      }"
+    >
+      <div class="text-xl font-semibold text-gray-700 mb-4">
+        My Payment Methods
+      </div>
+      <payement-card-list
+        [cards]="user.cards"
+        (selectedCardId)="selectedCardId = $event"
+        [canDelete]="true"
+      />
+    </div>
+  </div>
+
+  }
+</div>

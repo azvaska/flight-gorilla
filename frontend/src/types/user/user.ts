@@ -1,3 +1,5 @@
+import { IPayementCard } from "./payement-card";
+
 export interface IUser {
   id: string;
   name: string;
@@ -8,5 +10,5 @@ export interface IUser {
   address: string | null;
   zip: string | null;
   airline_id: string | null;
-  cards: [];
+  cards: IPayementCard[];
 }

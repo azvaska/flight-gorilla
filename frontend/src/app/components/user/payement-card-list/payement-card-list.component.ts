@@ -14,7 +14,6 @@ import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmSelectImports } from '@spartan-ng/ui-select-helm';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideLoaderCircle } from '@ng-icons/lucide';
 import { HlmIconDirective } from '@spartan-ng/ui-icon-helm';
@@ -24,7 +23,7 @@ import { UserFetchService } from '@/app/services/user/user-fetch.service';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
-  selector: 'app-credit-card-list',
+  selector: 'payement-card-list',
   standalone: true,
   imports: [
     CommonModule,
@@ -39,10 +38,10 @@ import { firstValueFrom } from 'rxjs';
     NgIcon,
     HlmIconDirective,
   ],
-  templateUrl: './credit-card-list.component.html',
+  templateUrl: './payement-card-list.component.html',
   providers: [provideIcons({ lucideLoaderCircle })],
 })
-export class CreditCardListComponent implements OnInit {
+export class PayementCardListComponent implements OnInit {
   @Input() canDelete = false;
 
   @Input() cards: IPayementCard[] = [];

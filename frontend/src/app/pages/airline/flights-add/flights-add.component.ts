@@ -14,7 +14,6 @@ import {NgIcon, provideIcons} from '@ng-icons/core';
 import {lucideCheck, lucideChevronsUpDown, lucideSearch} from '@ng-icons/lucide';
 import {BrnCommandEmptyDirective} from '@spartan-ng/brain/command';
 import {NgClass, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
-import {CreditCardListComponent} from '@/app/components/user/credit-card-list/credit-card-list.component';
 import {RouterLink} from '@angular/router';
 import {dateToString, formatTime} from '@/utils/date';
 import {FormsModule} from '@angular/forms';
@@ -55,10 +54,7 @@ interface Extra {
     HlmCommandSearchInputComponent,
     NgForOf,
     NgClass,
-    CreditCardListComponent,
     NgOptimizedImage,
-    RouterLink,
-    NgIf,
     FormsModule
   ],
   providers: [provideIcons({ lucideChevronsUpDown, lucideSearch, lucideCheck })],

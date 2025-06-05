@@ -5,7 +5,7 @@ import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideLoaderCircle } from '@ng-icons/lucide';
-import { CreditCardListComponent } from '@/app/components/user/credit-card-list/credit-card-list.component';
+import { PayementCardListComponent } from '@/app/components/user/payement-card-list/payement-card-list.component';
 import { IPayementCard } from '@/types/user/payement-card';
 import { LoadingService } from '@/app/services/loading.service';
 import { UserFetchService } from '@/app/services/user/user-fetch.service';
@@ -21,7 +21,7 @@ import { BookingPhase } from '@/types/booking/booking-state';
     CommonModule,
     FormsModule,
     HlmButtonDirective,
-    CreditCardListComponent,
+    PayementCardListComponent,
   ],
   templateUrl: './booking-payment.component.html',
   providers: [provideIcons({ lucideLoaderCircle })],

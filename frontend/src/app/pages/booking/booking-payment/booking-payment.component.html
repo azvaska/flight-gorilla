@@ -2,7 +2,7 @@
   <div class="p-6 bg-white rounded-lg shadow w-full max-w-4xl">
     <h2 class="text-xl font-semibold mb-6">Choose a payment method</h2>
     @if (cards) {
-    <app-credit-card-list
+    <payement-card-list
       [cards]="cards"
       (selectedCardId)="selectedCardId = $event"
     />

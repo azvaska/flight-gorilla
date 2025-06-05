@@ -21,7 +21,7 @@ import { BookingErrorComponent } from '@/app/pages/booking/booking-error/booking
 import { AuthGuard, GuestGuard } from './auth/auth.guard';
 import { BookingsComponent } from '@/app/pages/user/bookings/bookings.component';
 import { BookingCancelledComponent } from '@/app/pages/user/bookings/booking-cancelled/booking-cancelled.component';
-import { MyProfileComponent } from '@/app/pages/user/my-profile/my-profile.component';
+import { UserProfileComponent } from '@/app/pages/user/profile/profile.component';
 import { BookingDetailsComponent } from './pages/user/bookings/booking-details/booking-details.component';
 import { AircraftListComponent } from '@/app/pages/airline/aircraft-list/aircraft-list.component';
 import {AircraftAddComponent} from '@/app/pages/airline/aircraft-add/aircraft-add.component';
@@ -164,7 +164,7 @@ export const routes: Routes = [
 
   {
     path: 'profile',
-    component: MyProfileComponent,
+    component: UserProfileComponent,
   },
   {
     path: 'not-found',

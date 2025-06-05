@@ -13,6 +13,14 @@ export class UserFetchService {
     return this.http.get<IUser>(`${environment.apiUrl}/user/me`);
   }
 
+  public updateUser(userId: string, user: Partial<IUser>): Observable<IUser> {
+    return this.http.put<IUser>(`${environment.apiUrl}/user/${userId}`, user);
+  }
+
+  public updatePassword(oldPassword: string, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}/user/update_password`, { old_password: oldPassword, new_password: newPassword });
+  }
+
   public getPayementCards(): Observable<IPayementCard[]> {
     return this.http.get<IPayementCard[]>(`${environment.apiUrl}/user/cards`);
   }
