@@ -38,8 +38,8 @@
       </brn-popover>
     </div>
   </div>
-  <div class="flex justify-between items-center w-full px-4 transition-opacity duration-300"
-       [class.!opacity-0]="!currentRoute()"
+  <div class="flex justify-between items-center w-full px-4 transition-opacity duration-300 opacity-0"
+       [class.!opacity-100]="currentRoute()"
   >
     <button hlmBtn aria-label="Previous page" class="not-hover:bg-zinc-300 text-black hover:bg-zinc-200"
             (click)="page = 'forms'"
@@ -60,10 +60,10 @@
   </div>
 
 <!--  EXTRAS  -->
-  <div class="flex flex-col space-y-1 w-[550px] h-[460px] absolute top-[260px] transition-all duration-300"
+  <div class="flex flex-col space-y-1 w-[550px] h-[460px] absolute top-[260px] transition-all duration-300 opacity-0"
        [class.!opacity-0]="!currentRoute()"
        [ngClass]="{
-       'opacity-100 z-10': page === 'extras',
+       '!opacity-100 z-10': page === 'extras',
        'opacity-0 translate-x-[20px]': page === 'forms'}"
   >
     <div class="flex w-full justify-center mb-4 text-xl font-bold">
@@ -110,11 +110,11 @@
       </button>
     </div>
   </div>
-  <div class="flex flex-col justify-center space-y-1 w-[550px] h-[500px] absolute top-[240px] transition-all duration-300"
-       [class.!opacity-0]="!currentRoute()"
+<!--  FORMS -->
+  <div class="flex flex-col justify-center space-y-1 w-[550px] h-[500px] absolute top-[240px] transition-all duration-300 opacity-0"
        [ngClass]="{
-       'opacity-100 z-10': page === 'forms',
-       'opacity-0 -translate-x-[20px]': page === 'extras'}"
+       '!opacity-100 z-10': page === 'forms' && currentRoute(),
+       '-translate-x-[20px]': page === 'extras'}"
   >
     <!--    FLIGHT DATE-->
     <div class="relative col-span-2">
@@ -291,9 +291,9 @@
 <!--EXTRAS POPUP -->
 
 <div
-  class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 transition-opacity duration-300"
+  class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 transition-opacity duration-300 opacity-0"
   [ngClass]="{
-    'opacity-100': extrasDetail !== null,
+    '!opacity-100': extrasDetail !== null,
     'opacity-0 pointer-events-none': extrasDetail == null
   }"
 >
