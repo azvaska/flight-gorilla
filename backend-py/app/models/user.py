@@ -28,6 +28,7 @@ class User(sqla.FsUserMixin,db.Model):
     nation_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Nation.id), nullable=True)
     airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id), nullable=True)
 
+
     nation: Mapped[Nation] = relationship(Nation, foreign_keys=[nation_id], lazy='joined')
     airline: Mapped[Airline] = relationship(Airline, foreign_keys=[airline_id], lazy='joined')
     bookings: Mapped[List['Booking']] = relationship('Booking', back_populates='user', cascade='all, delete-orphan')

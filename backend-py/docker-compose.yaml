@@ -8,8 +8,6 @@ services:
       POSTGRES_DB: flight_gorilla
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # - ./init/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
-      # - ./init/nation.sql:/docker-entrypoint-initdb.d/2-nation.sql
     ports:
       - "5432:5432"
     healthcheck:

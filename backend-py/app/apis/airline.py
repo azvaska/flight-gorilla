@@ -88,7 +88,6 @@ route_model = api.model('Route', {
 airline_list_parser = reqparse.RequestParser()
 airline_list_parser.add_argument('name', type=str, help='Filter by airline name (case-insensitive)', location='args')
 airline_list_parser.add_argument('nation_id', type=int, help='Filter by nation ID', location='args')
-airline_list_parser.add_argument('is_approved', type=bool, help='Filter by approval status', location='args')
 
 @api.route('/')
 class AirlineList(Resource):
@@ -109,54 +108,55 @@ class AirlineList(Resource):
             query = query.filter(Airline.name.ilike(f"%{args['name']}%"))
         if args['nation_id']:
             query = query.filter(Airline.nation_id == args['nation_id'])
+        query = query.filter(Airline.is_approved == True)
 
         return marshal(airlines_schema.dump(query.all()),airline_model), 200
-
-    @api.expect(airline_put_model)
-    @jwt_required()
-    @roles_required(['admin'])
-    @api.response(201, 'Created', new_airline_model)
-    @api.response(400, 'Bad Request')
-    @api.response(403, 'Unauthorized')
-    @api.response(500, 'Internal Server Error')
-    # @roles_required(['u'])
-    def post(self):
-        """Create a new airline"""
-        data = request.json
-        #check if airlines with the same name already exists
-        existing_airline = Airline.query.filter_by(name=data['name']).first()
-        if existing_airline:
-            return {'error': 'Airline with this name already exists', 'code': 400}, 400
-
-        # Validate the incoming data
-        try:
-            new_airline = airline_schema.load(data)
-        except ValidationError as err:
-            return {"errors": err.messages, "code": 400}, 400
-        
-        new_airline.is_approved = True
-
-        # Create new airline instance
-        db.session.add(new_airline)
-        #create a new airline admin account
-        datastore = current_app.extensions['security'].datastore
-        password_account = generate_secure_password()
-        airline_user = datastore.create_user(email=new_airline.email,
-                                              password=hash_password(password_account), roles=["airline-admin"],
-                                                airline_id=new_airline.id,
-                                              name=new_airline.name, surname=new_airline.name)
-
-        datastore.db.session.add(airline_user)
-        datastore.db.session.commit()
-        db.session.commit()
-
-        return marshal({
-        'airline': airline_schema.dump(new_airline),
-        'admin_credentials': {
-            'email': new_airline.email,
-            'password': password_account
-        }
-    },new_airline_model), 201
+    #
+    # @api.expect(airline_put_model)
+    # @jwt_required()
+    # @roles_required(['admin'])
+    # @api.response(201, 'Created', new_airline_model)
+    # @api.response(400, 'Bad Request')
+    # @api.response(403, 'Unauthorized')
+    # @api.response(500, 'Internal Server Error')
+    # # @roles_required(['u'])
+    # def post(self):
+    #     """Create a new airline"""
+    #     data = request.json
+    #     #check if airlines with the same name already exists
+    #     existing_airline = Airline.query.filter_by(name=data['name']).first()
+    #     if existing_airline:
+    #         return {'error': 'Airline with this name already exists', 'code': 400}, 400
+    #
+    #     # Validate the incoming data
+    #     try:
+    #         new_airline = airline_schema.load(data)
+    #     except ValidationError as err:
+    #         return {"errors": err.messages, "code": 400}, 400
+    #
+    #     new_airline.is_approved = True
+    #
+    #     # Create new airline instance
+    #     db.session.add(new_airline)
+    #     #create a new airline admin account
+    #     datastore = current_app.extensions['security'].datastore
+    #     password_account = generate_secure_password()
+    #     airline_user = datastore.create_user(email=new_airline.email,
+    #                                           password=hash_password(password_account), roles=["airline-admin"],
+    #                                             airline_id=new_airline.id,
+    #                                           name=new_airline.name, surname=new_airline.name)
+    #
+    #     datastore.db.session.add(airline_user)
+    #     datastore.db.session.commit()
+    #     db.session.commit()
+    #
+    #     return marshal({
+    #     'airline': airline_schema.dump(new_airline),
+    #     'admin_credentials': {
+    #         'email': new_airline.email,
+    #         'password': password_account
+    #     }
+    # },new_airline_model), 201
 
 @api.route('/<uuid:airline_id>')
 @api.param('airline_id', 'The airline identifier')

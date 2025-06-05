@@ -15,7 +15,7 @@ from sqlalchemy.exc import IntegrityError
 from app.schemas.seat_session import seat_session_schema
 
 api = Namespace('seat_session', description='Seat reservation session operations')
-
+SESSION_GRAY_TIME = datetime.timedelta(minutes=2)
 # --- RESTx Models ---
 
 seat_model = api.model('Seat', {
@@ -51,7 +51,7 @@ class SeatSessionList(Resource):
         """Create a new seat reservation session"""
         user_id = get_jwt_identity()
 
-        now = datetime.datetime.now(datetime.UTC)
+        now = datetime.datetime.now(datetime.UTC) + SESSION_GRAY_TIME
         already_session = SeatSession.query.filter(SeatSession.session_end_time > now,
                                                    SeatSession.user_id == user_id).first()
         if already_session is None:
@@ -69,7 +69,7 @@ class SeatSessionList(Resource):
         user_id = get_jwt_identity()
 
         now = datetime.datetime.now(datetime.UTC)
-        session_end = now + datetime.timedelta(minutes=30)  # 15 minute session
+        session_end = now + datetime.timedelta(minutes=15)  # 15 minute session 13 for the user to book
         already_session = SeatSession.query.filter(SeatSession.session_end_time > now,SeatSession.user_id == user_id).first()
         if already_session is not None:
             db.session.delete(already_session);
@@ -124,6 +124,12 @@ class SeatSessionResource(Resource):
         user_id = get_jwt_identity()
 
         session:SeatSession = SeatSession.query.get_or_404(session_id)
+        # Check if the user owns this session
+        if str(session.user_id) != user_id:
+            return {'error': 'You do not have permission to update this session',"code": 403}, 403
+        # Check if session is expired
+        if session.session_end_time - SESSION_GRAY_TIME < datetime.datetime.now(datetime.UTC) :
+            return {'error': 'Session expired', 'code': 400}, 400
         data = request.json
 
         flight_id = data['flight_id']

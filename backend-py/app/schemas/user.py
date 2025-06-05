@@ -27,7 +27,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
                         error_messages={"required": "Surname is required", "invalid": "Invalid surname format"})
 
     @validates('nation_id')
-    def validate_nation_id(self, value):
+    def validate_nation_id(self, value,data_key=None):
         if value is not None and not db.session.get(Nation, value):
             raise ValidationError("Nation with given ID does not exist.")
 

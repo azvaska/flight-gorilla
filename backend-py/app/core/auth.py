@@ -7,7 +7,7 @@ from flask import current_app
 from flask_jwt_extended import get_jwt_identity
 
 
-def roles_required(allowed_roles_outer):
+def roles_required(allowed_roles_outer,inactive_allowed=False):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
@@ -18,6 +18,8 @@ def roles_required(allowed_roles_outer):
             user = datastore.find_user(id=user_id)
             if not user:
                 return {'error': 'User not found.', 'code': 404}, 404
+            if not user.active and not inactive_allowed:
+                return {'error': 'User is not active.', 'code': 403}, 403
             
             if type(allowed_roles) is not list:
                 allowed_roles = [allowed_roles]

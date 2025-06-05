@@ -50,6 +50,7 @@ def generate_secure_password( length=12):
     return ''.join(password)
 
 
+
 def airline_id_from_user():
     """
     A decorator that adds the airline_id from the authenticated user to the kwargs

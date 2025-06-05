@@ -2,6 +2,7 @@
 from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, marshal, reqparse
+from flask_security import hash_password
 from marshmallow import ValidationError
 from app.core.auth import roles_required
 from app.models.user import User, PayementCard, CardType
@@ -131,9 +132,6 @@ class UserResource(Resource):
                 if key != 'password' and key != 'roles':  # Handle these separately
                     setattr(user, key, value)
 
-            # If password is being updated
-            if 'password' in data and data['password']:
-                user.password = current_app.extensions['security'].hash_password(data['password'])
 
             db.session.commit()
             return user_schema.dump(user), 200
@@ -157,14 +155,52 @@ class UserResource(Resource):
 
         return {'message': 'User deleted successfully'}, 200
 
+@api.route('/update_password')
+@api.response(500, 'Internal Server Error')
+class UpdatePassword(Resource):
+    @jwt_required()
+    @api.expect(api.model('UpdatePassword', {
+        'old_password': fields.String(required=True, description='Current password'),
+        'new_password': fields.String(required=True, description='New password')
+    }))
+    @api.response(200, 'Password updated successfully')
+    @api.response(400, 'Bad Request')
+    @api.response(403, 'Forbidden')
+    def post(self):
+        """Update user password"""
+        user_id = get_jwt_identity()
+        user = User.query.get_or_404(user_id)
+
+        data = request.json
+        
+        old_password = data.get('old_password')
+        new_password = data.get('new_password')
+
+        if not user.verify_and_update_password(old_password):
+            return {'error': 'Old password is incorrect'}, 403
+
+        user.password = hash_password(new_password)
+        user.active = True  # Ensure user is active
+
+        db.session.commit()
+
+        return {'message': 'Password updated successfully'}, 200
+
 @api.route('/me')
 class CurrentUser(Resource):
     @jwt_required()
+    @roles_required(['user', 'airline-admin'])
+    @api.response(200, 'OK', user_model)
+    @api.response(404, 'Not Found')
+    @api.response(500, 'Internal Server Error')
     def get(self):
         """Get current user profile"""
         user_id = get_jwt_identity()
         user = User.query.get_or_404(user_id)
         return user_schema.dump(user), 200
+
+
+
 
 @api.route('/cards')
 @api.response(500, 'Internal Server Error')
