@@ -25,7 +25,7 @@ login_model_input  = api.model('Login', {
 user_model = api.model('User', {
     'id': fields.String(required=True, description='User ID'),
     'active': fields.Boolean(required=True, description='User active status'),
-    'airline_id': fields.String(description='Airline ID', allow_none=True, example="123e4567-e89b-12d3-a456-426614174000"),
+    'type': fields.String(required=True, description='User type (airline or user)',enum=['airline','user']),
 })
 
 login_model_output = api.model('LoginOutput', {
@@ -69,7 +69,19 @@ airline_register_model = api.model('AirlineRegister', {
     'economy_class_description': fields.String(required=True, description='Economy class description'),
 })
 
+def generate_token(user):
+    token = create_access_token(identity=str(user.id))
+    refresh_token = create_refresh_token(identity=str(user.id))
 
+    return marshal({
+        "access_token": token,
+        "refresh_token": refresh_token,
+        "user": {
+            "id": str(user.id),
+            "active": user.active,
+            "type": "airline" if user.airline_id is None else "user",
+        }
+    }, login_model_output), 200
 
 @api.route('/login')
 class LoginResource(Resource):
@@ -102,18 +114,7 @@ class LoginResource(Resource):
                 return {"error": "User is not active"}, 403
 
             login_user(user)
-            token = create_access_token(identity=str(user.id))
-            refresh_token = create_refresh_token(identity=str(user.id))
-
-            return marshal({
-                "access_token": token,
-                "refresh_token": refresh_token,
-                "user": {
-                        "id": str(user.id),
-                        "active": user.active,
-                        "airline_id": str(user.airline_id) if user.airline_id else None,
-                    }
-                },login_model_output), 200
+            return generate_token(user)
         except Exception as e:
             current_app.logger.error(f"Login error: {str(e)}")
             return {"error": 'Login Error'}, 500
@@ -138,19 +139,7 @@ class RefreshTokenResource(Resource):
             if not current_user.active and current_user.airline_id is None:
                 return {'error': 'User is not active'}, 403
 
-            # Create both new access token and new refresh token
-            new_access_token = create_access_token(identity=str(current_user.id))
-            new_refresh_token = create_refresh_token(identity=str(current_user.id))
-
-            return marshal({
-                "access_token": new_access_token,
-                "refresh_token": new_refresh_token,  # Return new refresh token
-                "user": {
-                    "id": str(current_user.id),
-                    "active": current_user.active,
-                    "airline_id": str(current_user.airline_id) if current_user.airline_id else None,
-                }
-            }, login_model_output), 200
+            return generate_token(current_user)
             
         except Exception as e:
             return {'error': str(e)}, 500
