@@ -140,23 +140,7 @@ class BookingList(Resource):
         datastore = current_app.extensions["security"].datastore
         user = datastore.find_user(id=user_id)
 
-        query = (
-            Booking.query
-            .options(
-                db.joinedload(Booking.departure_flights)
-                .joinedload(BookingDepartureFlight.extras)
-                .joinedload(BookingFlightExtra.extra_original),
-                db.joinedload(Booking.departure_flights).joinedload(
-                    BookingDepartureFlight.flight
-                ),
-                db.joinedload(Booking.return_flights)
-                .joinedload(BookingReturnFlight.extras)
-                .joinedload(BookingFlightExtra.extra_original),
-                db.joinedload(Booking.return_flights).joinedload(
-                    BookingReturnFlight.flight
-                ),
-            )
-        )
+        query = Booking.query
 
         if not user.has_role("admin") and not user.has_role("airline-admin"):
             # Regular users can only see their own bookings

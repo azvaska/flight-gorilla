@@ -80,6 +80,8 @@ class BookingDepartureFlight(db.Model):
         viewonly=True,
         uselist=True,
         lazy='joined',
+        cascade='all, delete-orphan',
+
     )
     booking: Mapped[Booking] = relationship(Booking, back_populates='departure_flights', foreign_keys=[booking_id], lazy='joined')
     flight: Mapped[Flight] = relationship(Flight, back_populates='departure_bookings', foreign_keys=[flight_id], lazy='joined')
@@ -101,6 +103,7 @@ class BookingReturnFlight(db.Model):
         viewonly=True,
         uselist=True,
         lazy='joined',
+        cascade='all, delete-orphan',
     )
 
     booking: Mapped[Booking] = relationship(Booking, back_populates='return_flights', foreign_keys=[booking_id], lazy='joined')
