@@ -1,5 +1,7 @@
 import { IPayementCard } from "./payement-card";
 
+export type Role = 'admin' | 'user' | 'airline-admin';
+
 export interface IUser {
   id: string;
   name: string;
@@ -11,5 +13,5 @@ export interface IUser {
   zip: string | null;
   airline_id: string | null;
   cards: IPayementCard[];
-  type: 'admin' | 'user' | 'airline-admin';
+  type: Role;
 }

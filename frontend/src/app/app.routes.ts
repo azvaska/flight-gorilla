@@ -8,7 +8,6 @@ import { SearchDatesComponent } from '@/app/pages/search/search-dates/search-dat
 import { SearchFlightsComponent } from '@/app/pages/search/search-flights/search-flights.component';
 import { NotFoundComponent } from '@/app/pages/not-found/not-found.component';
 import { SearchParamsGuard, SearchRedirectGuard } from './guards/search-guard';
-
 import { BookingComponent } from '@/app/pages/booking/booking.component';
 import { BookingOverviewComponent } from '@/app/pages/booking/booking-overview/booking-overview.component';
 import { BookingSeatsComponent } from '@/app/pages/booking/booking-seats/booking-seats.component';
@@ -18,27 +17,36 @@ import { RegisterComponent } from '@/app/pages/auth/register/register.component'
 import { BookingPaymentComponent } from '@/app/pages/booking/booking-payment/booking-payment.component';
 import { BookingConfirmationComponent } from '@/app/pages/booking/booking-confirmation/booking-confirmation.component';
 import { BookingErrorComponent } from '@/app/pages/booking/booking-error/booking-error.component';
-import { AuthGuard, GuestGuard } from './auth/auth.guard';
 import { BookingsComponent } from '@/app/pages/user/bookings/bookings.component';
-import { BookingCancelledComponent } from '@/app/pages/user/bookings/booking-cancelled/booking-cancelled.component';
 import { UserProfileComponent } from '@/app/pages/user/profile/profile.component';
-import { BookingDetailsComponent } from './pages/user/bookings/booking-details/booking-details.component';
 import { AircraftListComponent } from '@/app/pages/airline/aircraft-list/aircraft-list.component';
-import {AircraftAddComponent} from '@/app/pages/airline/aircraft-add/aircraft-add.component';
-import {RouteListComponent} from '@/app/pages/airline/route-list/route-list.component';
+import { AircraftAddComponent } from '@/app/pages/airline/aircraft-add/aircraft-add.component';
+import { RouteListComponent } from '@/app/pages/airline/route-list/route-list.component';
 import { RouteAddComponent } from './pages/airline/route-add/route-add.component';
-import {FlightsListComponent} from '@/app/pages/airline/flights-list/flights-list.component';
-import {FlightsAddComponent} from '@/app/pages/airline/flights-add/flights-add.component';
-import {ExtrasListComponent} from '@/app/pages/airline/extras-list/extras-list.component';
+import { FlightsListComponent } from '@/app/pages/airline/flights-list/flights-list.component';
+import { FlightsAddComponent } from '@/app/pages/airline/flights-add/flights-add.component';
+import { ExtrasListComponent } from '@/app/pages/airline/extras-list/extras-list.component';
+import { RoleGuard } from './guards/role-access.guard';
 
 export const routes: Routes = [
   {
     path: '',
     component: UserLandingPage,
+    canMatch: [RoleGuard],
+    pathMatch: 'full',
+    data: { roles: ['guest', 'user'] },
+  },
+  {
+    path: '',
+    component: AirlineLandingPage,
+    canMatch: [RoleGuard],
+    pathMatch: 'full',
+    data: { roles: ['airline-admin'] },
   },
   {
     path: 'auth',
-    canActivate: [GuestGuard],
+    canMatch: [RoleGuard],
+    data: { roles: ['guest'] },
     children: [
       {
         path: 'login',
@@ -53,8 +61,10 @@ export const routes: Routes = [
   {
     path: 'search',
     component: SearchComponent,
+    canMatch: [RoleGuard],
     canActivate: [SearchRedirectGuard],
     canActivateChild: [SearchParamsGuard],
+    data: { roles: ['guest', 'user'] },
     runGuardsAndResolvers: 'always',
     children: [
       {
@@ -82,7 +92,8 @@ export const routes: Routes = [
   {
     path: 'booking',
     component: BookingComponent,
-    canActivate: [AuthGuard],
+    canMatch: [RoleGuard],
+    data: { roles: ['user'] },
     children: [
       {
         path: 'overview',
@@ -117,59 +128,54 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'airlines',
-    component: AirlineLandingPage,
-  },
-  {
-    path: 'manage-aircraft',
-    component: AircraftListComponent
-  },
-  {
-    path: 'manage-aircraft/add',
-    component: AircraftAddComponent,
-  },
-  {
-    path: 'manage-routes',
-    component: RouteListComponent,
-  },
-  {
-    path: 'manage-routes/add',
-    component: RouteAddComponent,
-  },
-  {
-    path: 'manage-flights',
-    component: FlightsListComponent,
-  },
-  {
-    path: 'manage-flights/add',
-    component: FlightsAddComponent,
-  },
-  {
-    path: 'manage-extras',
-    component: ExtrasListComponent,
-  },
-  {
-    path: 'bookings',
-    canActivate: [AuthGuard],
+    path: 'user',
+    canMatch: [RoleGuard],
+    data: { roles: ['user'] },
     children: [
       {
-        path: '',
+        path: 'bookings',
         component: BookingsComponent,
       },
       {
-        path: 'cancelled',
-        component: BookingCancelledComponent,
-      },
-      {
-        path: ':bookingId',
-        component: BookingDetailsComponent,
+        path: 'profile',
+        component: UserProfileComponent,
       },
     ],
   },
-
   {
-    path: 'profile',
-    component: UserProfileComponent,
+    path: 'manage',
+    canMatch: [RoleGuard],
+    data: { roles: ['airline-admin'] },
+    children: [
+      {
+        path: 'aircraft',
+        component: AircraftListComponent,
+      },
+      {
+        path: 'aircraft/add',
+        component: AircraftAddComponent,
+      },
+      {
+        path: 'routes',
+        component: RouteListComponent,
+      },
+      {
+        path: 'routes/add',
+        component: RouteAddComponent,
+      },
+      {
+        path: 'flights',
+        component: FlightsListComponent,
+      },
+      {
+        path: 'flights/add',
+        component: FlightsAddComponent,
+      },
+      {
+        path: 'extras',
+        component: ExtrasListComponent,
+      },
+    ],
   },
   {
     path: 'not-found',
