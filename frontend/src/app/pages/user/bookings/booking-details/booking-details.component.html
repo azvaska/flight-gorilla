@@ -94,16 +94,21 @@
               >{{ booking.total_price }}€</span
             >
           </div>
-          @if (booking.is_insurance_purchased) {
           <div class="flex flex-col gap-1">
             <span class="text-xl font-semibold text-gray-800"
-              >Insurance price</span
+              >Flex Plan</span
             >
+            @if (booking.is_insurance_purchased) {
             <span class="text-sm text-gray-500"
-              >{{ booking.insurance_price }}€</span
+              >Yes - {{ booking.insurance_price }}€</span
             >
+            } @else {
+            <span class="text-sm text-gray-500"
+              >Not purchased</span
+            >
+            }
           </div>
-          }
+          
         </div>
       </section>
       <section class="w-full flex flex-col gap-4">
