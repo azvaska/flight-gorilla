@@ -15,3 +15,16 @@ export function getCurrentFlight(departureFlights: IFlight[], returnFlights: IFl
   return undefined;
   
 }
+
+export function beautifyFlightClass(flightClass: string) {
+  switch (flightClass) {
+    case 'FIRST_CLASS':
+      return 'First Class';
+    case 'BUSINESS_CLASS':
+      return 'Business Class';
+    case 'ECONOMY_CLASS':
+      return 'Economy Class';
+    default:
+      return flightClass;
+  }
+}

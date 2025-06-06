@@ -4,6 +4,7 @@ import { Component, Input } from '@angular/core';
 import { HlmCardDirective } from '@spartan-ng/ui-card-helm';
 import prettyMilliseconds from 'pretty-ms';
 import { CommonModule } from '@angular/common';
+import { beautifyFlightClass } from '@/utils/booking';
 
 @Component({
   selector: 'flight-card',
@@ -11,6 +12,9 @@ import { CommonModule } from '@angular/common';
   templateUrl: './flight-card.component.html',
 })
 export class FlightCardComponent {
+
+  protected beautifyFlightClass = beautifyFlightClass;
+
   @Input() segment!: IBookingSegment;
 
   protected formatDate(date: string) {

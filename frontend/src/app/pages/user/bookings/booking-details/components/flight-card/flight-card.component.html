@@ -32,7 +32,7 @@
     <div class="w-full flex flex-col gap-1 text-sm text-gray-600">
       <span class="text-base font-semibold text-gray-800"> Details: </span>
       <div>
-        <span class="font-semibold">Class:</span> {{ segment.class_type }}
+        <span class="font-semibold">Class:</span> {{ beautifyFlightClass(segment.class_type) }}
       </div>
       <div>
         <span class="font-semibold">Seat:</span> {{ segment.seat_number }}

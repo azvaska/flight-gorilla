@@ -217,7 +217,6 @@ class UpdatePassword(Resource):
 @api.route('/me')
 class CurrentUser(Resource):
     @jwt_required()
-    @roles_required(['user', 'airline-admin'])
     @api.response(200, 'OK', user_output_model)
     @api.response(404, 'Not Found')
     @api.response(500, 'Internal Server Error')

@@ -45,26 +45,13 @@
       </div>
     </div> -->
 
-  <flight-card 
-    [flights]="mappedDepartureFlights" 
-    title="Departure Flights" 
-  />
+  <flight-card [flights]="mappedDepartureFlights" title="Departure Flights" />
 
   @if (mappedReturnFlights) {
-    <flight-card 
-      [flights]="mappedReturnFlights" 
-      title="Return Flights" 
-    />
+  <flight-card [flights]="mappedReturnFlights" title="Return Flights" />
   }
   <!--  align the flex to have all items that starts from right -->
   <div class="flex justify-end mt-8">
-    <button
-      hlmBtn
-      variant="outline"
-      class="bg-black text-white"
-      (click)="onContinue()"
-    >
-      Continue
-    </button>
+    <button hlmBtn (click)="onContinue()">Continue</button>
   </div>
 </div>
