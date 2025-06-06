@@ -79,7 +79,7 @@ def generate_token(user):
         "user": {
             "id": str(user.id),
             "active": user.active,
-            "type": "airline" if user.airline_id is not None else "user",
+            "type": user.roles[0].name
         }
     }, login_model_output), 200
 

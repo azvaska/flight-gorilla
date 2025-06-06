@@ -34,6 +34,10 @@ class User(sqla.FsUserMixin,db.Model):
     bookings: Mapped[List['Booking']] = relationship('Booking', back_populates='user', cascade='all, delete-orphan')
     cards: Mapped[List['PayementCard']] = relationship('PayementCard', back_populates='user', cascade='all, delete-orphan')
 
+    @property
+    def type(self):
+        return self.roles[0].name
+
 
 class PayementCard(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

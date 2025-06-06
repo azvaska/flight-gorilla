@@ -25,6 +25,8 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
                      error_messages={"required": "Name is required", "invalid": "Invalid name format"})
     surname = ma.String(required=True, validate=validate.Length(min=2, max=100),
                         error_messages={"required": "Surname is required", "invalid": "Invalid surname format"})
+    
+    type = ma.String(required=True, attribute="type")
 
     @validates('nation_id')
     def validate_nation_id(self, value,data_key=None):
