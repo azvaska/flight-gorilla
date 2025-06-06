@@ -1,0 +1,129 @@
+<!-- extras-list.component.html -->
+<div class="flex w-full justify-center mb-16 text-3xl font-bold">
+  Extras List
+</div>
+
+<div class="flex flex-col space-y-1 w-[700px]">
+  <div class="flex w-full justify-center mb-4 text-xl font-bold">
+    Extras
+  </div>
+  <div class="w-full max-w-4xl border border-zinc-300 rounded-lg shadow-md bg-white custom-scrollbar">
+    <!-- Scrollable container -->
+    <div class="overflow-y-auto max-h-[350px]">
+      <table class="min-w-full">
+        <thead class="sticky top-0 bg-zinc-200 z-10">
+        <tr>
+          <th class="px-4 py-2 text-left">Name</th>
+          <th class="px-4 py-2 text-left">Description</th>
+          <th class="px-4 py-2 text-left">Stackable</th>
+          <th class="px-4 py-2 text-center">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let ex of extras; let i = index" class="even:bg-zinc-100">
+          <td class="px-4 py-3 font-medium">{{ ex.name }}</td>
+          <td class="px-4 py-3 font-light text-sm">{{ ex.description }}</td>
+          <td class="px-4 py-3 text-center">
+            <div class="inline-flex items-center px-2 py-1" [class.scale-75]="!ex.stackable">
+              <img
+                [ngSrc]="ex.stackable ? '/assets/check.png' : '/assets/close.png'"
+                alt="Stackable"
+                class="h-5 w-5"
+                height="64"
+                width="64"
+              />
+            </div>
+          </td>
+          <td class="px-4 py-3 text-center space-x-2">
+            <button
+              type="button"
+              class="inline-flex items-center px-2 py-1 border border-gray-300 rounded hover:bg-gray-100"
+              (click)="openModalForEdit(i)"
+            >
+              <img ngSrc="/assets/editing.png" alt="Edit" class="h-5 w-5" height="64" width="64" />
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center px-2 py-1 border border-gray-300 rounded hover:bg-gray-100"
+              (click)="extras.splice(i, 1)"
+            >
+              <img ngSrc="/assets/trash.png" alt="Delete" class="h-5 w-5" height="128" width="128" />
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="flex w-full justify-end">
+    <button hlmBtn class="bg-black text-white px-10 mt-2" (click)="openModalForNew()">
+      + Add new extra
+    </button>
+  </div>
+</div>
+
+<!-- Extras Modal -->
+<div
+  class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 transition-opacity duration-300"
+  [ngClass]="{ '!opacity-100': showModal, 'opacity-0 pointer-events-none': !showModal }"
+>
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 relative">
+    <!-- Header -->
+    <div class="flex justify-between items-center border-b border-zinc-200 px-6 py-4">
+      <h2 class="text-2xl font-semibold">
+        {{ editingIndex === null ? 'Add Extra' : 'Edit Extra' }}
+      </h2>
+      <button
+        (click)="closeModal()"
+        class="text-zinc-500 hover:text-zinc-800 font-bold text-xl"
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </div>
+    <!-- Body: Name, Description, Stackable -->
+    <div class="px-6 py-6 flex flex-col space-y-4">
+      <div>
+        <label hlmLabel class="block">
+          Name
+          <input
+            hlmInput
+            type="text"
+            class="mt-1 w-full"
+            [(ngModel)]="editableExtra.name"
+          />
+        </label>
+      </div>
+      <div>
+        <label hlmLabel class="block">
+          Description
+          <input
+            hlmInput
+            type="text"
+            class="mt-1 w-full"
+            [(ngModel)]="editableExtra.description"
+          />
+        </label>
+      </div>
+      <div class="flex items-center space-x-4 cursor-pointer">
+        <hlm-checkbox
+          [(ngModel)]="editableExtra.stackable"
+          [aria-label]="'Stackable'"
+          class="mr-2"
+        >
+        </hlm-checkbox>
+        <label for="stackableCheckbox" class="select-none cursor-pointer"
+               (click)="editableExtra.stackable = !editableExtra.stackable">
+        Stackable</label>
+      </div>
+      <button
+        hlmBtn
+        class="bg-black text-white px-10 mx-auto mt-6"
+        [disabled]="!editableExtra.name.trim()"
+        (click)="saveExtra()"
+      >
+        Save Extra
+      </button>
+    </div>
+  </div>
+</div>
