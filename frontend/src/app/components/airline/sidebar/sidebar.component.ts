@@ -1,0 +1,53 @@
+import { Component } from '@angular/core';
+import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { HlmCardDirective } from '@spartan-ng/ui-card-helm';
+import { filter } from 'rxjs/operators';
+
+@Component({
+  selector: 'app-sidebar',
+  imports: [RouterLink, RouterOutlet, HlmCardDirective  ],
+  templateUrl: './sidebar.component.html',
+  styleUrls: ['./sidebar.component.css'],
+  host: {
+    class: 'block w-full h-fit',
+  },
+})
+export class SidebarComponent {
+
+  protected pageTitle = '';
+
+  constructor(private router: Router, private route: ActivatedRoute) {
+    this.router.events
+    .pipe(filter((event) => event instanceof NavigationEnd))
+    .subscribe(() => {
+      const child = this.route.firstChild?.snapshot;
+      this.pageTitle = child?.data?.['pageTitle'] || '';
+    });
+
+  }
+
+  protected readonly routes = [
+
+    {
+      label: 'Home',
+      path: '/',
+    },
+    {
+      label: 'Aircrafts',
+      path: '/aircraft',
+    },
+    {
+      label: 'Routes',
+      path: '/routes',
+    },
+    {
+      label: 'Flights',
+      path: '/flights',
+    },
+    {
+      label: 'Extras',
+      path: '/extras',
+    },
+  ];
+
+}

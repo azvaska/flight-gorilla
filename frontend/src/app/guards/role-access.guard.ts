@@ -34,6 +34,9 @@ export class RoleGuard implements CanMatch {
       return false;
     }
 
+    console.log(user);
+    console.log(allowedRoles);
+
     // If the user is logged in, we let it through if the page allows the user's role otherwise we redirect to not found
     if (user && allowedRoles.includes(user.type)) {
       return true;

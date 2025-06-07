@@ -27,9 +27,10 @@ import { FlightsListComponent } from '@/app/pages/airline/flights-list/flights-l
 import { FlightsAddComponent } from '@/app/pages/airline/flights-add/flights-add.component';
 import { ExtrasListComponent } from '@/app/pages/airline/extras-list/extras-list.component';
 import { RoleGuard } from './guards/role-access.guard';
-import {AirlineProfileComponent} from '@/app/pages/airline/airline-profile/airline-profile.component';
+import { AirlineProfileComponent } from '@/app/pages/airline/airline-profile/airline-profile.component';
 import { BookingDetailsComponent } from './pages/user/bookings/booking-details/booking-details.component';
 import { BookingCancelledComponent } from './pages/user/bookings/booking-cancelled/booking-cancelled.component';
+import { SidebarComponent as AirlineSidebarComponent } from './components/airline/sidebar/sidebar.component';
 
 export const routes: Routes = [
   {
@@ -41,10 +42,62 @@ export const routes: Routes = [
   },
   {
     path: '',
-    component: AirlineLandingPage,
+    component: AirlineSidebarComponent,
     canMatch: [RoleGuard],
-    pathMatch: 'full',
     data: { roles: ['airline-admin'] },
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        data: { pageTitle: 'Home' },
+        component: AirlineLandingPage,
+      },
+      {
+        path: 'airline',
+        pathMatch: 'full',
+        data: { pageTitle: 'Airline Profile' },
+        component: AirlineProfileComponent,
+      },
+      {
+        path: 'aircraft',
+        pathMatch: 'full',
+        data: { pageTitle: 'Aircraft Management' },
+        component: AircraftListComponent,
+      },
+      {
+        path: 'routes',
+        pathMatch: 'full',
+        data: { pageTitle: 'Route Management' },
+        component: RouteListComponent,
+      },
+      {
+        path: 'flights',
+        pathMatch: 'full',
+        data: { pageTitle: 'Flight Management' },
+        component: FlightsListComponent,
+      },
+      {
+        path: 'extras',
+        pathMatch: 'full',
+        data: { pageTitle: 'Extra Management' },
+        component: ExtrasListComponent,
+      },
+    ],
+  },
+  {
+    path: 'aircraft/add',
+    pathMatch: 'full',
+    component: AircraftAddComponent,
+  },
+  {
+    path: 'routes/add',
+    pathMatch: 'full',
+    component: RouteAddComponent,
+  },
+  {
+    path: 'flights/add',
+    pathMatch: 'full',
+    component: FlightsAddComponent,
   },
   {
     path: 'auth',
@@ -151,45 +204,6 @@ export const routes: Routes = [
       {
         path: 'profile',
         component: UserProfileComponent,
-      },
-    ],
-  },
-  {
-    path: 'manage',
-    canMatch: [RoleGuard],
-    data: { roles: ['airline-admin'] },
-    children: [
-      {
-        path: 'airline',
-        component: AirlineProfileComponent
-      },
-      {
-        path: 'aircraft',
-        component: AircraftListComponent,
-      },
-      {
-        path: 'aircraft/add',
-        component: AircraftAddComponent,
-      },
-      {
-        path: 'routes',
-        component: RouteListComponent,
-      },
-      {
-        path: 'routes/add',
-        component: RouteAddComponent,
-      },
-      {
-        path: 'flights',
-        component: FlightsListComponent,
-      },
-      {
-        path: 'flights/add',
-        component: FlightsAddComponent,
-      },
-      {
-        path: 'extras',
-        component: ExtrasListComponent,
       },
     ],
   },

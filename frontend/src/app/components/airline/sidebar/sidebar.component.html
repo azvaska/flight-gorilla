@@ -1,0 +1,39 @@
+<div class="flex w-full justify-center mb-10 text-3xl font-bold">
+  {{ pageTitle }}
+</div>
+
+<div class="flex justify-between w-full gap-8 ">
+  <div hlmCard class="w-1/4 h-fit flex flex-col text-zinc-700 rounded-lg">
+    @for (route of routes; let i = $index; track route.path) { @if(i <
+    routes.length - 1) {
+    <a
+      [routerLink]="route.path"
+      class="selector-left-row flex pl-8 pr-6 items-center h-12 border-b-1 border-zinc-200 font-bold select-none cursor-pointer hover:bg-zinc-100 transition-colors duration-300"
+    >
+      <div class="flex justify-between w-full">
+        <span class="selector-left-text inline-block">{{ route.label }}</span>
+        <span
+          class="selector-left-arrow scale-x-110 transition-transform duration-300"
+          >-></span
+        >
+      </div>
+    </a>
+    } @else {
+    <a
+      [routerLink]="route.path"
+      class="selector-left-row flex pl-8 pr-6 items-center h-12 font-bold select-none cursor-pointer hover:bg-zinc-100 transition-colors duration-300"
+    >
+      <div class="flex justify-between w-full">
+        <span class="selector-left-text inline-block">{{ route.label }}</span>
+        <span
+          class="selector-left-arrow scale-x-110 transition-transform duration-300"
+          >-></span
+        >
+      </div>
+    </a>
+    } }
+  </div>
+  <div class="flex-1">
+    <router-outlet></router-outlet>
+  </div>
+</div>
