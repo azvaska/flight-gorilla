@@ -1,75 +1,63 @@
-<div class="flex w-full justify-center mb-16 text-3xl font-bold">
-  Flights List
-</div>
-
 <div class="flex flex-col justify-center items-center">
-  <div class="w-full max-w-5xl border border-zinc-300 rounded-lg shadow-md bg-white custom-scrollbar">
-    <div class="overflow-y-auto max-h-[600px]">
-      <table class="min-w-full">
-        <thead class="sticky top-0 bg-zinc-200">
-        <tr>
-          <th class="px-4 py-2 text-left">Aircraft ID</th>
-          <th class="px-4 py-2 text-left">Departure Airport</th>
-          <th class="px-4 py-2 text-left">Arrival Airport</th>
-          <th class="px-4 py-2 text-left">Departure Time</th>
-          <th class="px-4 py-2 text-left">Arrival Time</th>
-          <th class="px-4 py-2 text-center">Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let fl of flights" class="even:bg-zinc-100">
-          <td class="px-4 py-3">{{ fl.aircraft_id }}</td>
-          <td class="px-4 py-3">{{ fl.departure_airport }}</td>
-          <td class="px-4 py-3">{{ fl.arrival_airport }}</td>
-          <td class="px-4 py-3">
-            {{ formatTime(fl.departure_time) + ' ' + dateToString(fl.departure_time, 'specific') }}
-          </td>
-          <td class="px-4 py-3">
-            {{ formatTime(fl.arrival_time)   + ' ' + dateToString(fl.arrival_time, 'specific') }}
-          </td>
-          <td class="px-4 py-3 text-center space-x-2">
-            <!-- Info button: opens popup -->
-            <button
-              type="button"
-              (click)="openDetails(fl)"
-              class="inline-flex items-center px-2 py-1 border border-gray-300 rounded hover:bg-gray-100"
+  <div hlmCard class="w-full max-w-5xl p-[2px]">
+    <div class="overflow-y-auto overflow-x-hidden max-h-200 custom-scrollbar">
+      <hlm-table class="w-full">
+        <hlm-trow class="sticky top-0 bg-white z-10">
+          <hlm-th class="w-1/6">Aircraft ID</hlm-th>
+          <hlm-th class="w-1/6">Departure Airport</hlm-th>
+          <hlm-th class="w-1/6">Arrival Airport</hlm-th>
+          <hlm-th class="w-1/6">Departure Time</hlm-th>
+          <hlm-th class="w-1/6">Arrival Time</hlm-th>
+        </hlm-trow>
+        <ng-container *ngFor="let fl of flights">
+          <hlm-trow>
+            <hlm-th class="w-1/6">{{ fl.aircraft_id }}</hlm-th>
+            <hlm-th class="w-1/6">{{ fl.departure_airport }}</hlm-th>
+            <hlm-th class="w-1/6">{{ fl.arrival_airport }}</hlm-th>
+            <hlm-th class="w-1/6">
+              {{ formatTime(fl.departure_time) + ' ' + dateToString(fl.departure_time, 'specific') }}
+            </hlm-th>
+            <hlm-th class="w-1/6">
+              {{ formatTime(fl.arrival_time) + ' ' + dateToString(fl.arrival_time, 'specific') }}
+            </hlm-th>
+            <hlm-th class="w-1/6 flex justify-end gap-2">
+              <app-popover
+              [popoverRelativePosition]="{
+                top: 0,
+                right: 0
+              }"
             >
-              <img
-                ngSrc="/assets/info.png"
-                alt="Info"
-                class="h-5 w-5"
-                height="128"
-                width="128"
-              />
-            </button>
-
-            <!-- Edit & Delete buttons remain the same -->
-            <button type="button" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded hover:bg-gray-100">
-              <img
-                ngSrc="/assets/editing.png"
-                alt="Edit"
-                class="h-5 w-5 -translate-y-[1px]"
-                height="64"
-                width="64"
-              />
-            </button>
-            <button type="button" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded hover:bg-gray-100">
-              <img
-                ngSrc="/assets/trash.png"
-                alt="Delete"
-                class="h-5 w-5"
-                height="128"
-                width="128"
-              />
-            </button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
+              <button type="button" variant="ghost" hlmBtn popover-trigger>
+                <ng-icon name="lucideEllipsis" class="h-5 w-5" />
+              </button>
+              <div popover-content class="p-1 flex flex-col gap-1">
+                <ul>
+                  <li
+                    class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
+                  >
+                    Edit
+                  </li>
+                  <li
+                    class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
+                  >
+                    Duplicate
+                  </li>
+                  <li
+                    class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
+                  >
+                    Delete
+                  </li>
+                </ul>
+              </div>
+            </app-popover>
+            </hlm-th>
+          </hlm-trow>
+        </ng-container>
+      </hlm-table>
     </div>
   </div>
 
-  <div class="flex w-full max-w-4xl justify-end">
+  <div class="flex w-full max-w-5xl justify-end">
     <button
       hlmBtn
       class="bg-black text-white px-10 mt-4"

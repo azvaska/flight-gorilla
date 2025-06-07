@@ -3,6 +3,16 @@ import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import { dateToString, formatTime } from '@/utils/date';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { RouterLink } from '@angular/router';
+import {
+  HlmTableComponent,
+  HlmTrowComponent,
+  HlmThComponent,
+} from '@spartan-ng/ui-table-helm';
+import { HlmCardDirective } from '@spartan-ng/ui-card-helm';
+import { lucideEllipsis } from '@ng-icons/lucide';
+import { provideIcons, NgIcon } from '@ng-icons/core';
+import { PopoverComponent } from '@/app/components/ui/popover/popover.component';
+import { PopoverTriggerDirective } from '@/app/components/ui/popover/popover-trigger.directive';
 
 export interface Flight {
   id: number;
@@ -29,9 +39,16 @@ export interface Flight {
     NgForOf,
     HlmButtonDirective,
     RouterLink,
-    NgOptimizedImage,
-    NgIf
+    NgIf,
+    HlmCardDirective,
+    HlmTableComponent,
+    HlmTrowComponent,
+    HlmThComponent,
+    NgIcon,
+    PopoverComponent,
+    PopoverTriggerDirective,
   ],
+  providers: [provideIcons({ lucideEllipsis })  ],
   templateUrl: './flights-list.component.html',
   host: {
     class: 'block w-full h-fit',

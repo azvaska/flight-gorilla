@@ -6,6 +6,12 @@ import {HlmButtonDirective} from '@spartan-ng/ui-button-helm';
 import {HlmInputDirective} from '@spartan-ng/ui-input-helm';
 import {HlmLabelDirective} from '@spartan-ng/ui-label-helm';
 import {HlmCheckboxComponent} from '@spartan-ng/ui-checkbox-helm';
+import { HlmCardDirective } from '@spartan-ng/ui-card-helm';
+import { HlmTableComponent, HlmTrowComponent, HlmThComponent } from '@spartan-ng/ui-table-helm';
+import { lucideEllipsis } from '@ng-icons/lucide';
+import { provideIcons, NgIcon } from '@ng-icons/core';
+import { PopoverComponent } from '@/app/components/ui/popover/popover.component';
+import { PopoverTriggerDirective } from '@/app/components/ui/popover/popover-trigger.directive';
 
 interface Extra {
   name: string;
@@ -15,7 +21,10 @@ interface Extra {
 
 @Component({
   selector: 'app-extras-list',
+  standalone: true,
   templateUrl: './extras-list.component.html',
+  providers: [provideIcons({ lucideEllipsis })],
+  host: { class: 'block w-full h-fit' },
   imports: [
     FormsModule,
     NgClass,
@@ -24,7 +33,14 @@ interface Extra {
     HlmButtonDirective,
     HlmInputDirective,
     HlmLabelDirective,
-    HlmCheckboxComponent
+    HlmCheckboxComponent,
+    HlmCardDirective,
+    HlmTableComponent,
+    HlmTrowComponent,
+    HlmThComponent,
+    NgIcon,
+    PopoverComponent,
+    PopoverTriggerDirective
   ]
 })
 export class ExtrasListComponent {

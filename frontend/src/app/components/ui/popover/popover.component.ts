@@ -52,9 +52,7 @@ export class PopoverComponent {
 
   public ngAfterViewInit() {
     if (!this.preventDefaultBehavior) {
-      this.triggerDir.el.nativeElement.addEventListener('click', () => {
-        console.log('click');
-        
+      this.triggerDir.el.nativeElement.addEventListener('click', () => {        
         this.toggle();
       });
     }
