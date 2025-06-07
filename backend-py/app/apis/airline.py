@@ -53,15 +53,15 @@ airline_model = api.model('Airline', {
 })
 
 airline_put_model = api.model('AirlinePut', {
-    'name': fields.String(required=True, description='Airline name'),
-    'address': fields.String(required=True, description='Airline address'),
-    'zip': fields.String(required=True, description='ZIP/postal code'),
-    'nation_id': fields.Integer(required=True, description='Nation ID'),
-    'email': fields.String(required=True, description='Email address'),
-    'website': fields.String(required=True, description='Website URL'),
-    'first_class_description': fields.String(required=True, description='First class description'),
-    'business_class_description': fields.String(required=True, description='Business class description'),
-    'economy_class_description': fields.String(required=True, description='Economy class description'),
+    'name': fields.String(required=False, description='Airline name'),
+    'address': fields.String(required=False, description='Airline address'),
+    'zip': fields.String(required=False, description='ZIP/postal code'),
+    'nation_id': fields.Integer(required=False, description='Nation ID'),
+    'email': fields.String(required=False, description='Email address'),
+    'website': fields.String(required=False, description='Website URL'),
+    'first_class_description': fields.String(required=False, description='First class description'),
+    'business_class_description': fields.String(required=False, description='Business class description'),
+    'economy_class_description': fields.String(required=False, description='Economy class description'),
 })
 
 admin_credentials_model = api.model('AdminCredentials', {
