@@ -71,7 +71,7 @@ export class BookingCardComponent {
     firstValueFrom(this.bookingFetchService.deleteBooking(id))
       .then(() => {
         console.log('booking cancelled');
-        this.router.navigate(['/bookings/cancelled'], { queryParams: { reimbursement: this.booking.is_insurance_purchased } });
+        this.router.navigate(['/user/bookings/cancelled'], { queryParams: { reimbursement: this.booking.is_insurance_purchased } });
       })
       .catch(() => {
         console.error('error cancelling booking');

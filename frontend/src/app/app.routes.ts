@@ -29,6 +29,7 @@ import { ExtrasListComponent } from '@/app/pages/airline/extras-list/extras-list
 import { RoleGuard } from './guards/role-access.guard';
 import {AirlineProfileComponent} from '@/app/pages/airline/airline-profile/airline-profile.component';
 import { BookingDetailsComponent } from './pages/user/bookings/booking-details/booking-details.component';
+import { BookingCancelledComponent } from './pages/user/bookings/booking-cancelled/booking-cancelled.component';
 
 export const routes: Routes = [
   {
@@ -138,6 +139,10 @@ export const routes: Routes = [
         path: 'bookings',
         component: BookingsComponent,
         pathMatch: 'full',
+      },
+      {
+        path: 'bookings/cancelled',
+        component: BookingCancelledComponent,
       },
       {
         path: 'bookings/:bookingId',
