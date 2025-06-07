@@ -27,6 +27,7 @@ import { FlightsListComponent } from '@/app/pages/airline/flights-list/flights-l
 import { FlightsAddComponent } from '@/app/pages/airline/flights-add/flights-add.component';
 import { ExtrasListComponent } from '@/app/pages/airline/extras-list/extras-list.component';
 import { RoleGuard } from './guards/role-access.guard';
+import {AirlineProfileComponent} from '@/app/pages/airline/airline-profile/airline-profile.component';
 
 export const routes: Routes = [
   {
@@ -147,6 +148,10 @@ export const routes: Routes = [
     canMatch: [RoleGuard],
     data: { roles: ['airline-admin'] },
     children: [
+      {
+        path: 'airline',
+        component: AirlineProfileComponent
+      },
       {
         path: 'aircraft',
         component: AircraftListComponent,
