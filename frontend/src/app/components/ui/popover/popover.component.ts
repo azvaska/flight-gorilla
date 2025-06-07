@@ -16,6 +16,7 @@ import {
   OverlayPositionBuilder,
 } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-popover',
@@ -51,9 +52,11 @@ export class PopoverComponent {
 
   public ngAfterViewInit() {
     if (!this.preventDefaultBehavior) {
-      this.triggerDir.el.nativeElement.addEventListener('click', () =>
-        this.toggle()
-      );
+      this.triggerDir.el.nativeElement.addEventListener('click', () => {
+        console.log('click');
+        
+        this.toggle();
+      });
     }
   }
 
@@ -90,6 +93,9 @@ export class PopoverComponent {
 
       this.overlayRef
         .outsidePointerEvents()
+        .pipe(
+          filter((event: MouseEvent) => !this.triggerDir.el.nativeElement.contains(event.target as HTMLElement))
+        )
         .subscribe(() => this.close());
     }
 
