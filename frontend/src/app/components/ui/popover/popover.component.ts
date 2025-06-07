@@ -1,13 +1,22 @@
 import {
   Component,
   ContentChild,
-  ElementRef,
   HostListener,
   Input,
   ViewChild,
+  ViewContainerRef,
+  TemplateRef,
+  EmbeddedViewRef,
 } from '@angular/core';
 import { PopoverTriggerDirective } from './popover-trigger.directive';
 import { CommonModule } from '@angular/common';
+import {
+  Overlay,
+  OverlayRef,
+  OverlayPositionBuilder,
+} from '@angular/cdk/overlay';
+import { TemplatePortal } from '@angular/cdk/portal';
+
 @Component({
   selector: 'app-popover',
   exportAs: 'appPopover',
@@ -20,75 +29,104 @@ export class PopoverComponent {
     top?: number;
     left?: number;
     right?: number;
-  } = {}
+  } = {};
   @Input() public popoverWidth: string = 'auto';
   @Input() public preventDefaultBehavior: boolean = false;
 
   @ContentChild(PopoverTriggerDirective)
   public readonly triggerDir!: PopoverTriggerDirective;
-  @ViewChild('popover') public readonly popoverEl!: ElementRef<HTMLElement>;
+  @ViewChild('portalTemplate') private portalTemplate!: TemplateRef<any>;
 
-  public popoverStyles!: {
-    top: string;
-    left: string;
-    right: string;
-    width: string;
-  };
   public showPopover = false;
 
-  private _ignoreOutsideClick = true;
+  private overlayRef?: OverlayRef;
+  private viewRef?: EmbeddedViewRef<any>;
+  private panelEl?: HTMLElement;
+
+  constructor(
+    private overlay: Overlay,
+    private positionBuilder: OverlayPositionBuilder,
+    private vcr: ViewContainerRef
+  ) {}
 
   public ngAfterViewInit() {
     if (!this.preventDefaultBehavior) {
-      this.triggerDir.el.nativeElement.addEventListener('click', () => {
-        this.toggle();
-      });
+      this.triggerDir.el.nativeElement.addEventListener('click', () =>
+        this.toggle()
+      );
     }
   }
 
   public open() {
-    if (!this.showPopover) {
-      this.updatePosition();
-      this.showPopover = true;
-      this._ignoreOutsideClick = true;
-      setTimeout(() => (this._ignoreOutsideClick = false), 0);
+    if (!this.overlayRef) {
+      const positionStrategy = this.positionBuilder
+        .flexibleConnectedTo(this.triggerDir.el)
+        .withPositions([
+          {
+            originX:
+              this.popoverRelativePosition.right !== undefined
+                ? 'end'
+                : 'start',
+            originY: 'bottom',
+            overlayX:
+              this.popoverRelativePosition.right !== undefined
+                ? 'end'
+                : 'start',
+            overlayY: 'top',
+            offsetX:
+              this.popoverRelativePosition.left ??
+              (this.popoverRelativePosition.right !== undefined
+                ? -this.popoverRelativePosition.right
+                : 0),
+            offsetY: this.popoverRelativePosition.top ?? 0,
+          },
+        ]);
+
+      this.overlayRef = this.overlay.create({
+        positionStrategy,
+        scrollStrategy: this.overlay.scrollStrategies.reposition(),
+        hasBackdrop: false,
+      });
+
+      this.overlayRef
+        .outsidePointerEvents()
+        .subscribe(() => this.close());
     }
+
+    if (!this.overlayRef.hasAttached()) {
+      this.viewRef = this.overlayRef.attach(
+        new TemplatePortal(this.portalTemplate, this.vcr)
+      );
+      const roots = this.viewRef.rootNodes.filter(
+        (n): n is HTMLElement => n.nodeType === Node.ELEMENT_NODE
+      );
+      this.panelEl = roots[0];
+    }
+
+    this.showPopover = true;
   }
 
   public close() {
+    if (!this.overlayRef || !this.panelEl) return;
+
     this.showPopover = false;
+
+    const onEnd = (e: TransitionEvent) => {
+      if (e.propertyName === 'opacity') {
+        this.panelEl!.removeEventListener('transitionend', onEnd);
+        this.overlayRef!.detach();
+        this.overlayRef!.dispose();
+        this.overlayRef = undefined;
+        this.viewRef = undefined;
+        this.panelEl = undefined;
+      }
+    };
+
+    this.panelEl.addEventListener('transitionend', onEnd);
   }
 
   public toggle() {
     this.showPopover ? this.close() : this.open();
   }
 
-  private updatePosition() {
-    const rect = this.triggerDir.el.nativeElement.getBoundingClientRect();
-    this.popoverStyles = {
-      top: `${
-        rect.height + (this.popoverRelativePosition.top ?? 0)
-      }px`,
-      left: this.popoverRelativePosition.left !== undefined
-        ? this.popoverRelativePosition.left + 'px'
-        : '',
-      right: this.popoverRelativePosition.right !== undefined
-        ? this.popoverRelativePosition.right + 'px'
-        : '',
-      width: this.popoverWidth,
-    };
-  }
-
-  @HostListener('document:click', ['$event.target'])
-  public onClickOutside(target: HTMLElement) {
-    if (this._ignoreOutsideClick) {
-      return;
-    }
-    if (
-      !this.triggerDir.el.nativeElement.contains(target) &&
-      !this.popoverEl?.nativeElement.contains(target)
-    ) {
-      this.close();
-    }
-  }
 }
