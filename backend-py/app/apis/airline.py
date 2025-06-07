@@ -158,6 +158,24 @@ class AirlineList(Resource):
     #     }
     # },new_airline_model), 201
 
+@api.route('/me')
+class MyAirline(Resource):
+    @jwt_required()
+    @airline_id_from_user()
+    @api.response(200, 'OK', airline_model)
+    @api.response(404, 'Not Found')
+    @api.response(403, 'Unauthorized')
+    @roles_required(['airline-admin'])
+    def get(self,airline_id):
+        """Fetch the airline associated with the current user"""
+
+        airline = Airline.query.options(
+            joinedload(Airline.nation),
+            joinedload(Airline.extras),
+       ).get_or_404(airline_id)
+
+        return marshal(airline_schema.dump(airline),airline_model), 200
+
 @api.route('/<uuid:airline_id>')
 @api.param('airline_id', 'The airline identifier')
 class AirlineResource(Resource):
