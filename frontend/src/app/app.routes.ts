@@ -28,6 +28,7 @@ import { FlightsAddComponent } from '@/app/pages/airline/flights-add/flights-add
 import { ExtrasListComponent } from '@/app/pages/airline/extras-list/extras-list.component';
 import { RoleGuard } from './guards/role-access.guard';
 import {AirlineProfileComponent} from '@/app/pages/airline/airline-profile/airline-profile.component';
+import { BookingDetailsComponent } from './pages/user/bookings/booking-details/booking-details.component';
 
 export const routes: Routes = [
   {
@@ -136,6 +137,11 @@ export const routes: Routes = [
       {
         path: 'bookings',
         component: BookingsComponent,
+        pathMatch: 'full',
+      },
+      {
+        path: 'bookings/:bookingId',
+        component: BookingDetailsComponent,
       },
       {
         path: 'profile',

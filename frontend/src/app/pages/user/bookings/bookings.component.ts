@@ -33,6 +33,6 @@ export class BookingsComponent {
   }
 
   protected navigateToBooking(bookingId: string) {
-    this.router.navigate(['/bookings', bookingId]);
+    this.router.navigate(['/user/bookings', bookingId]);
   }
 }

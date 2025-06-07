@@ -36,7 +36,7 @@ class Booking(db.Model):
 
     @property
     def insurance_price(self) -> float:
-        return sum(flight.flight.price_insurance for flight in self.departure_flights) + sum(flight.flight.price_insurance for flight in self.return_flights)
+        return round(sum(flight.flight.price_insurance for flight in self.departure_flights) + sum(flight.flight.price_insurance for flight in self.return_flights), 2)
 
     @property
     def total_price(self) -> float:
