@@ -63,10 +63,9 @@ body {
   color-scheme: dark;
 }
 
-.custom-scrollbar {
-  /* Firefox */
+.custom-scrollbar {  /* Firefox */
   scrollbar-width: thin;
-  scrollbar-color: #c3c3c3 #f3f4f6;
+  scrollbar-color: #c3c3c3 white;
 }
 /* Webkit/Blink */
 .custom-scrollbar::-webkit-scrollbar {

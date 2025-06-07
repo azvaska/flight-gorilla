@@ -76,6 +76,9 @@
       ],
       "@spartan-ng/ui-slider-helm": [
         "./libs/ui/ui-slider-helm/src/index.ts"
+      ],
+      "@spartan-ng/ui-table-helm": [
+        "./libs/ui/ui-table-helm/src/index.ts"
       ]
     }
   },
