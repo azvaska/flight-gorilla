@@ -14,7 +14,7 @@ import {HlmButtonDirective} from '@spartan-ng/ui-button-helm';
 import {NgForOf, NgIf} from '@angular/common';
 import {HlmInputDirective} from '@spartan-ng/ui-input-helm';
 import {HlmLabelDirective} from '@spartan-ng/ui-label-helm';
-import {Aircraft} from '@/types/airline/aircraft';
+import {IAircraft} from '@/types/airline/aircraft';
 import {lucideCheck, lucideChevronsUpDown, lucideSearch} from '@ng-icons/lucide';
 import {randomInt} from '@/utils/random';
 import {SeatsGridComponent} from '@/app/pages/airline/aircraft-add/seats-grid/seats-grid.component';
@@ -61,28 +61,28 @@ export enum SeatClass {
 })
 
 export class AircraftAddComponent {
-  aircrafts: Aircraft[] = [
+  aircrafts: IAircraft[] = [
     {
       id: 1,
       name: 'Boeing 737',
       rows: 30,
-      unavailableSeats: ['1A', '1B', '2C'],
+      unavailable_seats: ['1A', '1B', '2C'],
     },
     {
       id: 2,
       name: 'Airbus A320',
       rows: 32,
-      unavailableSeats: ['1A', '1B', '2C', '3D'],
+      unavailable_seats: ['1A', '1B', '2C', '3D'],
     },
     {
       id: 3,
       name: 'Boeing 777',
       rows: 40,
-      unavailableSeats: ['1A', '1B', '2C', '3D', '4E'],
+      unavailable_seats: ['1A', '1B', '2C', '3D', '4E'],
     },
   ];
 
-  public currentModel = signal<Aircraft | undefined>(undefined);
+  public currentModel = signal<IAircraft | undefined>(undefined);
   public state = signal<'closed' | 'open'>('closed');
 
   // SEATS GRID
@@ -100,16 +100,16 @@ export class AircraftAddComponent {
 
   constructor () {
     for(let i = 0; i < 10; i++){
-      const newAircraft: Aircraft = {
+      const newAircraft: IAircraft = {
         id: i + 4, // Start from 4 since we already have 3 aircrafts
         name: 'Boeing ' + (randomInt(100, 999)), // Random Boeing models
         rows: randomInt(30, 60), // Incrementing rows for variety
-        unavailableSeats: [[["1A", "1B", "3F"], ["2C", "2D", "4E"]][randomInt(0, 1)]].flat() // Random unavailable seats
+        unavailable_seats: [[["1A", "1B", "3F"], ["2C", "2D", "4E"]][randomInt(0, 1)]].flat() // Random unavailable seats
       };
       this.aircrafts = [...this.aircrafts, newAircraft];
     }
 
-    this.seatsMatrix = this.buildSeatsMatrix(30, this.aircrafts[2].unavailableSeats);
+    this.seatsMatrix = this.buildSeatsMatrix(30, this.aircrafts[2].unavailable_seats);
   }
 
   buildSeatsMatrix(rows: number, unavailableSeats: string[]): SeatClass[][] {
@@ -166,10 +166,10 @@ export class AircraftAddComponent {
     this.state.set(state);
   }
 
-  commandSelected(aircraft: Aircraft) {
+  commandSelected(aircraft: IAircraft) {
     if (this.currentModel()?.name !== aircraft.name) {
       this.currentModel.set(aircraft);
-      this.seatsMatrix = this.buildSeatsMatrix(aircraft.rows, aircraft.unavailableSeats);
+      this.seatsMatrix = this.buildSeatsMatrix(aircraft.rows, aircraft.unavailable_seats);
     }
     this.state.set('closed');
   }

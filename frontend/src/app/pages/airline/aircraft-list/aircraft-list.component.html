@@ -9,13 +9,13 @@
         </hlm-trow>
         <ng-container *ngFor="let ac of aircrafts">
           <hlm-trow>
-            <hlm-th class="w-1/4">{{ ac.model }}</hlm-th>
-            <hlm-th class="w-1/4">{{ ac.tailNumber }}</hlm-th>
+            <hlm-th class="w-1/4">{{ ac.aircraft.name }}</hlm-th>
+            <hlm-th class="w-1/4">{{ ac.tail_number }}</hlm-th>
             <hlm-th class="w-1/4">
               {{
-                ac.firstClassSeats.length +
-                  ac.businessClassSeats.length +
-                  ac.economyClassSeats.length
+                ac.first_class_seats.length +
+                  ac.business_class_seats.length +
+                  ac.economy_class_seats.length
               }}
             </hlm-th>
             <hlm-th class="w-1/4 flex justify-end gap-2">

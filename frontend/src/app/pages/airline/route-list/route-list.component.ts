@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import {NgForOf, NgOptimizedImage} from "@angular/common";
-import {AirlineAircraft} from '@/types/airline/airlineAircraft';
+
 import {dateToString} from '@/utils/date';
 import {HlmButtonDirective} from '@spartan-ng/ui-button-helm';
 import {RouterLink} from '@angular/router';
