@@ -486,6 +486,10 @@ class MyAirlineRouteList(Resource):
 class AirlineRouteResource(Resource):
     @api.response(200, 'OK', route_model)
     @api.response(404, 'Not Found')
+    @api.response(403, 'Unauthorized')  
+    @jwt_required()
+    @roles_required('airline-admin')
+    @airline_id_from_user()
     def get(self, route_id, airline_id):
         """Get a specific route for an airline"""
         # Check if airline exists

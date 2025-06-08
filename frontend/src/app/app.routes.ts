@@ -33,6 +33,7 @@ import { AirlineProfileComponent } from '@/app/pages/airline/airline-profile/air
 import { BookingDetailsComponent } from './pages/user/bookings/booking-details/booking-details.component';
 import { BookingCancelledComponent } from './pages/user/bookings/booking-cancelled/booking-cancelled.component';
 import { SidebarComponent as AirlineSidebarComponent } from './components/airline/sidebar/sidebar.component';
+import { RouteDetailsComponent } from './pages/airline/route-details/route-details.component';
 
 export const routes: Routes = [
   {
@@ -99,6 +100,11 @@ export const routes: Routes = [
     path: 'routes/add',
     pathMatch: 'full',
     component: RouteAddComponent,
+  },
+  {
+    path: 'routes/:routeId',
+    pathMatch: 'full',
+    component: RouteDetailsComponent,
   },
   {
     path: 'flights/add',
