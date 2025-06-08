@@ -20,6 +20,7 @@ class AirlineAircraftSchema(ma.SQLAlchemyAutoSchema):
     first_class_seats = ma.List(ma.String(), dump_only=True)
     business_class_seats = ma.List(ma.String(), dump_only=True)
     economy_class_seats = ma.List(ma.String(), dump_only=True)
+    aircraft = ma.Nested('app.schemas.aircraft.AircraftSchema', dump_only=True)
     class Meta:
         model = AirlineAircraft
         load_instance = True
