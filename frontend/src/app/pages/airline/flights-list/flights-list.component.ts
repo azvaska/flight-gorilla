@@ -55,18 +55,6 @@ export class FlightsListComponent {
     return flights;
   }
 
-
-  // Which flight (if any) is currently open in the popup:
-  selectedFlight: IAirlineFlight | null = null;
-
-  openDetails(f: IAirlineFlight) {
-    this.selectedFlight = f;
-  }
-
-  closeDetails() {
-    this.selectedFlight = null;
-  }
-
   protected formatTime(time: string) {
     return formatTime(new Date(time));
   }

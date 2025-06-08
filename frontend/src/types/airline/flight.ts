@@ -14,4 +14,10 @@ export interface IAirlineFlight {
   price_insurance: number;
   aircraft: IAirlineAircraft;
   route_id: string;
+  gate?: string;
+  terminal?: string;
+  checkin_start_time: string;
+  checkin_end_time: string;
+  boarding_start_time: string;
+  boarding_end_time: string;
 }

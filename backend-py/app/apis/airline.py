@@ -100,7 +100,7 @@ flight_model_input = api.model('Flight', {
     'price_insurance': fields.Float(description='Insurance price'),
 })
 
-flight_model_output = api.model('FlightOutput', {
+flight_model_output = api.model('AirlineFlightOutput', {
     'id': fields.String(readonly=True, description='Flight ID'),
     'flight_number': fields.String(required=True, description='Flight number'),
     'aircraft': fields.Nested(airline_aircraft_model, description='Aircraft'),
@@ -113,6 +113,12 @@ flight_model_output = api.model('FlightOutput', {
     'price_business_class': fields.Float(required=True, description='Business class price'),
     'price_economy_class': fields.Float(required=True, description='Economy class price'),
     'price_insurance': fields.Float(required=True, description='Insurance price'),
+    'gate': fields.String(required=True, description='Gate'),
+    'terminal': fields.String(required=True, description='Terminal'),
+    'checkin_start_time': fields.DateTime(required=True, description='Checkin start time'),
+    'checkin_end_time': fields.DateTime(required=True, description='Checkin end time'),
+    'boarding_start_time': fields.DateTime(required=True, description='Boarding start time'),
+    'boarding_end_time': fields.DateTime(required=True, description='Boarding end time'),
 })
 
 extra_flight_model = api.model('FlightExtra', {
@@ -568,6 +574,21 @@ class MyAirlineFlightsList(Resource):
 @api.route('/flights/<uuid:flight_id>')
 @api.param('flight_id', 'The flight identifier')
 class MyAirlineFlightResource(Resource):
+    @jwt_required()
+    @roles_required('airline-admin')
+    @airline_id_from_user()
+    @api.response(200, 'OK', flight_model_output)
+    @api.response(404, 'Not Found')
+    @api.response(403, 'Forbidden')
+    def get(self, flight_id, airline_id):
+        """Get a specific flight for the current airline"""
+        flight = Flight.query.join(Flight.route).filter(
+            Flight.id == flight_id,
+            Route.airline_id == airline_id
+        ).first_or_404()
+        
+        return marshal(flight_schema.dump(flight), flight_model_output), 200
+
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()

@@ -1,0 +1,388 @@
+@if (flight) {
+<div class="flex flex-col items-center space-y-8 w-full max-w-6xl mx-auto">
+  <!-- Header Section -->
+  <div class="flex flex-row justify-between items-center w-full">
+    <button
+      hlmBtn
+      variant="outline"
+      size="sm"
+      class="bg-white"
+      [routerLink]="['/flights']"
+    >
+      <ng-icon name="lucideArrowLeft" size="sm" hlm></ng-icon>
+      Back to Flights
+    </button>
+    <div class="text-center">
+      <h1 class="text-3xl font-bold text-gray-900">
+        {{ flight.flight_number }}
+      </h1>
+      <p class="text-lg text-gray-600">Flight Details & Information</p>
+    </div>
+    <div class="w-32"></div>
+    <!-- Spacer for centering -->
+  </div>
+
+  <!-- Flight Route Overview - Hero Section -->
+  <section class="w-full">
+    <div hlmCard class="w-full p-8 border-2">
+      <div class="flex flex-row justify-between items-center gap-8">
+        <div class="flex flex-col items-center text-center">
+          <span class="text-4xl font-bold text-gray-900 mb-2">
+            {{ formatTime(flight.departure_time) }}
+          </span>
+          <span class="text-xl font-semibold text-gray-800 mb-1">
+            {{ flight.departure_airport.name }}
+          </span>
+          <span class="text-sm text-gray-600 mb-2">
+            {{ flight.departure_airport.iata_code }} •
+            {{ flight.departure_airport.city.name }}
+          </span>
+          <span
+            class="text-sm font-medium text-gray-700 bg-gray-100 px-3 py-1 rounded-full border"
+          >
+            {{ formatDate(flight.departure_time) }}
+          </span>
+        </div>
+
+        <div class="flex flex-col items-center text-center px-8">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-3 h-3 bg-gray-400 rounded-full"></div>
+            <div class="w-16 h-0.5 bg-gray-300"></div>
+            <ng-icon
+              name="lucideArrowRight"
+              class="text-gray-500"
+              size="lg"
+            ></ng-icon>
+            <div class="w-16 h-0.5 bg-gray-300"></div>
+            <div class="w-3 h-3 bg-gray-400 rounded-full"></div>
+          </div>
+          <!-- <span class="text-sm font-medium text-gray-600">Direct Flight</span>
+          <span class="text-xs text-gray-500">{{ flight.route_id }}</span> -->
+        </div>
+
+        <div class="flex flex-col items-center text-center">
+          <span class="text-4xl font-bold text-gray-900 mb-2">
+            {{ formatTime(flight.arrival_time) }}
+          </span>
+          <span class="text-xl font-semibold text-gray-800 mb-1">
+            {{ flight.arrival_airport.name }}
+          </span>
+          <span class="text-sm text-gray-600 mb-2">
+            {{ flight.arrival_airport.iata_code }} •
+            {{ flight.arrival_airport.city.name }}
+          </span>
+          <span
+            class="text-sm font-medium text-gray-700 bg-gray-100 px-3 py-1 rounded-full border"
+          >
+            {{ formatDate(flight.arrival_time) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Left Column -->
+    <div class="flex flex-col gap-8">
+      <!-- Flight Operations -->
+      <section class="w-full flex flex-col gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-1 h-6 bg-gray-900 rounded-full"></div>
+          <h2 class="text-2xl font-bold text-gray-900">Flight Information</h2>
+        </div>
+        <div hlmCard class="w-full p-6">
+          <div class="grid grid-cols-2 grid-rows-2 gap-6">
+            <div class="flex flex-col gap-1">
+              <span
+                class="text-sm font-medium text-gray-500 uppercase tracking-wide"
+                >Flight ID</span
+              >
+              <span class="text-lg font-semibold text-gray-900">{{
+                flight.id
+              }}</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <span
+                class="text-sm font-medium text-gray-500 uppercase tracking-wide"
+                >Route ID</span
+              >
+              <span
+                class="text-lg font-semibold text-gray-900 w-fit cursor-pointer hover:underline"
+                [routerLink]="['/routes', flight.route_id]"
+                >{{ flight.route_id }}</span
+              >
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <span
+                class="text-sm font-medium text-gray-500 uppercase tracking-wide"
+                >Gate</span
+              >
+              <span class="text-lg font-semibold text-gray-900">{{
+                flight.gate ?? "N/A"
+              }}</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <span
+                class="text-sm font-medium text-gray-500 uppercase tracking-wide"
+                >Terminal</span
+              >
+              <span class="text-lg font-semibold text-gray-900">{{
+                flight.terminal ?? "N/A"
+              }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Check-in & Boarding Information -->
+      <section class="w-full flex flex-col gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-1 h-6 bg-gray-900 rounded-full"></div>
+          <h2 class="text-2xl font-bold text-gray-900">Check-in & Boarding</h2>
+        </div>
+        <div hlmCard class="w-full p-6">
+          <div class="grid grid-cols-1 gap-6">
+            <!-- Check-in Times -->
+            <div class="border-b border-gray-200 pb-4">
+              <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                Check-in Window
+              </h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div
+                  class="flex flex-col gap-1 p-3 bg-gray-50 rounded-lg border"
+                >
+                  <span
+                    class="text-sm font-medium text-gray-500 uppercase tracking-wide"
+                    >Opens</span
+                  >
+                  <span class="text-lg font-semibold text-gray-900">
+                    {{ formatTime(flight.checkin_start_time) }}
+                  </span>
+                  <span class="text-sm text-gray-500">
+                    {{ formatDate(flight.checkin_start_time) }}
+                  </span>
+                </div>
+                <div
+                  class="flex flex-col gap-1 p-3 bg-gray-50 rounded-lg border"
+                >
+                  <span
+                    class="text-sm font-medium text-gray-500 uppercase tracking-wide"
+                    >Closes</span
+                  >
+                  <span class="text-lg font-semibold text-gray-900">
+                    {{ formatTime(flight.checkin_end_time) }}
+                  </span>
+                  <span class="text-sm text-gray-500">
+                    {{ formatDate(flight.checkin_end_time) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Boarding Times -->
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                Boarding Window
+              </h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div
+                  class="flex flex-col gap-1 p-3 bg-gray-50 rounded-lg border"
+                >
+                  <span
+                    class="text-sm font-medium text-gray-500 uppercase tracking-wide"
+                    >Starts</span
+                  >
+                  <span class="text-lg font-semibold text-gray-900">
+                    {{ formatTime(flight.boarding_start_time) }}
+                  </span>
+                  <span class="text-sm text-gray-500">
+                    {{ formatDate(flight.boarding_start_time) }}
+                  </span>
+                </div>
+                <div
+                  class="flex flex-col gap-1 p-3 bg-gray-50 rounded-lg border"
+                >
+                  <span
+                    class="text-sm font-medium text-gray-500 uppercase tracking-wide"
+                    >Ends</span
+                  >
+                  <span class="text-lg font-semibold text-gray-900">
+                    {{ formatTime(flight.boarding_end_time) }}
+                  </span>
+                  <span class="text-sm text-gray-500">
+                    {{ formatDate(flight.boarding_end_time) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right Column -->
+    <div class="flex flex-col gap-8">
+      <!-- Aircraft Information -->
+      <section class="w-full flex flex-col gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-1 h-6 bg-gray-900 rounded-full"></div>
+          <h2 class="text-2xl font-bold text-gray-900">Aircraft Details</h2>
+        </div>
+        <div hlmCard class="w-full p-6">
+          <div class="flex flex-col gap-6">
+            <!-- Aircraft Basic Info -->
+            <div class="grid grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1">
+                <span
+                  class="text-sm font-medium text-gray-500 uppercase tracking-wide"
+                  >Aircraft Model</span
+                >
+                <span class="text-xl font-bold text-gray-900">{{
+                  flight.aircraft.aircraft.name
+                }}</span>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span
+                  class="text-sm font-medium text-gray-500 uppercase tracking-wide"
+                  >Tail Number</span
+                >
+                <span
+                  class="text-lg font-semibold text-gray-900 w-fit cursor-pointer hover:underline"
+                  [routerLink]="['/aircraft', flight.aircraft.id]"
+                  >{{ flight.aircraft.tail_number }}</span
+                >
+              </div>
+            </div>
+
+            <!-- Seating Configuration -->
+            <div class="border-t border-gray-200 pt-4">
+              <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                Seating Configuration
+              </h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div
+                  class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border"
+                >
+                  <span class="text-sm font-medium text-gray-700"
+                    >First Class</span
+                  >
+                  <span class="text-lg font-bold text-gray-900">{{
+                    flight.aircraft.first_class_seats.length
+                  }}</span>
+                </div>
+                <div
+                  class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border"
+                >
+                  <span class="text-sm font-medium text-gray-700"
+                    >Business Class</span
+                  >
+                  <span class="text-lg font-bold text-gray-900">{{
+                    flight.aircraft.business_class_seats.length
+                  }}</span>
+                </div>
+                <div
+                  class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border"
+                >
+                  <span class="text-sm font-medium text-gray-700"
+                    >Economy Class</span
+                  >
+                  <span class="text-lg font-bold text-gray-900">{{
+                    flight.aircraft.economy_class_seats.length
+                  }}</span>
+                </div>
+                <div
+                  class="flex justify-between items-center p-3 bg-gray-100 rounded-lg border-2 border-gray-300"
+                >
+                  <span class="text-sm font-medium text-gray-700"
+                    >Total Seats</span
+                  >
+                  <span class="text-lg font-bold text-gray-900">
+                    {{
+                      flight.aircraft.first_class_seats.length +
+                        flight.aircraft.business_class_seats.length +
+                        flight.aircraft.economy_class_seats.length
+                    }}
+                  </span>
+                </div>
+              </div>
+              <div class="mt-3 text-center">
+                <span class="text-sm text-gray-500"
+                  >{{ flight.aircraft.aircraft.rows }} rows total</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pricing Information -->
+      <section class="w-full flex flex-col gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-1 h-6 bg-gray-900 rounded-full"></div>
+          <h2 class="text-2xl font-bold text-gray-900">Ticket Pricing</h2>
+        </div>
+        <div hlmCard class="w-full p-6">
+          <div class="grid grid-cols-1 gap-4">
+            <div
+              class="flex justify-between items-center p-4 bg-gray-50 rounded-lg border"
+            >
+              <div class="flex flex-col">
+                <span class="text-lg font-semibold text-gray-800"
+                  >First Class</span
+                >
+                <span class="text-sm text-gray-500">Premium experience</span>
+              </div>
+              <span class="text-2xl font-bold text-gray-900"
+                >{{ flight.price_first_class }}€</span
+              >
+            </div>
+
+            <div
+              class="flex justify-between items-center p-4 bg-gray-50 rounded-lg border"
+            >
+              <div class="flex flex-col">
+                <span class="text-lg font-semibold text-gray-800"
+                  >Business Class</span
+                >
+                <span class="text-sm text-gray-500">Enhanced comfort</span>
+              </div>
+              <span class="text-2xl font-bold text-gray-900"
+                >{{ flight.price_business_class }}€</span
+              >
+            </div>
+
+            <div
+              class="flex justify-between items-center p-4 bg-gray-50 rounded-lg border"
+            >
+              <div class="flex flex-col">
+                <span class="text-lg font-semibold text-gray-800"
+                  >Economy Class</span
+                >
+                <span class="text-sm text-gray-500">Standard seating</span>
+              </div>
+              <span class="text-2xl font-bold text-gray-900"
+                >{{ flight.price_economy_class }}€</span
+              >
+            </div>
+
+            <div
+              class="flex justify-between items-center p-4 bg-gray-100 rounded-lg border-2 border-gray-300"
+            >
+              <div class="flex flex-col">
+                <span class="text-lg font-semibold text-gray-800"
+                  >Travel Insurance</span
+                >
+                <span class="text-sm text-gray-500">Optional coverage</span>
+              </div>
+              <span class="text-2xl font-bold text-gray-900"
+                >{{ flight.price_insurance }}€</span
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+}

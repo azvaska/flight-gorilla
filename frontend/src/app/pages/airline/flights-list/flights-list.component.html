@@ -11,14 +11,14 @@
         </hlm-trow>
         <ng-container *ngFor="let fl of flights">
           <hlm-trow>
-            <hlm-th class="w-1/6">{{ fl.aircraft.aircraft.name }}</hlm-th>
+            <hlm-th class="w-1/6 cursor-pointer hover:underline" [routerLink]="'/flights/' + fl.id">{{ fl.aircraft.aircraft.name }}</hlm-th>
             <hlm-th class="w-1/6">{{ fl.departure_airport.iata_code }}</hlm-th>
             <hlm-th class="w-1/6">{{ fl.arrival_airport.iata_code }}</hlm-th>
             <hlm-th class="w-1/6">
-              {{ formatTime(fl.departure_time) + ' ' + dateToString(fl.departure_time) }}
+              {{ dateToString(fl.departure_time) }}
             </hlm-th>
             <hlm-th class="w-1/6">
-              {{ formatTime(fl.arrival_time) + ' ' + dateToString(fl.arrival_time) }}
+              {{ dateToString(fl.arrival_time) }}
             </hlm-th>
             <hlm-th class="w-1/6 flex justify-end gap-2">
               <app-popover
@@ -32,16 +32,6 @@
               </button>
               <div popover-content class="p-1 flex flex-col gap-1">
                 <ul>
-                  <li
-                    class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
-                  >
-                    Edit
-                  </li>
-                  <li
-                    class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
-                  >
-                    Duplicate
-                  </li>
                   <li
                     class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
                   >
@@ -65,130 +55,5 @@
     >
       + Add new Flight
     </button>
-  </div>
-</div>
-
-<!-- Popover / Modal: only present when selectedFlight is non-null -->
-<div
-  *ngIf="selectedFlight"
-  class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
->
-  <!-- The white card -->
-  <div class="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 relative">
-    <!-- Header with title and close button -->
-    <div class="flex justify-between items-center border-b border-zinc-200 px-6 py-4">
-      <h2 class="text-2xl font-semibold">Flight Details</h2>
-      <button
-        (click)="closeDetails()"
-        class="text-zinc-500 hover:text-zinc-800 font-bold text-xl"
-        aria-label="Close"
-      >
-        ×
-      </button>
-    </div>
-
-    <!-- Body: all fields, one row each (start/end pairs grouped) -->
-    <div class="px-6 py-6 space-y-4">
-      <!-- ID -->
-      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
-        <span class="font-bold">ID:</span>
-        <span>{{ selectedFlight.id }}</span>
-      </div>
-
-      <!-- Route ID -->
-      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
-        <span class="font-bold">Route ID:</span>
-        <span>{{ selectedFlight.route_id }}</span>
-      </div>
-
-      <!-- Aircraft ID -->
-      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
-        <span class="font-bold">Aircraft ID:</span>
-        <span>{{ selectedFlight.aircraft.id }}</span>
-      </div>
-
-      <!-- Departure / Arrival Times -->
-      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
-        <div>
-          <span class="font-bold">Departure:</span><br />
-          <span>
-            {{ formatTime(selectedFlight.departure_time) }}
-            {{ dateToString(selectedFlight.departure_time) }}
-          </span>
-        </div>
-        <div>
-          <span class="font-bold text-right w-full inline-block">Arrival:</span><br />
-          <span>
-            {{ formatTime(selectedFlight.arrival_time) }}
-            {{ dateToString(selectedFlight.arrival_time) }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Check-in Start / End -->
-      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
-        <div>
-          <span class="font-bold">Check-in Start:</span><br />
-          <span>
-            <!-- {{ formatTime(selectedFlight.checkin_start) }}
-            {{ dateToString(selectedFlight.checkin_start) }} -->
-          </span>
-        </div>
-        <div>
-          <span class="font-bold text-right w-full inline-block">Check-in End:</span><br />
-          <span>
-            <!-- {{ formatTime(selectedFlight.checkin_end) }}
-            {{ dateToString(selectedFlight.checkin_end) }} -->
-          </span>
-        </div>
-      </div>
-
-      <!-- Boarding Start / End -->
-      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
-        <div>
-          <span class="font-bold">Boarding Start:</span><br />
-          <span>
-            <!-- {{ formatTime(selectedFlight.boarding_start) }}
-            {{ dateToString(selectedFlight.boarding_start) }} -->
-          </span>
-        </div>
-        <div>
-          <span class="font-bold text-right w-full inline-block">Boarding End:</span><br />
-          <span>
-            <!-- {{ formatTime(selectedFlight.boarding_end) }}
-            {{ dateToString(selectedFlight.boarding_end) }} -->
-          </span>
-        </div>
-      </div>
-
-      <!-- Gate / Terminal -->
-      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
-        <div>
-          <span class="font-bold">Gate:</span><br />
-          <!-- <span>{{ selectedFlight.gate }}</span> -->
-        </div>
-        <div>
-          <span class="font-bold">Terminal:</span><br />
-          <!-- <span class="w-full text-righst inline-block">{{ selectedFlight.terminal }}</span> -->
-        </div>
-      </div>
-
-      <!-- Prices -->
-      <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
-        <div>
-          <span class="font-bold">First Class Price:</span><br />
-          <span>${{ selectedFlight.price_first_class }}</span>
-        </div>
-        <div>
-          <span class="font-bold">Business Class Price:</span><br />
-          <span>${{ selectedFlight.price_business_class }}</span>
-        </div>
-      </div>
-
-      <div class="flex justify-between">
-        <span class="font-bold">Insurance Price:</span>
-        <span>${{ selectedFlight.price_insurance }}</span>
-      </div>
-    </div>
   </div>
 </div>

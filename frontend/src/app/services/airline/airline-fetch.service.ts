@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { IAirline } from '@/types/airline/airline';
 import { environment } from '@/app/environments/environment';
-import { IAircraft } from '@/types/airline/aircraft';
 import { IAirlineAircraft } from '@/types/airline/aircraft';
 import { IExtra } from '@/types/airline/extra';
 import { IRoute } from '@/types/airline/route';
@@ -29,19 +28,19 @@ export class AirlineFetchService {
     business_class_seats: number;
     economy_class_seats: number;
     tail_number: string;
-  }): Observable<IAircraft> {
-    return this.http.post<IAircraft>(
+  }): Observable<IAirlineAircraft> {
+    return this.http.post<IAirlineAircraft>(
       `${environment.apiUrl}/airline/aircrafts`,
       aircraft
     );
   }
 
-  public getAircraft(aircraftId: string): Observable<IAircraft> {
-    return this.http.get<IAircraft>(
-      `${environment.apiUrl}/airline/aircraft/${aircraftId}`
+  public getAircraft(aircraftId: string): Observable<IAirlineAircraft> {
+    return this.http.get<IAirlineAircraft>(
+      `${environment.apiUrl}/airline/aircrafts/${aircraftId}`
     );
   }
-
+ 
   public updateAircraft(
     aircraftId: string,
     aircraft: Partial<{
@@ -51,16 +50,16 @@ export class AirlineFetchService {
       economy_class_seats: number;
       tail_number: string;
     }>
-  ): Observable<IAircraft> {
-    return this.http.put<IAircraft>(
-      `${environment.apiUrl}/airline/aircraft/${aircraftId}`,
+  ): Observable<IAirlineAircraft> {
+    return this.http.put<IAirlineAircraft>(
+      `${environment.apiUrl}/airline/aircrafts/${aircraftId}`,
       aircraft
     );
   }
 
   public deleteAircraft(aircraftId: string): Observable<void> {
     return this.http.delete<void>(
-      `${environment.apiUrl}/airline/aircraft/${aircraftId}`
+      `${environment.apiUrl}/airline/aircrafts/${aircraftId}`
     );
   }
 
@@ -176,6 +175,12 @@ export class AirlineFetchService {
 
   public deleteFlight(flightId: string): Observable<void> {
     return this.http.delete<void>(
+      `${environment.apiUrl}/airline/flights/${flightId}`
+    );
+  }
+
+  public getFlight(flightId: string): Observable<IAirlineFlight> {
+    return this.http.get<IAirlineFlight>(
       `${environment.apiUrl}/airline/flights/${flightId}`
     );
   }

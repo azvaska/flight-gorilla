@@ -21,6 +21,8 @@ import { BookingsComponent } from '@/app/pages/user/bookings/bookings.component'
 import { UserProfileComponent } from '@/app/pages/user/profile/profile.component';
 import { AircraftListComponent } from '@/app/pages/airline/aircraft-list/aircraft-list.component';
 import { AircraftAddComponent } from '@/app/pages/airline/aircraft-add/aircraft-add.component';
+import { AircraftDetailsComponent } from '@/app/pages/airline/aircraft-details/aircraft-details.component';
+import { FlightDetailsComponent } from '@/app/pages/airline/flight-details/flight-details.component';
 import { RouteListComponent } from '@/app/pages/airline/route-list/route-list.component';
 import { RouteAddComponent } from './pages/airline/route-add/route-add.component';
 import { FlightsListComponent } from '@/app/pages/airline/flights-list/flights-list.component';
@@ -53,7 +55,7 @@ export const routes: Routes = [
       },
       {
         path: 'airline',
-        canMatch: [RoleGuard],  
+        canMatch: [RoleGuard],
         data: { roles: ['airline-admin'], pageTitle: 'Airline Profile' },
         component: AirlineProfileComponent,
       },
@@ -89,6 +91,11 @@ export const routes: Routes = [
     component: AircraftAddComponent,
   },
   {
+    path: 'aircraft/:aircraftId',
+    pathMatch: 'full',
+    component: AircraftDetailsComponent,
+  },
+  {
     path: 'routes/add',
     pathMatch: 'full',
     component: RouteAddComponent,
@@ -97,6 +104,11 @@ export const routes: Routes = [
     path: 'flights/add',
     pathMatch: 'full',
     component: FlightsAddComponent,
+  },
+  {
+    path: 'flights/:flightId',
+    pathMatch: 'full',
+    component: FlightDetailsComponent,
   },
   {
     path: 'auth',
