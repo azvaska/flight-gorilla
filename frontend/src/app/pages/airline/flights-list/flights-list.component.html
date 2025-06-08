@@ -11,14 +11,14 @@
         </hlm-trow>
         <ng-container *ngFor="let fl of flights">
           <hlm-trow>
-            <hlm-th class="w-1/6">{{ fl.aircraft_id }}</hlm-th>
-            <hlm-th class="w-1/6">{{ fl.departure_airport }}</hlm-th>
-            <hlm-th class="w-1/6">{{ fl.arrival_airport }}</hlm-th>
+            <hlm-th class="w-1/6">{{ fl.aircraft.aircraft.name }}</hlm-th>
+            <hlm-th class="w-1/6">{{ fl.departure_airport.iata_code }}</hlm-th>
+            <hlm-th class="w-1/6">{{ fl.arrival_airport.iata_code }}</hlm-th>
             <hlm-th class="w-1/6">
-              {{ formatTime(fl.departure_time) + ' ' + dateToString(fl.departure_time, 'specific') }}
+              {{ formatTime(fl.departure_time) + ' ' + dateToString(fl.departure_time) }}
             </hlm-th>
             <hlm-th class="w-1/6">
-              {{ formatTime(fl.arrival_time) + ' ' + dateToString(fl.arrival_time, 'specific') }}
+              {{ formatTime(fl.arrival_time) + ' ' + dateToString(fl.arrival_time) }}
             </hlm-th>
             <hlm-th class="w-1/6 flex justify-end gap-2">
               <app-popover
@@ -104,7 +104,7 @@
       <!-- Aircraft ID -->
       <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
         <span class="font-bold">Aircraft ID:</span>
-        <span>{{ selectedFlight.aircraft_id }}</span>
+        <span>{{ selectedFlight.aircraft.id }}</span>
       </div>
 
       <!-- Departure / Arrival Times -->
@@ -113,14 +113,14 @@
           <span class="font-bold">Departure:</span><br />
           <span>
             {{ formatTime(selectedFlight.departure_time) }}
-            {{ dateToString(selectedFlight.departure_time, 'specific') }}
+            {{ dateToString(selectedFlight.departure_time) }}
           </span>
         </div>
         <div>
           <span class="font-bold text-right w-full inline-block">Arrival:</span><br />
           <span>
             {{ formatTime(selectedFlight.arrival_time) }}
-            {{ dateToString(selectedFlight.arrival_time, 'specific') }}
+            {{ dateToString(selectedFlight.arrival_time) }}
           </span>
         </div>
       </div>
@@ -130,15 +130,15 @@
         <div>
           <span class="font-bold">Check-in Start:</span><br />
           <span>
-            {{ formatTime(selectedFlight.checkin_start) }}
-            {{ dateToString(selectedFlight.checkin_start, 'specific') }}
+            <!-- {{ formatTime(selectedFlight.checkin_start) }}
+            {{ dateToString(selectedFlight.checkin_start) }} -->
           </span>
         </div>
         <div>
           <span class="font-bold text-right w-full inline-block">Check-in End:</span><br />
           <span>
-            {{ formatTime(selectedFlight.checkin_end) }}
-            {{ dateToString(selectedFlight.checkin_end, 'specific') }}
+            <!-- {{ formatTime(selectedFlight.checkin_end) }}
+            {{ dateToString(selectedFlight.checkin_end) }} -->
           </span>
         </div>
       </div>
@@ -148,15 +148,15 @@
         <div>
           <span class="font-bold">Boarding Start:</span><br />
           <span>
-            {{ formatTime(selectedFlight.boarding_start) }}
-            {{ dateToString(selectedFlight.boarding_start, 'specific') }}
+            <!-- {{ formatTime(selectedFlight.boarding_start) }}
+            {{ dateToString(selectedFlight.boarding_start) }} -->
           </span>
         </div>
         <div>
           <span class="font-bold text-right w-full inline-block">Boarding End:</span><br />
           <span>
-            {{ formatTime(selectedFlight.boarding_end) }}
-            {{ dateToString(selectedFlight.boarding_end, 'specific') }}
+            <!-- {{ formatTime(selectedFlight.boarding_end) }}
+            {{ dateToString(selectedFlight.boarding_end) }} -->
           </span>
         </div>
       </div>
@@ -165,11 +165,11 @@
       <div class="flex justify-between border-b-1 border-zinc-300 pb-2 mb-2">
         <div>
           <span class="font-bold">Gate:</span><br />
-          <span>{{ selectedFlight.gate }}</span>
+          <!-- <span>{{ selectedFlight.gate }}</span> -->
         </div>
         <div>
           <span class="font-bold">Terminal:</span><br />
-          <span class="w-full text-right inline-block">{{ selectedFlight.terminal }}</span>
+          <!-- <span class="w-full text-righst inline-block">{{ selectedFlight.terminal }}</span> -->
         </div>
       </div>
 

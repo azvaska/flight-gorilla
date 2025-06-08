@@ -17,6 +17,10 @@ import { lucideEllipsis } from '@ng-icons/lucide';
 import { provideIcons, NgIcon } from '@ng-icons/core';
 import { PopoverComponent } from '@/app/components/ui/popover/popover.component';
 import { PopoverTriggerDirective } from '@/app/components/ui/popover/popover-trigger.directive';
+import { IRoute } from '@/types/airline/route';
+import { AirlineFetchService } from '@/app/services/airline/airline-fetch.service';
+import { LoadingService } from '@/app/services/loading.service';
+import { firstValueFrom } from 'rxjs';
 
 export interface AirlineRoute {
   id: number;
@@ -50,31 +54,27 @@ export interface AirlineRoute {
   },
 })
 export class RouteListComponent {
-  routes : AirlineRoute[] = [
-    {
-      id: 1,
-      flight_number: 'FL123',
-      departure_airport: 'JFK',
-      arrival_airport: 'LAX',
-      period_start: new Date('2023-10-01T08:00:00Z'),
-      period_end: new Date('2024-10-31T20:00:00Z'),
-    },
-    {
-      id: 2,
-      flight_number: 'FL456',
-      departure_airport: 'LAX',
-      arrival_airport: 'ORD',
-      period_start: new Date('2023-11-01T08:00:00Z'),
-      period_end: new Date('2025-12-30T20:00:00Z'),
-    },
-  ];
+  protected routes: IRoute[] = [];
 
-  constructor() {
-    // Duplicate the first element in "routes" array 15 times (test purposes)
-    const newRoutes = Array(15).fill(this.routes[0]);
-    this.routes = [...this.routes, ...newRoutes, ...newRoutes];
+  constructor(private airlineFetchService: AirlineFetchService, private loadingService: LoadingService) {
+    this.fetchRoutes().then((routes) => {
+      this.routes = routes;
+    });
+  }
+
+  private async fetchRoutes() {
+    this.loadingService.startLoadingTask();
+    const routes = await firstValueFrom(this.airlineFetchService.getRoutes());
+    this.loadingService.endLoadingTask();
+    return routes;
   }
 
 
-  protected readonly dateToString = dateToString;
+  protected formatDate(date: string) {
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
 }

@@ -12,12 +12,11 @@ import { lucideEllipsis } from '@ng-icons/lucide';
 import { provideIcons, NgIcon } from '@ng-icons/core';
 import { PopoverComponent } from '@/app/components/ui/popover/popover.component';
 import { PopoverTriggerDirective } from '@/app/components/ui/popover/popover-trigger.directive';
+import { IExtra } from '@/types/airline/extra';
+import { AirlineFetchService } from '@/app/services/airline/airline-fetch.service';
+import { LoadingService } from '@/app/services/loading.service';
+import { firstValueFrom } from 'rxjs';
 
-interface Extra {
-  name: string;
-  description: string;
-  stackable: boolean;
-}
 
 @Component({
   selector: 'app-extras-list',
@@ -45,14 +44,23 @@ interface Extra {
 })
 export class ExtrasListComponent {
   // The list of extras
-  extras: Extra[] = [
-    // You can initialize with some sample data or leave empty
-    { name: 'WiFi', description: 'In-flight internet access', stackable: false },
-    { name: 'Extra Legroom', description: 'Seat with extra legroom', stackable: true },
-  ];
+  protected extras: IExtra[] = [];
+
+  constructor(private airlineFetchService: AirlineFetchService, private loadingService: LoadingService) {
+    this.fetchExtras().then((extras) => {
+      this.extras = extras;
+    });
+  }
+
+  private async fetchExtras() {
+    this.loadingService.startLoadingTask();
+    const extras = await firstValueFrom(this.airlineFetchService.getExtras());
+    this.loadingService.endLoadingTask();
+    return extras;
+  }
 
   // Holds the extra being added/edited
-  editableExtra: Extra = { name: '', description: '', stackable: false };
+  editableExtra: IExtra = { id: '', name: '', description: '', airline_id: '', stackable: false };
   // Index of the extra being edited; null if adding new
   editingIndex: number | null = null;
   // Controls the visibility of the modal
@@ -61,7 +69,7 @@ export class ExtrasListComponent {
   // Open the modal for adding a new extra
   openModalForNew() {
     this.editingIndex = null;
-    this.editableExtra = { name: '', description: '', stackable: false };
+    this.editableExtra = { id: '', name: '', description: '', airline_id: '', stackable: false };
     this.showModal = true;
   }
 
@@ -80,10 +88,12 @@ export class ExtrasListComponent {
 
   // Save the new or edited extra back into the list
   saveExtra() {
-    const extraCopy: Extra = {
+    const extraCopy: IExtra = {
       name: this.editableExtra.name.trim(),
       description: this.editableExtra.description.trim(),
       stackable: this.editableExtra.stackable,
+      airline_id: this.editableExtra.airline_id,
+      id: this.editableExtra.id,
     };
 
     if (!extraCopy.name) {

@@ -5,6 +5,8 @@ from app.models.airport import Airport
 from app.models.airlines import Airline, AirlineAircraft
 from app.schemas.airport import AirportSchema
 from app.schemas.airline import AirlineSchema
+from app.schemas.airline import AirlineAircraftSchema
+from app.schemas.airline import RouteSchema
 import datetime
 
 
@@ -15,7 +17,7 @@ class FlightSchema(ma.SQLAlchemyAutoSchema):
     departure_airport = ma.Nested(AirportSchema, dump_only=True)
     arrival_airport = ma.Nested(AirportSchema, dump_only=True)
     flight_number = ma.String(dump_only=True)
-
+    aircraft = ma.Nested(AirlineAircraftSchema, dump_only=True)
     checkin_start_time = ma.DateTime(required=False)
     checkin_end_time = ma.DateTime(required=False)
     boarding_start_time = ma.DateTime(required=False)

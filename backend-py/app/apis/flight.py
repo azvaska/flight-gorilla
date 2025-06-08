@@ -11,20 +11,10 @@ from app.models.flight import Flight, Route, FlightExtra
 from app.models.airlines import AirlineAircraft
 from app.schemas.flight import FlightSchema, flight_schema, flight_extra_schema, flights_extra_schema
 from app.apis.airport import airport_model
+from app.apis.airline import extra_flight_model
 
 api = Namespace('flight', description='Flight related operations')
 
-flight_model_input = api.model('Flight', {
-    'id': fields.String(readonly=True, description='Flight ID'),
-    'route_id': fields.Integer(required=True, description='Route ID'),
-    'aircraft_id': fields.String(required=True, description='Airline Aircraft ID'),
-    'departure_time': fields.DateTime(required=True, description='Departure time'),
-    'arrival_time': fields.DateTime(required=True, description='Arrival time'),
-    'price_economy_class': fields.Float(required=True, description='Economy class price'),
-    'price_business_class': fields.Float(required=True, description='Business class price'),
-    'price_first_class': fields.Float(required=True, description='First class price'),
-    'price_insurance': fields.Float(description='Insurance price'),
-})
 
 airline_model = api.model('FlightAirline', {
     'id': fields.String(readonly=True, description='Airline ID'),
@@ -33,8 +23,6 @@ airline_model = api.model('FlightAirline', {
     'business_class_description': fields.String(required=True, description='Business class description'),
     'economy_class_description': fields.String(required=True, description='Economy class description'),
 })
-
-
 
 flight_model_output = api.model('FlightOutput', {
     'id': fields.String(readonly=True, description='Flight ID'),
@@ -49,54 +37,6 @@ flight_model_output = api.model('FlightOutput', {
     'price_economy_class': fields.Float(required=True, description='Economy class price'),
     'price_insurance': fields.Float(required=True, description='Insurance price'),
 })
-
-@api.route('/')
-@api.response(500, 'Internal Server Error')
-class FlightList(Resource):
-    @api.expect(flight_model_input)
-    @jwt_required()
-    @roles_required('airline-admin')
-    @airline_id_from_user()
-    @api.response(201, 'Created', flight_model_output)
-    @api.response(400, 'Bad Request')
-    @api.response(403, 'Forbidden')
-    def post(self, airline_id):
-        """Create a new flight"""
-        data = request.json
-        data['airline_id'] = airline_id
-        # airline_id = "fe8a8515-a2ec-4569-b8b6-549ae8069ace" #TODO: Hardcoded for tests, change!!
-
-        try:
-            # Validate that the airline aircraft belongs to the airline
-            aircraft = AirlineAircraft.query.get(data['aircraft_id'])
-            if not aircraft or str(aircraft.airline_id) != str(airline_id):
-                return {"error": "The specified aircraft does not belong to your airline"}, 403
-            
-            
-            new_flight = flight_schema.load(data)
-            
-           
-            if 'price_insurance' not in data:
-                new_flight.price_insurance = 0.0
-                
-            # Calculate default checkin and baording times
-            new_flight.checkin_start_time = new_flight.departure_time - datetime.timedelta(hours=2)
-            new_flight.checkin_end_time = new_flight.departure_time - datetime.timedelta(hours=1)
-            new_flight.boarding_start_time = new_flight.departure_time - datetime.timedelta(hours=1)
-            new_flight.boarding_end_time = new_flight.departure_time
-
-
-            db.session.add(new_flight)
-            db.session.commit()
-
-            return marshal(flight_schema.dump(new_flight), flight_model_output), 201
-
-        except ValidationError as err:
-            return {"error": err.messages}, 400
-        except Exception as err:
-            print("Error", err)
-            return {"error": "Internal server error"}, 500
-
 
 @api.route('/<uuid:flight_id>')
 @api.param('flight_id', 'The flight identifier')
@@ -113,67 +53,6 @@ class FlightResource(Resource):
 
         return marshal(flight_schema.dump(flight), flight_model_output), 200
 
-    @api.expect(flight_model_input)
-    @jwt_required()
-    @roles_required('airline-admin')
-    @airline_id_from_user()
-    @api.response(200, 'OK', flight_model_output)
-    @api.response(400, 'Bad Request')
-    @api.response(403, 'Forbidden')
-    def put(self, flight_id, airline_id):
-        """Update a flight given its identifier"""
-        flight = Flight.query.get_or_404(flight_id)
-
-        # Check if flight belongs to the airline
-        if str(flight.airline_id) != str(airline_id):
-            return {'error': 'You do not have permission to update this flight'}, 403
-
-        data = request.json
-
-        # Don't allow changing the airline_id
-        if 'airline_id' in data:
-            del data['airline_id']
-
-        try:
-
-            # Validate data with Marshmallow schema
-            validated_data = flight_schema.load(data,partial=True)
-
-            db.session.commit()
-            return marshal(flight_schema.dump(flight), flight_model_output), 200
-
-        except ValidationError as err:
-            return {"errors": err.messages}, 400
-        except Exception as e:
-            return {"error": str(e)}, 500
-
-    @jwt_required()
-    @roles_required('airline-admin')
-    @airline_id_from_user()
-    @api.response(403, 'Forbidden')
-    @api.response(400, 'Bad Request')
-    @api.response(200, 'OK')
-    def delete(self, flight_id, airline_id):
-        """Delete a flight given its identifier"""
-        try:
-            flight = Flight.query.get_or_404(flight_id)
-
-            # Check if flight belongs to the airline
-            if str(flight.airline_id) != str(airline_id):
-                return {'error': 'You do not have permission to delete this flight'}, 403
-
-            # Check if the flight is in the past
-            if flight.departure_time < datetime.datetime.now(datetime.UTC):
-                return {'error': 'Cannot delete flights that have already departed'}, 400
-
-            db.session.delete(flight)
-            db.session.commit()
-
-            return {'message': 'Flight deleted successfully'}, 200
-        except Exception as e:
-            return {'error': str(e)}, 500
-
-
 seats_info_model = api.model('SeatsInfo', {
     'first_class_seats': fields.List(fields.String, description='First class seats'),
     'business_class_seats': fields.List(fields.String, description='Business class seats'),
@@ -186,30 +65,6 @@ booked_seats_model = api.model('BookedSeats', {
     'seats_info': fields.Nested(seats_info_model, description='Seats info'),
     'rows': fields.Integer(description='Rows of the aircraft'),
 })
-
-extra_flight_model = api.model('FlightExtra', {
-    'id': fields.String(readonly=True, description='Flight Extra ID'),
-    'name': fields.String(readonly=True,required=True, description='Name of the extra'),
-    'description': fields.String(readonly=True,required=True, description='Description of the extra'),
-    'extra_id': fields.String(required=True, description='Extra ID'),
-    'price': fields.Float(required=True, description='Price of the extra'),
-    'limit': fields.Integer(readonly=True,required=True, description='Limit of the extra'),
-    'stackable': fields.Boolean(readonly=True,required=True, description='Is the extra stackable'),
-    'required_on_all_segments': fields.Boolean(readonly=True,required=True, description='Is the extra required on all segments'),
-})
-
-
-
-
-extra_flight_input_model = api.model('FlightExtraInput', {
-    'extras': fields.List(fields.Nested(api.model('ExtraItem', {
-        'extra_id': fields.String(required=True, description='Extra ID'),
-        'price': fields.Float(required=True, description='Price of the extra'),
-        'limit': fields.Integer(required=True, description='Limit of the extra'),
-    })), required=True, description='List of extras to add to the flight')
-})
-
-
 
 @api.route('/extra/<uuid:flight_id>')
 @api.param('flight_id', 'The flight identifier')
@@ -225,56 +80,6 @@ class FlightExtraR(Resource):
             return {'error': 'Flight extras not found for the flight'}, 404
 
         return marshal(flights_extra_schema.dump(q), extra_flight_model), 200
-
-    @jwt_required()
-    @roles_required('airline-admin')
-    @airline_id_from_user()
-    @api.response(403, 'Forbidden')
-    @api.response(400, 'Bad Request')
-    @api.response(201, 'Created', extra_flight_model)
-    @api.expect(extra_flight_input_model)
-    def post(self, flight_id, airline_id):
-        """Create new flight extras"""
-        data = request.json
-        flight = Flight.query.get_or_404(flight_id)
-        airline = flight.airline
-        # Check if flight belongs to the airline
-        if airline.id != airline_id:
-            return {'error': 'You do not have permission to modify this flight'}, 403
-        
-        # Create a dictionary of airline extras for faster lookup
-        airline_extras = {str(extra.id): extra for extra in airline.extras}
-
-        try:
-            results = []
-            for extra in data['extras']:
-                extra_data = {
-                    'flight_id': str(flight_id),
-                    'extra_id': extra['extra_id'],
-                    'price': extra['price'],
-                    'limit': extra['limit']
-                }
-                
-                # Check if extra belongs to airline
-                if extra['extra_id'] not in airline_extras:
-                    return {'error': f"Extra {extra['extra_id']} does not belong to airline {airline_id}"}, 403
-
-                # Get the original extra to check if it's stackable
-                extra_original = airline_extras[extra['extra_id']]
-                
-                # Check if extra is stackable and if limit is appropriate
-                if not extra_original.stackable and extra['limit'] > 1:
-                    return {'error': f"Extra {extra_original.name} is not stackable, limit must be 1"}, 400
-
-                new_extra = flight_extra_schema.load(extra_data)
-                db.session.add(new_extra)
-                results.append(new_extra)
-
-            db.session.commit()
-            return marshal(flights_extra_schema.dump(results), extra_flight_model), 201
-        except ValidationError as err:
-            return {'error': 'validation Failed'},400
-
 
 @api.route('/seats/<uuid:flight_id>')
 @api.param('flight_id', 'The flight identifier')

@@ -54,6 +54,8 @@ class AirlineSchema(ma.SQLAlchemyAutoSchema):
 
 class RouteSchema(ma.SQLAlchemyAutoSchema):
     airline_id = ma.UUID(dump_only=True)
+    departure_airport = ma.Nested('app.schemas.airport.AirportSchema', dump_only=True)
+    arrival_airport = ma.Nested('app.schemas.airport.AirportSchema', dump_only=True)
     class Meta:
         model = Route
         load_instance = True
