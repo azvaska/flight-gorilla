@@ -218,6 +218,12 @@ export class AirlineFetchService {
     );
   }
 
+  public deleteRoute(routeId: string): Observable<void> {
+    return this.http.delete<void>(
+      `${environment.apiUrl}/airline/routes/${routeId}`
+    );
+  }
+
   public getRoute(routeId: string): Observable<IRoute> {
     return this.http.get<IRoute>(
       `${environment.apiUrl}/airline/routes/${routeId}`

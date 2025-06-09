@@ -587,6 +587,33 @@ class AirlineRouteResource(Resource):
         db.session.commit()
         return marshal(route_schema.dump(route),route_model), 200
 
+    @jwt_required()
+    @roles_required('airline-admin')
+    @airline_id_from_user()
+    @api.response(200, 'OK')
+    @api.response(403, 'Unauthorized')
+    @api.response(404, 'Not Found')
+    @api.response(400, 'Bad Request')
+    def delete(self, route_id, airline_id):
+        """Delete a route for the current airline"""
+        try:
+            route = Route.query.filter_by(id=route_id).first_or_404()
+            
+            # Check if route belongs to the airline
+            if route.airline_id != airline_id:
+                return {'error': 'You do not have permission to delete this route'}, 403
+
+            # Check if the route has associated flights
+            if route.flights:
+                return {'error': 'Cannot delete route with associated flights'}, 400
+
+            db.session.delete(route)
+            db.session.commit()
+
+            return {'message': 'Route deleted successfully'}, 200
+        except Exception as e:
+            return {'error': str(e)}, 500
+
 @api.route('/flights')
 class MyAirlineFlightsList(Resource):
     @jwt_required()
@@ -673,7 +700,7 @@ class MyAirlineFlightResource(Resource):
         flight = Flight.query.get_or_404(flight_id)
 
         # Check if flight belongs to the airline
-        if str(flight.airline_id) != str(airline_id):
+        if str(flight.airline.id) != str(airline_id):
             return {'error': 'You do not have permission to update this flight'}, 403
 
         data = request.json
@@ -707,7 +734,7 @@ class MyAirlineFlightResource(Resource):
             flight = Flight.query.get_or_404(flight_id)
 
             # Check if flight belongs to the airline
-            if str(flight.airline_id) != str(airline_id):
+            if str(flight.airline.id) != str(airline_id):
                 return {'error': 'You do not have permission to delete this flight'}, 403
 
             # Check if the flight is in the past

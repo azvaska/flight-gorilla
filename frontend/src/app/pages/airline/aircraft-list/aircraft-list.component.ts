@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import {NgForOf, NgOptimizedImage} from '@angular/common';
 import {HlmButtonDirective} from '@spartan-ng/ui-button-helm';
-import {RouterLink} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {
   HlmCaptionComponent,
   HlmTableComponent,
@@ -20,6 +20,21 @@ import { LoadingService } from '@/app/services/loading.service';
 import { IAircraft, IAirlineAircraft
  } from '@/types/airline/aircraft';
 import { firstValueFrom, Observable } from 'rxjs';
+import {
+  BrnAlertDialogContentDirective,
+  BrnAlertDialogTriggerDirective,
+} from '@spartan-ng/brain/alert-dialog';
+import {
+  HlmAlertDialogActionButtonDirective,
+  HlmAlertDialogCancelButtonDirective,
+  HlmAlertDialogComponent,
+  HlmAlertDialogContentComponent,
+  HlmAlertDialogDescriptionDirective,
+  HlmAlertDialogFooterComponent,
+  HlmAlertDialogHeaderComponent,
+  HlmAlertDialogTitleDirective,
+} from '@spartan-ng/ui-alertdialog-helm';
+import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
 
 @Component({
   selector: 'app-aircrafts-list',
@@ -36,6 +51,17 @@ import { firstValueFrom, Observable } from 'rxjs';
     NgIcon,
     PopoverComponent,
     PopoverTriggerDirective,
+    HlmAlertDialogComponent,
+    HlmAlertDialogContentComponent,
+    HlmAlertDialogHeaderComponent,
+    HlmAlertDialogTitleDirective,
+    HlmAlertDialogDescriptionDirective,
+    HlmAlertDialogFooterComponent,
+    HlmAlertDialogActionButtonDirective,
+    HlmSpinnerComponent,
+    BrnAlertDialogContentDirective,
+    BrnAlertDialogTriggerDirective,
+    HlmAlertDialogCancelButtonDirective,
   ],
   host: {
     class: 'block w-full h-fit',
@@ -43,8 +69,13 @@ import { firstValueFrom, Observable } from 'rxjs';
 })
 export class AircraftListComponent {
   protected aircrafts: IAirlineAircraft[] = [];
+  protected isDeleteAircraftLoading = false;
 
-  constructor(private airlineFetchService: AirlineFetchService, private loadingService: LoadingService) {
+  constructor(
+    private airlineFetchService: AirlineFetchService, 
+    private loadingService: LoadingService,
+    private router: Router
+  ) {
     this.fetchAircrafts().then((aircrafts) => {
       this.aircrafts = aircrafts;
     });
@@ -63,6 +94,19 @@ export class AircraftListComponent {
       month: 'long',
       day: 'numeric',
     });
+  }
+
+  protected async deleteAircraft(aircraftId: string, modalCtx: any) {
+    this.isDeleteAircraftLoading = true;
+    try {
+      await firstValueFrom(this.airlineFetchService.deleteAircraft(aircraftId));
+      this.aircrafts = this.aircrafts.filter((aircraft) => aircraft.id !== aircraftId);
+    } catch (error) {
+      console.error('error deleting aircraft');
+    } finally {
+      this.isDeleteAircraftLoading = false;
+      modalCtx.close(); 
+    }
   }
 }
 

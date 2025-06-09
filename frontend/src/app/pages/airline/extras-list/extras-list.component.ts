@@ -20,6 +20,21 @@ import { IExtra } from '@/types/airline/extra';
 import { AirlineFetchService } from '@/app/services/airline/airline-fetch.service';
 import { LoadingService } from '@/app/services/loading.service';
 import { firstValueFrom } from 'rxjs';
+import {
+  BrnAlertDialogContentDirective,
+  BrnAlertDialogTriggerDirective,
+} from '@spartan-ng/brain/alert-dialog';
+import {
+  HlmAlertDialogActionButtonDirective,
+  HlmAlertDialogCancelButtonDirective,
+  HlmAlertDialogComponent,
+  HlmAlertDialogContentComponent,
+  HlmAlertDialogDescriptionDirective,
+  HlmAlertDialogFooterComponent,
+  HlmAlertDialogHeaderComponent,
+  HlmAlertDialogTitleDirective,
+} from '@spartan-ng/ui-alertdialog-helm';
+import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
 
 @Component({
   selector: 'app-extras-list',
@@ -43,6 +58,17 @@ import { firstValueFrom } from 'rxjs';
     NgIcon,
     PopoverComponent,
     PopoverTriggerDirective,
+    HlmAlertDialogComponent,
+    HlmAlertDialogContentComponent,
+    HlmAlertDialogHeaderComponent,
+    HlmAlertDialogTitleDirective,
+    HlmAlertDialogDescriptionDirective,
+    HlmAlertDialogFooterComponent,
+    HlmAlertDialogActionButtonDirective,
+    HlmSpinnerComponent,
+    BrnAlertDialogContentDirective,
+    BrnAlertDialogTriggerDirective,
+    HlmAlertDialogCancelButtonDirective,
   ],
 })
 export class ExtrasListComponent {
@@ -50,6 +76,7 @@ export class ExtrasListComponent {
   protected extras: IExtra[] = [];
 
   protected isLoading = false;
+  protected isDeleteExtraLoading = false;
 
   @ViewChildren('popover') public popovers!: QueryList<PopoverComponent>;
 
@@ -152,6 +179,19 @@ export class ExtrasListComponent {
       this.isLoading = false;
     }
     this.closeModal();
+  }
+
+  protected async deleteExtra(extraId: string, modalCtx: any) {
+    this.isDeleteExtraLoading = true;
+    try {
+      await firstValueFrom(this.airlineFetchService.deleteExtra(extraId));
+      this.extras = this.extras.filter((extra) => extra.id !== extraId);
+    } catch (error) {
+      console.error('error deleting extra');
+    } finally {
+      this.isDeleteExtraLoading = false;
+      modalCtx.close();
+    }
   }
 
 }

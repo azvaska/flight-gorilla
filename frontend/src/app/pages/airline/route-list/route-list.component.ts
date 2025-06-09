@@ -3,7 +3,7 @@ import {NgForOf, NgOptimizedImage} from "@angular/common";
 
 import {dateToString} from '@/utils/date';
 import {HlmButtonDirective} from '@spartan-ng/ui-button-helm';
-import {RouterLink} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {
   HlmCaptionComponent,
   HlmTableComponent,
@@ -21,6 +21,21 @@ import { IRoute } from '@/types/airline/route';
 import { AirlineFetchService } from '@/app/services/airline/airline-fetch.service';
 import { LoadingService } from '@/app/services/loading.service';
 import { firstValueFrom } from 'rxjs';
+import {
+  BrnAlertDialogContentDirective,
+  BrnAlertDialogTriggerDirective,
+} from '@spartan-ng/brain/alert-dialog';
+import {
+  HlmAlertDialogActionButtonDirective,
+  HlmAlertDialogCancelButtonDirective,
+  HlmAlertDialogComponent,
+  HlmAlertDialogContentComponent,
+  HlmAlertDialogDescriptionDirective,
+  HlmAlertDialogFooterComponent,
+  HlmAlertDialogHeaderComponent,
+  HlmAlertDialogTitleDirective,
+} from '@spartan-ng/ui-alertdialog-helm';
+import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
 
 export interface AirlineRoute {
   id: number;
@@ -46,6 +61,17 @@ export interface AirlineRoute {
     NgIcon,
     PopoverComponent,
     PopoverTriggerDirective,
+    HlmAlertDialogComponent,
+    HlmAlertDialogContentComponent,
+    HlmAlertDialogHeaderComponent,
+    HlmAlertDialogTitleDirective,
+    HlmAlertDialogDescriptionDirective,
+    HlmAlertDialogFooterComponent,
+    HlmAlertDialogActionButtonDirective,
+    HlmSpinnerComponent,
+    BrnAlertDialogContentDirective,
+    BrnAlertDialogTriggerDirective,
+    HlmAlertDialogCancelButtonDirective,
   ],
   providers: [provideIcons({ lucideEllipsis })],
   templateUrl: './route-list.component.html',
@@ -55,8 +81,13 @@ export interface AirlineRoute {
 })
 export class RouteListComponent {
   protected routes: IRoute[] = [];
+  protected isDeleteRouteLoading = false;
 
-  constructor(private airlineFetchService: AirlineFetchService, private loadingService: LoadingService) {
+  constructor(
+    private airlineFetchService: AirlineFetchService, 
+    private loadingService: LoadingService,
+    private router: Router
+  ) {
     this.fetchRoutes().then((routes) => {
       this.routes = routes;
     });
@@ -76,5 +107,18 @@ export class RouteListComponent {
       month: 'long',
       day: 'numeric',
     });
+  }
+
+  protected async deleteRoute(routeId: string, modalCtx: any) {
+    this.isDeleteRouteLoading = true;
+    try {
+      await firstValueFrom(this.airlineFetchService.deleteRoute(routeId));
+      this.routes = this.routes.filter((route) => route.id !== routeId);
+    } catch (error) {
+      console.error('error deleting route');
+    } finally {
+      this.isDeleteRouteLoading = false;
+      modalCtx.close();
+    }
   }
 }
