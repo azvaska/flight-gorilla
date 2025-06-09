@@ -44,7 +44,7 @@ export class AirlineFetchService {
   public updateAircraft(
     aircraftId: string,
     aircraft: Partial<{
-      aircraft_id: string;
+      aircraft_id: number;
       first_class_seats: string[];
       business_class_seats: string[];
       economy_class_seats: string[];

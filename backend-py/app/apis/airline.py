@@ -464,6 +464,7 @@ class AirlineAircraftResource(Resource):
 
         return marshal(airline_aircraft_schema.dump(aircraft),airline_aircraft_model), 200
     
+    @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
     @api.expect(airline_aircraft_put_model)

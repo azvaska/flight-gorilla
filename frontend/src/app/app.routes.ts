@@ -92,12 +92,22 @@ export const routes: Routes = [
     component: AircraftAddComponent,
   },
   {
+    path: 'aircraft/edit/:aircraftId',
+    pathMatch: 'full',
+    component: AircraftAddComponent,
+  },
+  {
     path: 'aircraft/:aircraftId',
     pathMatch: 'full',
     component: AircraftDetailsComponent,
   },
   {
     path: 'routes/add',
+    pathMatch: 'full',
+    component: RouteAddComponent,
+  },
+  {
+    path: 'routes/edit/:routeId',
     pathMatch: 'full',
     component: RouteAddComponent,
   },

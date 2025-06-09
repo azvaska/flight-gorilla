@@ -58,10 +58,6 @@ export class SearchInputComponent<T> {
 
   protected filteredList: SearchInputValue<T>[] = []
 
-  ngOnInit(): void {
-    this.search = this.inputValue?.value ?? '';
-  }
-
 
   protected filterList(searchList: SearchInputValue<T>[], search: string) {
 
@@ -80,6 +76,10 @@ export class SearchInputComponent<T> {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['searchList']) {
       this.filteredList = this.filterList(this.searchList, this.search);
+    }
+
+    if (changes['inputValue']) {
+      this.search = this.inputValue?.value ?? '';
     }
   }
 

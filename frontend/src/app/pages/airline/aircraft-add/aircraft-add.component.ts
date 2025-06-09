@@ -22,7 +22,7 @@ import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { NgForOf, NgIf } from '@angular/common';
 import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
 import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
-import { IAircraft } from '@/types/airline/aircraft';
+import { IAircraft, IAirlineAircraft } from '@/types/airline/aircraft';
 import {
   lucideCheck,
   lucideChevronsUpDown,
@@ -35,7 +35,7 @@ import { AircraftFetchService } from '@/app/services/airline/aircraft-fetch.serv
 import { LoadingService } from '@/app/services/loading.service';
 import { firstValueFrom } from 'rxjs';
 import { AirlineFetchService } from '@/app/services/airline/airline-fetch.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 export enum SeatClass {
   UNASSIGNED = 'unassigned',
@@ -94,17 +94,98 @@ export class AircraftAddComponent {
   tailNumber: string = '';
 
   protected isLoading = false;
+  protected isEditMode = false;
+  protected aircraftId: string | null = null;
+  protected existingAircraft: IAirlineAircraft | null = null;
 
   constructor(
     private airlineFetchService: AirlineFetchService,
     private aircraftFetchService: AircraftFetchService,
     private loadingService: LoadingService,
-    private router: Router
+    private router: Router,
+    private activatedRoute: ActivatedRoute
   ) {
-    this.fetchAircrafts().then((aircrafts) => {
-      this.aircrafts = aircrafts;
-      // this.seatsMatrix = this.buildSeatsMatrix(30, this.aircrafts[2].unavailable_seats);
+    // Check if we're in edit mode
+    this.aircraftId = this.activatedRoute.snapshot.paramMap.get('aircraftId');
+    this.isEditMode = !!this.aircraftId;
+
+    this.initializeComponent();
+  }
+
+  private async initializeComponent() {
+    // Fetch available aircraft models
+    const aircrafts = await this.fetchAircrafts();
+    this.aircrafts = aircrafts;
+
+    // If in edit mode, load existing aircraft data
+    if (this.isEditMode && this.aircraftId) {
+      await this.loadExistingAircraft();
+    }
+  }
+
+  private async loadExistingAircraft() {
+    try {
+      this.loadingService.startLoadingTask();
+      this.existingAircraft = await firstValueFrom(
+        this.airlineFetchService.getAircraft(this.aircraftId!)
+      );
+      
+      // Set the tail number
+      this.tailNumber = this.existingAircraft.tail_number;
+      
+      // Find and set the aircraft model
+      const aircraftModel = this.aircrafts.find(
+        ac => ac.id === this.existingAircraft!.aircraft.id
+      );
+      if (aircraftModel) {
+        this.selectedAircraftModel.set(aircraftModel);
+        
+        // Build seats matrix with existing seat assignments
+        this.seatsMatrix = this.buildSeatsMatrixFromExisting(
+          aircraftModel,
+          this.existingAircraft
+        );
+      }
+    } catch (error) {
+      console.error('Error loading existing aircraft:', error);
+    } finally {
+      this.loadingService.endLoadingTask();
+    }
+  }
+
+  private buildSeatsMatrixFromExisting(
+    aircraftModel: IAircraft,
+    existingAircraft: IAirlineAircraft
+  ): SeatClass[][] {
+    // Start with base matrix
+    const matrix = this.buildSeatsMatrix(
+      aircraftModel.rows,
+      aircraftModel.unavailable_seats
+    );
+
+    // Assign existing seats
+    existingAircraft.first_class_seats.forEach(seat => {
+      const { row, col } = this.convertSeatNameToRowCol(seat);
+      if (row >= 0 && row < matrix.length && col >= 0 && col < matrix[row].length) {
+        matrix[row][col] = SeatClass.FIRST;
+      }
     });
+
+    existingAircraft.business_class_seats.forEach(seat => {
+      const { row, col } = this.convertSeatNameToRowCol(seat);
+      if (row >= 0 && row < matrix.length && col >= 0 && col < matrix[row].length) {
+        matrix[row][col] = SeatClass.BUSINESS;
+      }
+    });
+
+    existingAircraft.economy_class_seats.forEach(seat => {
+      const { row, col } = this.convertSeatNameToRowCol(seat);
+      if (row >= 0 && row < matrix.length && col >= 0 && col < matrix[row].length) {
+        matrix[row][col] = SeatClass.ECONOMY;
+      }
+    });
+
+    return matrix;
   }
 
   protected async fetchAircrafts() {
@@ -217,39 +298,55 @@ export class AircraftAddComponent {
   protected async onSubmit() {
     this.isLoading = true;
     try {
-      await firstValueFrom(
-        this.airlineFetchService.addAircraft({
-          aircraft_id: this.selectedAircraftModel()!.id,
-          first_class_seats: this.seatsMatrix.flatMap((row, rowIndex) =>
-            row
-              .map((seat, colIndex) =>
-                seat === SeatClass.FIRST
-                  ? this.convertRowColToSeatName(rowIndex, colIndex)
-                  : null
-              )
-              .filter(Boolean)
-          ) as string[],
-          business_class_seats: this.seatsMatrix.flatMap((row, rowIndex) =>
-            row
-              .map((seat, colIndex) =>
-                seat === SeatClass.BUSINESS
-                  ? this.convertRowColToSeatName(rowIndex, colIndex)
-                  : null
-              )
-              .filter(Boolean)
-          ) as string[],
-          economy_class_seats: this.seatsMatrix.flatMap((row, rowIndex) =>
-            row
-              .map((seat, colIndex) =>
-                seat === SeatClass.ECONOMY
-                  ? this.convertRowColToSeatName(rowIndex, colIndex)
-                  : null
-              )
-              .filter(Boolean)
-          ) as string[],
-          tail_number: this.tailNumber,
-        })
-      );
+      const seatsData = {
+        first_class_seats: this.seatsMatrix.flatMap((row, rowIndex) =>
+          row
+            .map((seat, colIndex) =>
+              seat === SeatClass.FIRST
+                ? this.convertRowColToSeatName(rowIndex, colIndex)
+                : null
+            )
+            .filter(Boolean)
+        ) as string[],
+        business_class_seats: this.seatsMatrix.flatMap((row, rowIndex) =>
+          row
+            .map((seat, colIndex) =>
+              seat === SeatClass.BUSINESS
+                ? this.convertRowColToSeatName(rowIndex, colIndex)
+                : null
+            )
+            .filter(Boolean)
+        ) as string[],
+        economy_class_seats: this.seatsMatrix.flatMap((row, rowIndex) =>
+          row
+            .map((seat, colIndex) =>
+              seat === SeatClass.ECONOMY
+                ? this.convertRowColToSeatName(rowIndex, colIndex)
+                : null
+            )
+            .filter(Boolean)
+        ) as string[],
+        tail_number: this.tailNumber,
+      };
+
+      if (this.isEditMode && this.aircraftId) {
+        // Update existing aircraft
+        await firstValueFrom(
+          this.airlineFetchService.updateAircraft(this.aircraftId, {
+            aircraft_id: this.selectedAircraftModel()!.id,
+            ...seatsData
+          })
+        );
+      } else {
+        // Add new aircraft
+        await firstValueFrom(
+          this.airlineFetchService.addAircraft({
+            aircraft_id: this.selectedAircraftModel()!.id,
+            ...seatsData
+          })
+        );
+      }
+      
       this.router.navigate(['/aircraft']);
     } catch (error) {
       console.error(error);

@@ -1,3 +1,7 @@
+<div class="flex w-full justify-center mb-16 text-3xl font-bold">
+  {{ isEditMode ? 'Edit Aircraft' : 'Add Aircraft' }}
+</div>
+
 <div class="flex justify-center w-full">
   <div class="flex max-w-4xl space-x-12">
     <div class="flex w-[500px]">
@@ -131,8 +135,9 @@
         <div class="flex items-center justify-center">
           <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
         </div>
+      } @else {
+        {{ isEditMode ? 'Update Aircraft' : 'Confirm seats' }}
       }
-        Confirm seats
       
     </button>
   </div>

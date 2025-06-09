@@ -1,4 +1,6 @@
-<div class="flex w-full justify-center mb-16 text-3xl font-bold ">Add Route</div>
+<div class="flex w-full justify-center mb-16 text-3xl font-bold">
+  {{ isEditMode ? 'Edit Route' : 'Add Route' }}
+</div>
 
 <div class="flex w-full justify-center">
 
@@ -67,7 +69,15 @@
       <input hlmInput id="flightNumber" type="text" class="mt-1 w-full bg-white" [(ngModel)]="flightNumber" />
     </div>
     <div class="flex w-full justify-center">
-      <button hlmBtn class="bg-black text-white px-10 mt-4" (click)="onSubmit()" [disabled]="!departureAirport || !arrivalAirport || !periodStart || !periodEnd || !flightNumber">+ Add Route</button>
+      <button hlmBtn class="bg-black text-white px-10 mt-4" (click)="onSubmit()" [disabled]="!departureAirport || !arrivalAirport || !periodStart || !periodEnd || !flightNumber || isLoading">
+        @if(isLoading) {
+          <div class="flex items-center justify-center">
+            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+          </div>
+        } @else {
+          {{ isEditMode ? '+ Update Route' : '+ Add Route' }}
+        }
+      </button>
     </div>
   </div>
 </div>
