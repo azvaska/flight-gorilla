@@ -12,3 +12,10 @@ class Airport(db.Model):
     city_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(City.id), nullable=False)
 
     city: Mapped[City] = relationship(City, back_populates="airports", foreign_keys=[city_id])
+    
+    __table_args__ = (
+        # For location searches and filtering
+        db.Index('ix_airport_city', 'city_id'),
+        db.Index('idx_airport_name_trgm', 'name', postgresql_using='gin', postgresql_ops={'name': 'gin_trgm_ops'}),
+        db.Index('ix_airport_codes', 'iata_code', 'icao_code'),
+    )

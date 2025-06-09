@@ -28,6 +28,16 @@ class Route(db.Model):
     airline: Mapped[Airline] = relationship(Airline, back_populates='routes', foreign_keys=[airline_id], lazy='joined')
     flights: Mapped[List['Flight']] = relationship('Flight', back_populates='route', cascade='all, delete-orphan')
     __table_args__ = (
+        # For route-based searches
+        db.Index('ix_route_airline', 'airline_id'),
+        db.Index('ix_route_departure_airport', 'departure_airport_id'),
+        db.Index('ix_route_arrival_airport', 'arrival_airport_id'),
+
+        # For period filtering
+        db.Index('ix_route_period', 'period_start', 'period_end'),
+        
+        
+        # Existing constraints...
         db.CheckConstraint('period_start <= period_end', name='ck_route_period'),
         #check that departure and arrival airports are not the same
         db.CheckConstraint('departure_airport_id != arrival_airport_id', name='ck_route_different_airports'),
@@ -67,6 +77,18 @@ class Flight(db.Model):
 
     departure_bookings = relationship("BookingDepartureFlight", back_populates="flight")
     return_bookings = relationship("BookingReturnFlight", back_populates="flight")
+
+    __table_args__ = (
+        # For flight search queries - most important
+        db.Index('ix_flight_departure_time', 'departure_time'),
+        db.Index('ix_flight_route_departure', 'route_id', 'departure_time'),
+        db.Index('ix_flight_search_composite', 'route_id', 'departure_time', 'fully_booked'),
+        db.Index('ix_flight_fully_booked', 'fully_booked'),
+        # For price filtering
+        db.Index('ix_flight_prices', 'price_economy_class', 'price_business_class', 'price_first_class'),
+        # Existing constraints...
+    )
+
 
     @property
     def departure_airport(self):
@@ -127,4 +149,7 @@ class FlightExtra(db.Model):
     extra: Mapped[Extra] = relationship(Extra, back_populates='flight_extras', lazy='joined')
     
     #i want flight and extra_id to be unique together
-    __table_args__ = (db.UniqueConstraint('flight_id', 'extra_id', name='uq_flight_extra'),)
+    __table_args__ = (
+        db.Index('ix_flight_extra_flight', 'flight_id'),
+        db.Index('ix_flight_extra_extra', 'extra_id'),
+        db.UniqueConstraint('flight_id', 'extra_id', name='uq_flight_extra'),)

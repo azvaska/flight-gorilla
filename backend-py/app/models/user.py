@@ -34,6 +34,14 @@ class User(sqla.FsUserMixin,db.Model):
     bookings: Mapped[List['Booking']] = relationship('Booking', back_populates='user', cascade='all, delete-orphan')
     cards: Mapped[List['PayementCard']] = relationship('PayementCard', back_populates='user', cascade='all, delete-orphan')
 
+    __table_args__ = (
+        # For authentication and user lookups
+        db.Index('ix_user_email', 'email'),
+        db.Index('ix_user_active', 'active'),
+
+    )
+
+
     @property
     def type(self):
         return self.roles[0].name
@@ -50,3 +58,6 @@ class PayementCard(db.Model):
     card_type: Mapped[CardType] = mapped_column(db.Enum(CardType), nullable=False)
 
     user: Mapped[User] = relationship(User, back_populates='cards', foreign_keys=[user_id], lazy='joined')
+    __table_args__ = (
+        db.Index('ix_payment_card_user', 'user_id'),
+    )

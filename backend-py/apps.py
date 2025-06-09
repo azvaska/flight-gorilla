@@ -49,6 +49,12 @@ with app_flask.app_context():
     user_datastore = SQLAlchemySessionUserDatastore(db_session, User, Role)
     security = Security(app_flask, user_datastore,register_blueprint=False)
     # Create the database tables
+    try:
+        with db.engine.begin() as conn:
+            conn.execute(text('CREATE EXTENSION IF NOT EXISTS pg_trgm'))
+    except Exception as e:
+        print(f"Extension already exists or error: {e}")
+
     db.metadata.create_all(bind=db_session.bind, checkfirst=True)
     
 

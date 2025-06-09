@@ -17,7 +17,10 @@ class SeatSession(db.Model):
     session_end_time: Mapped[datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
     user: Mapped[User] = relationship(User, foreign_keys=[user_id], lazy='joined')
     seats : Mapped[List['Seat']] = relationship('Seat', back_populates='session', cascade='all, delete-orphan')
-
+    __table_args__ = (
+        db.Index('ix_seat_session_cleanup', 'session_end_time'), 
+        db.Index('ix_seat_session_user', 'user_id'),  
+    )
 
 class Seat(db.Model):
     session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(SeatSession.id),primary_key=True)
@@ -28,6 +31,7 @@ class Seat(db.Model):
     class_type: Mapped[ClassType] = mapped_column(db.Enum(ClassType), nullable=False)
 
     __table_args__ = (
+        db.Index('ix_seat_flight_session', 'flight_id', 'session_id'), 
         UniqueConstraint('flight_id', 'seat_number', name='uix_flight_seat'),
     )
 
