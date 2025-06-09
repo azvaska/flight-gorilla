@@ -1,7 +1,9 @@
 import datetime
 import uuid
 
-from app.models import Aircraft
+import networkx as nx
+
+from app.models import Aircraft, Nation, City
 from app.models.airlines import Airline, AirlineAircraft
 from app.models.airport import Airport
 from app.models.flight import Flight, Route
@@ -234,6 +236,39 @@ class SearchFlight:
         return flight_query
 
 
+def build_graph(session):
+    G = nx.DiGraph()
+    for f in session.query(Flight).join(Route).all():
+        origin = f.route.departure_airport_id
+        dest   = f.route.arrival_airport_id
+        G.add_edge(origin, dest, weight=f.price_economy_class, flight_id=f.id)
+    for a in session.query(Airport).all():
+        G.add_node(a.id, name=a.iata_code, city_id=a.city_id, nation_id=a.city.nation_id)
+    return G
+
+
+def cheapest_per_nation(session, G, origin_airport_id,max_transfers=3):
+    # calcolo distanza minima da origin a tutti gli aeroporti
+    lengths, paths = nx.single_source_dijkstra(G, origin_airport_id, weight="weight")
+    # raggruppa per nazione
+    result = {}
+    for airport_id, price in lengths.items():
+        nation = (session.query(Nation)
+                  .join(City).join(Airport)
+                  .filter(Airport.id == airport_id)
+                  .one())
+        nid = nation.id
+        if nid not in result or price < result[nid]["min_price"]:
+            result[nid] = {
+                "nation_name": nation.name,
+                "airport_id": airport_id,
+                "min_price": price,
+                "path_flights": paths[airport_id]
+            }
+    return result
+
+
+
 def filter_journeys(unfiltered_journeys, args):
     """Filter journeys based on provided arguments"""
     filtered_journeys = []
@@ -275,6 +310,58 @@ def sort_journeys(unfiltered_journeys, args):
 
     return unfiltered_journeys
 
+def get_airports(args):
+    errors = None
+    if args['departure_type'] == 'airport':
+        if not args['departure_id']:
+            errors=({'error': 'Departure airport ID is required', 'code': 400}, 400)
+        departure_airports = Airport.query.filter_by(id=args['departure_id']).all()
+    else:
+        if not args['departure_id']:
+            errors=({'error': 'Departure city ID is required', 'code': 400}, 400)
+        departure_airports = Airport.query.filter_by(city_id=args['departure_id']).all()
+
+    if args['arrival_type'] == 'airport':
+        if not args['arrival_id']:
+            errors=({'error': 'Arrival airport ID is required', 'code': 400}, 400)
+        arrival_airports = Airport.query.filter_by(id=args['arrival_id']).all()
+    else:
+        if not args['arrival_id']:
+            errors=({'error': 'Arrival city ID is required', 'code': 400}, 400)
+        arrival_airports = Airport.query.filter_by(city_id=args['arrival_id']).all()
+
+    if not departure_airports or not arrival_airports:
+        errors=({'error': 'No valid departure or arrival airports found', 'code': 400}, 400)
+    return departure_airports, arrival_airports , errors
+
+def lowest_price_multiple_dates(departure_date_range,departure_airports,arrival_airports,args):
+    departure_journeys = []
+    for date in departure_date_range:
+        journey_departure = []
+        for departure_airport in departure_airports:
+            for arrival_airport in arrival_airports:
+                # Generate journeys for each departure and arrival airport
+                departure_results = generate_journey(
+                    departure_airport,
+                    arrival_airport,
+                    date,
+                    max_transfers=args['max_transfers'],
+                    args=args
+                )
+                journey_departure.extend(departure_results)
+
+        journey_departure = sort_journeys(journey_departure, args)
+
+        # Get the best price for each day
+        best_price = journey_departure[0] if journey_departure else None
+        if best_price:
+            filtered = filter_journeys(journey_departure, args)
+            if filtered:
+                best_price = filtered[0]
+            departure_journeys.append(best_price['price_economy'])
+        else:
+            departure_journeys.append(None)
+    return departure_journeys
 
 def generate_journey(departure_airport, arrival_airport, departure_date, max_transfers=3,
                      min_transfer_time=120, args=None):

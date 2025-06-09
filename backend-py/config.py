@@ -44,6 +44,14 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=120)  # 2 hours
     JWT_TOKEN_LOCATION = ['headers']  # Allow tokens in headers and cookies
 
+    MAIL_SERVER = 'smtp.example.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USE_SSL = False
+    MAIL_USERNAME = 'your_email@example.com'
+    MAIL_PASSWORD = 'your_password'
+    MAIL_DEFAULT_SENDER = ('Your Name', 'your_email@example.com')
+
     # Optional for logging/debugging
     DEBUG = os.environ.get("FLASK_DEBUG", "0") == "1"
     TESTING = os.environ.get("FLASK_TESTING", "0") == "1"
