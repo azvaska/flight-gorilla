@@ -550,12 +550,12 @@ class MyAirlineFlightsList(Resource):
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
-    @api.response(200, 'OK', [flight_model_seats_output])
+    @api.response(200, 'OK', [flight_model_output])
     @api.response(404, 'Not Found')
     def get(self, airline_id):
         """Get all flights for the current airline"""
         flights = Flight.query.join(Flight.route).filter(Route.airline_id == airline_id).all()
-        return marshal([flight_schema.dump(flight) for flight in flights], flight_model_seats_output), 200
+        return marshal([flight_schema.dump(flight) for flight in flights], flight_model_output), 200
 
     @api.expect(flight_model_input)
     @jwt_required()
@@ -603,7 +603,7 @@ class MyAirlineFlightResource(Resource):
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
-    @api.response(200, 'OK', flight_model_output_seats)
+    @api.response(200, 'OK', flight_model_seats_output)
     @api.response(404, 'Not Found')
     @api.response(403, 'Forbidden')
     def get(self, flight_id, airline_id):
@@ -613,7 +613,7 @@ class MyAirlineFlightResource(Resource):
             Route.airline_id == airline_id
         ).first_or_404()
         
-        return marshal(flight_schema.dump(flight), flight_model_output_seats), 200
+        return marshal(flight_schema.dump(flight), flight_model_seats_output), 200
 
     @jwt_required()
     @roles_required('airline-admin')
