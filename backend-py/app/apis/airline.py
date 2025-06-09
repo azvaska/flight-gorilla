@@ -121,6 +121,38 @@ flight_model_output = api.model('AirlineFlightOutput', {
     'boarding_end_time': fields.DateTime(required=True, description='Boarding end time'),
 })
 
+seats_info_model = api.model('SeatsInfo', {
+    'first_class_seats': fields.List(fields.String, description='First class seats'),
+    'business_class_seats': fields.List(fields.String, description='Business class seats'),
+    'economy_class_seats': fields.List(fields.String, description='Economy class seats'),
+    'booked_seats': fields.List(fields.String, description='Booked seats'),
+})
+
+
+flight_model_seats_output = api.model('AirlineFlightSeatsOutput', {
+    'id': fields.String(readonly=True, description='Flight ID'),
+    'flight_number': fields.String(required=True, description='Flight number'),
+    'aircraft': fields.Nested(airline_aircraft_model, description='Aircraft'),
+    'route_id': fields.String(readonly=True, description='Route ID'),
+    "seats_info": fields.Nested(seats_info_model, description='Seats information'),
+    'departure_time': fields.DateTime(required=True, description='Departure time'),
+    'arrival_time': fields.DateTime(required=True, description='Arrival time'),
+    'departure_airport': fields.Nested(airport_model, description='Departure Airport'),
+    'arrival_airport': fields.Nested(airport_model, description='Arrival Airport'),
+    'price_first_class': fields.Float(required=True, description='First class price'),
+    'price_business_class': fields.Float(required=True, description='Business class price'),
+    'price_economy_class': fields.Float(required=True, description='Economy class price'),
+    'price_insurance': fields.Float(required=True, description='Insurance price'),
+    'gate': fields.String(required=True, description='Gate'),
+    'terminal': fields.String(required=True, description='Terminal'),
+    'checkin_start_time': fields.DateTime(required=True, description='Checkin start time'),
+    'checkin_end_time': fields.DateTime(required=True, description='Checkin end time'),
+    'boarding_start_time': fields.DateTime(required=True, description='Boarding start time'),
+    'boarding_end_time': fields.DateTime(required=True, description='Boarding end time'),
+})
+
+
+
 extra_flight_model = api.model('FlightExtra', {
     'id': fields.String(readonly=True, description='Flight Extra ID'),
     'name': fields.String(readonly=True,required=True, description='Name of the extra'),
@@ -203,7 +235,7 @@ class AirlineResource(Resource):
         return marshal(airline_schema.dump(airline),airline_model), 200
 
     @jwt_required()
-    @roles_required(['admin', 'airline-admin'])
+    @roles_required(['airline-admin'])
     @api.expect(airline_put_model)
     @api.response(200, 'OK', airline_model)
     def put(self, airline_id):
@@ -218,7 +250,7 @@ class AirlineResource(Resource):
 
 
         # Check if the user is an airline admin and if they are trying to update their own airline
-        if user.has_role('airline-admin') and user.airline_id != airline_id:
+        if user.airline_id != airline_id:
             return {'error': 'You do not have permission to update this airline', 'code': 403}, 403
 
 
@@ -232,17 +264,7 @@ class AirlineResource(Resource):
         db.session.commit()
         return marshal(airline_schema.dump(airline),airline_model), 200
 
-    @jwt_required()
-    @roles_required('admin')
-    @api.response(200, 'OK')
-    @api.response(404, 'Not Found')
-    def delete(self, airline_id):
-        """Delete an airline given its identifier"""
-        airline = Airline.query.get_or_404(airline_id)
-        db.session.delete(airline)
-        db.session.commit()
 
-        return {'message': 'Ok'}, 200
 
 @api.route('/extras')
 class MyAirlineExtrasList(Resource):
@@ -528,12 +550,12 @@ class MyAirlineFlightsList(Resource):
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
-    @api.response(200, 'OK', [flight_model_output])
+    @api.response(200, 'OK', [flight_model_seats_output])
     @api.response(404, 'Not Found')
     def get(self, airline_id):
         """Get all flights for the current airline"""
         flights = Flight.query.join(Flight.route).filter(Route.airline_id == airline_id).all()
-        return marshal([flight_schema.dump(flight) for flight in flights], flight_model_output), 200
+        return marshal([flight_schema.dump(flight) for flight in flights], flight_model_seats_output), 200
 
     @api.expect(flight_model_input)
     @jwt_required()
@@ -581,7 +603,7 @@ class MyAirlineFlightResource(Resource):
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
-    @api.response(200, 'OK', flight_model_output)
+    @api.response(200, 'OK', flight_model_output_seats)
     @api.response(404, 'Not Found')
     @api.response(403, 'Forbidden')
     def get(self, flight_id, airline_id):
@@ -591,7 +613,7 @@ class MyAirlineFlightResource(Resource):
             Route.airline_id == airline_id
         ).first_or_404()
         
-        return marshal(flight_schema.dump(flight), flight_model_output), 200
+        return marshal(flight_schema.dump(flight), flight_model_output_seats), 200
 
     @jwt_required()
     @roles_required('airline-admin')

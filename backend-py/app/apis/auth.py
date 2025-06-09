@@ -8,6 +8,7 @@ from flask_security import hash_password
 from sqlalchemy.exc import IntegrityError
 
 from app.apis.utils import generate_secure_password
+from app.core.auth import roles_required
 from app.models.airlines import Airline
 from app.models.user import User
 from flask_login import login_user
@@ -197,7 +198,7 @@ class Register(Resource):
 @api.route('/register_airline')
 class AirlineRegister(Resource):
     @api.expect(airline_register_model)
-    @api.doc(security=None)
+    @roles_required('admin')
     @api.response(201, 'Created')
     @api.response(400, 'Bad Request')
     @api.response(500, 'Internal Server Error')
@@ -235,7 +236,10 @@ class AirlineRegister(Resource):
                 db.add(user)
                 db.commit()
 
-                return {'message': 'Airline registered successfully'}, 201
+                return {'message': 'Airline registered successfully','credentials':{
+                    'email': user.email,
+                    'password': tmp_passwd,
+                }}, 201
         except IntegrityError as e:
             db.rollback()
             # Check if it's specifically a unique constraint violation

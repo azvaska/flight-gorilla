@@ -88,6 +88,8 @@ class BookingDepartureFlight(db.Model):
     _table_args = (
         db.UniqueConstraint('flight_id', 'seat_number', name='uq_booking_departure_flight')
     )
+    #create nigger for booking departure flight
+
 
 class BookingReturnFlight(db.Model):
     booking_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Booking.id), nullable=False, primary_key=True)

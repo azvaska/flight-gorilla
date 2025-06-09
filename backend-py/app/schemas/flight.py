@@ -1,3 +1,4 @@
+from attr import attributes
 from marshmallow import validates_schema, ValidationError
 from app.extensions import ma
 from app.models.flight import Flight, Route, FlightExtra
@@ -18,6 +19,7 @@ class FlightSchema(ma.SQLAlchemyAutoSchema):
     arrival_airport = ma.Nested(AirportSchema, dump_only=True)
     flight_number = ma.String(dump_only=True)
     aircraft = ma.Nested(AirlineAircraftSchema, dump_only=True)
+    seats = ma.Dict(attribute="seats_info",dump_only=True)
     checkin_start_time = ma.DateTime(required=False)
     checkin_end_time = ma.DateTime(required=False)
     boarding_start_time = ma.DateTime(required=False)
@@ -71,7 +73,6 @@ class FlightExtraSchema(ma.SQLAlchemyAutoSchema):
     description = ma.String(attribute="extra.description",dump_only=True)
     stackable = ma.Boolean(attribute="extra.stackable",dump_only=True)
     required_on_all_segments = ma.Boolean(attribute="extra.required_on_all_segments",dump_only=True)
-
 
 
 

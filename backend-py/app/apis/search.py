@@ -1,10 +1,17 @@
 
+from collections import defaultdict, deque
 from flask_restx import Namespace, Resource, fields, reqparse, marshal
 import datetime
 import uuid
 
-from app.apis.search_utils import generate_journey, filter_journeys, sort_journeys
+from sqlalchemy.orm import joinedload
+
+from app.apis.search_utils import generate_journey, filter_journeys, sort_journeys, get_airports, \
+    lowest_price_multiple_dates, cheapest_per_nation, build_graph
+from app.extensions import db
+from app.models import Flight
 from app.models.airport import Airport
+from app.models.flight import Route
 
 api = Namespace('search', description='Flight search operations')
 import math
@@ -132,30 +139,11 @@ class FlightSearch(Resource):
 
         # Get airports
         unfiltered_departure_journeys = []
-        
-        if args['departure_type'] == 'airport':
-            if not args['departure_id']:
-                return {'error': 'Departure airport ID is required', 'code': 400}, 400
-            departure_airports = Airport.query.filter_by(id=args['departure_id']).all()
-        else:
-            if not args['departure_id']:
-                return {'error': 'Departure city ID is required', 'code': 400}, 400
-            departure_airports = Airport.query.filter_by(city_id=args['departure_id']).all()
-        
-        if args['arrival_type'] == 'airport':
-            if not args['arrival_id']:
-                return {'error': 'Arrival airport ID is required', 'code': 400}, 400
-            arrival_airports = Airport.query.filter_by(id=args['arrival_id']).all()
-        else:
-            if not args['arrival_id']:
-                return {'error': 'Arrival city ID is required', 'code': 400}, 400
-            arrival_airports = Airport.query.filter_by(city_id=args['arrival_id']).all()
 
-        if not departure_airports or not arrival_airports:
-            return {'error': 'No valid departure or arrival airports found', 'code': 400}, 400
-            
-            
-        
+        departure_airports, arrival_airports ,error = get_airports(args)
+        if error:
+            return error
+
         for departure_airport in departure_airports:
             for arrival_airport in arrival_airports:
 
@@ -200,12 +188,12 @@ class FlightSearch(Resource):
         return marshal({'journeys':departure_journeys,'total_pages':math.ceil(original_len/args['limit'])},search_output_model), 200 #flight_search_result_schema.dump(results)
 
 
-
 @api.route('/flexible-dates')
 class FlexibleFlightSearch(Resource):
     
     def _calculate_dates(self,date):
         """Calculate the start and end dates for a given month"""
+
         start_date = datetime.date(date.year, date.month, 1)
         if date.month == 12:
             end_date = datetime.date(date.year + 1, 1, 1) - datetime.timedelta(days=1)
@@ -226,65 +214,33 @@ class FlexibleFlightSearch(Resource):
         args = flexible_date_search_parser.parse_args()
 
         # Parse and validate date
+        departure_journeys =[]
         try:
             departure_date = datetime.datetime.strptime(args['departure_date'], '%m-%Y').date()
         except ValueError:
             return {'error': 'Invalid departure date format. Use MM', 'code': 400}, 400
 
         # Get airports
-        departure_journeys = []
-        
-        if args['departure_type'] == 'airport':
-            if not args['departure_id']:
-                return {'error': 'Departure airport ID is required', 'code': 400}, 400
-            departure_airports = Airport.query.filter_by(id=args['departure_id']).all()
-        else:
-            if not args['departure_id']:
-                return {'error': 'Departure city ID is required', 'code': 400}, 400
-            departure_airports = Airport.query.filter_by(city_id=args['departure_id']).all()
-        
-        if args['arrival_type'] == 'airport':
-            if not args['arrival_id']:
-                return {'error': 'Arrival airport ID is required', 'code': 400}, 400
-            arrival_airports = Airport.query.filter_by(id=args['arrival_id']).all()
-        else:
-            if not args['arrival_id']:
-                return {'error': 'Arrival city ID is required', 'code': 400}, 400
-            arrival_airports = Airport.query.filter_by(city_id=args['arrival_id']).all()
-
-        if not departure_airports or not arrival_airports:
-            return {'error': 'No valid departure or arrival airports found', 'code': 400}, 400
+        departure_airports, arrival_airports ,error = get_airports(args)
+        if error:
+            return error
             
             
         departure_date_range = self._calculate_dates(departure_date)
+        today_d = datetime.date.today()
+        if departure_date.month == today_d.month and departure_date.year == today_d.year:
+            # If the month is the current month, filter out past dates
+            departure_date_range = departure_date_range[today_d.day:]
+            #add None as many as the number of days in the month skipped
+            departure_journeys = [None] * today_d.day
 
-
-        result  = []
         # for each day in the range of dates, generate journeys
-        for date in departure_date_range:
-            journey_departure = []
-            for departure_airport in departure_airports:
-                for arrival_airport in arrival_airports:
+        departure_journeys.extend(lowest_price_multiple_dates(
+            departure_date_range,
+            departure_airports,
+            arrival_airports,
+            args
+        ))
 
-                    # Generate journeys for each departure and arrival airport
-                    departure_results = generate_journey(
-                        departure_airport,
-                        arrival_airport,
-                        date,
-                        max_transfers=args['max_transfers'],
-                        args=args
-                    )
-                    journey_departure.extend(departure_results)
-                    
 
-            journey_departure = sort_journeys(journey_departure,args)
-            
-            # Get the best price for each day
-            best_price = journey_departure[0] if journey_departure else None
-            if best_price:
-                departure_journeys.append(best_price['price_economy'])
-            else:
-                departure_journeys.append(None)
-
-        filtered = filter_journeys(departure_journeys, args)
-        return filtered, 200
+        return departure_journeys, 200
