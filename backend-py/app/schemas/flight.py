@@ -19,7 +19,7 @@ class FlightSchema(ma.SQLAlchemyAutoSchema):
     arrival_airport = ma.Nested(AirportSchema, dump_only=True)
     flight_number = ma.String(dump_only=True)
     aircraft = ma.Nested(AirlineAircraftSchema, dump_only=True)
-    seats = ma.Dict(attribute="seats_info",dump_only=True)
+    booked_seats = ma.List(ma.String(), attribute="booked_seats", dump_only=True)
     checkin_start_time = ma.DateTime(required=False)
     checkin_end_time = ma.DateTime(required=False)
     boarding_start_time = ma.DateTime(required=False)

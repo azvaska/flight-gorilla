@@ -134,7 +134,7 @@ flight_model_seats_output = api.model('AirlineFlightSeatsOutput', {
     'flight_number': fields.String(required=True, description='Flight number'),
     'aircraft': fields.Nested(airline_aircraft_model, description='Aircraft'),
     'route_id': fields.String(readonly=True, description='Route ID'),
-    "seats_info": fields.Nested(seats_info_model, description='Seats information'),
+    'booked_seats': fields.List(fields.String, description='List of booked seats'),
     'departure_time': fields.DateTime(required=True, description='Departure time'),
     'arrival_time': fields.DateTime(required=True, description='Arrival time'),
     'departure_airport': fields.Nested(airport_model, description='Departure Airport'),
