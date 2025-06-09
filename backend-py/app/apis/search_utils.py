@@ -1,8 +1,6 @@
 import datetime
 import uuid
 
-import networkx as nx
-
 from app.models import Aircraft, Nation, City
 from app.models.airlines import Airline, AirlineAircraft
 from app.models.airport import Airport
@@ -234,39 +232,6 @@ class SearchFlight:
             flight_query = flight_query.filter(Flight.price_economy_class <= args['price_max'])
 
         return flight_query
-
-
-def build_graph(session):
-    G = nx.DiGraph()
-    for f in session.query(Flight).join(Route).all():
-        origin = f.route.departure_airport_id
-        dest   = f.route.arrival_airport_id
-        G.add_edge(origin, dest, weight=f.price_economy_class, flight_id=f.id)
-    for a in session.query(Airport).all():
-        G.add_node(a.id, name=a.iata_code, city_id=a.city_id, nation_id=a.city.nation_id)
-    return G
-
-
-def cheapest_per_nation(session, G, origin_airport_id,max_transfers=3):
-    # calcolo distanza minima da origin a tutti gli aeroporti
-    lengths, paths = nx.single_source_dijkstra(G, origin_airport_id, weight="weight")
-    # raggruppa per nazione
-    result = {}
-    for airport_id, price in lengths.items():
-        nation = (session.query(Nation)
-                  .join(City).join(Airport)
-                  .filter(Airport.id == airport_id)
-                  .one())
-        nid = nation.id
-        if nid not in result or price < result[nid]["min_price"]:
-            result[nid] = {
-                "nation_name": nation.name,
-                "airport_id": airport_id,
-                "min_price": price,
-                "path_flights": paths[airport_id]
-            }
-    return result
-
 
 
 def filter_journeys(unfiltered_journeys, args):

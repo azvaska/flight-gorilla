@@ -7,7 +7,7 @@ import uuid
 from sqlalchemy.orm import joinedload
 
 from app.apis.search_utils import generate_journey, filter_journeys, sort_journeys, get_airports, \
-    lowest_price_multiple_dates, cheapest_per_nation, build_graph
+    lowest_price_multiple_dates
 from app.extensions import db
 from app.models import Flight
 from app.models.airport import Airport
