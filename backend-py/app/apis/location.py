@@ -1,4 +1,3 @@
-from operator import or_
 from flask_restx import Namespace, Resource, fields, marshal, reqparse
 from sqlalchemy.orm import joinedload, noload
 from app.extensions import db
@@ -6,6 +5,8 @@ from app.models import Airport
 from app.models.location import City, Nation
 from app.schemas.location import nations_schema, cities_schema, nation_schema, city_schema
 from app.schemas.airport import airports_schema
+from sqlalchemy import text
+
 
 api = Namespace('location', description='Location related operations')
 
@@ -67,43 +68,60 @@ class LocationsList(Resource):
     @api.response(500, 'Internal Server Error')
     def get(self):
         args = location_parser.parse_args()
+        name_filter = args['name']
+        include_nations = args['include_nations']
 
         try:
-            """Returns a combined list of cities, nations, and airports."""
-            query = db.session.query(City).with_entities(City.id, City.name)
-            if args['name']:
-                query = query.filter(City.name.ilike(f"%{args['name']}%"))
-            cities = cities_schema.dump(query.all())
-            for c in cities:
-                c['type'] = 'city'
+            # Use SQLAlchemy's session.execute for raw SQL with parameters
+            # This allows us to use a single UNION query instead of multiple queries
+            sql_parts = []
+            params = {}
 
-            query = db.session.query(Airport).with_entities(Airport.id, Airport.name, Airport.iata_code)
-            if args['name']:
-                query = query.filter(
-                    or_(
-                        Airport.name.ilike(f"%{args['name']}%"),
-                        Airport.iata_code.ilike(f"%{args['name']}%")
-                    )
-                )
-            airports = airports_schema.dump(query.all())
-            for a in airports:
-                a['type'] = 'airport'
-                a['name'] = f"{a['name']} ({a['iata_code']})"
+            # Cities query
+            city_sql = """
+                       SELECT id, name, 'city' as type \
+                       FROM city
+                       WHERE (:name IS NULL OR name ILIKE :city_name) \
+                       """
+            params['name'] = name_filter
+            params['city_name'] = f"%{name_filter}%" if name_filter else None
+            sql_parts.append(city_sql)
 
-            if args['include_nations']:
-                query = db.session.query(Nation).with_entities(Nation.id, Nation.name)
-                if args['name']:
-                    query = query.filter(Nation.name.ilike(f"%{args['name']}%"))
-                nations = nations_schema.dump(query.all())
-                for n in nations:
-                    n['type'] = 'nation'
+            # Airports query
+            airport_sql = """
+                          SELECT id,
+                                 CONCAT(name, ' (', iata_code, ')') as name,
+                                 'airport'                          as type
+                          FROM airport
+                          WHERE (:name IS NULL OR name ILIKE :airport_name OR iata_code ILIKE :airport_code) \
+                          """
+            params['airport_name'] = f"%{name_filter}%" if name_filter else None
+            params['airport_code'] = f"%{name_filter}%" if name_filter else None
+            sql_parts.append(airport_sql)
 
-            combined = cities + airports
-            if args['include_nations']:
-                combined += nations
-            
+            # Nations query (only if requested)
+            if include_nations:
+                nation_sql = """
+                             SELECT id, name, 'nation' as type \
+                             FROM nation
+                             WHERE (:name IS NULL OR name ILIKE :nation_name) \
+                             """
+                params['nation_name'] = f"%{name_filter}%" if name_filter else None
+                sql_parts.append(nation_sql)
+
+            # Combine with UNION ALL and ORDER BY
+            complete_sql = " UNION ALL ".join(sql_parts) + " ORDER BY name"
+
+            # Execute the combined query
+            result = db.session.execute(text(complete_sql), params).fetchall()
+
+            # Convert to dictionary format
+            combined = [{"id": row[0], "name": row[1], "type": row[2]} for row in result]
+
             return marshal(combined, location_model), 200
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return {'error': str(e)}, 500
 
 @api.route('/city')
