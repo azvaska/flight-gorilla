@@ -612,8 +612,11 @@ class MyAirlineFlightResource(Resource):
             Flight.id == flight_id,
             Route.airline_id == airline_id
         ).first_or_404()
+
+        flight_dump = flight_schema.dump(flight)
+        flight_dump['booked_seats'] = flight.booked_seats
         
-        return marshal(flight_schema.dump(flight), flight_model_seats_output), 200
+        return marshal(flight_dump, flight_model_seats_output), 200
 
     @jwt_required()
     @roles_required('airline-admin')
