@@ -6,7 +6,7 @@
     {{ squareStyle }}
   "
   [ngClass]="{
-    'hover:scale-110': status !== SeatClass.UNAVAILABLE
+    'hover:scale-110': status !== SeatClass.UNAVAILABLE && isInteractible
   }"
   (click)="onclick()"
 ></div>

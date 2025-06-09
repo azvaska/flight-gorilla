@@ -119,33 +119,29 @@
         <div hlmCard class="w-full p-6">
           <div class="flex flex-col gap-6">
             <!-- Legend -->
-            <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="flex flex-row gap-4 justify-between">
               <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-gray-100 border border-gray-300 rounded"></div>
+                <div class="w-4 h-4 bg-red-300 border border-gray-300 rounded"></div>
                 <span class="text-gray-700">First Class</span>
               </div>
               <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-gray-200 border border-gray-400 rounded"></div>
+                <div class="w-4 h-4 bg-purple-300 border border-gray-400 rounded"></div>
                 <span class="text-gray-700">Business Class</span>
               </div>
               <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-gray-50 border border-gray-200 rounded"></div>
+                <div class="w-4 h-4 bg-green-300 border border-gray-200 rounded"></div>
                 <span class="text-gray-700">Economy Class</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-gray-400 border border-gray-500 rounded"></div>
-                <span class="text-gray-700">Unavailable</span>
               </div>
             </div>
 
             <!-- Seats Grid -->
-            <div class="border-t border-gray-200 pt-4">
+            <div class="border-t border-gray-200 pt-4 flex justify-center">
               @if (seatsMatrix.length > 0) {
               <app-seats-grid
                 [rows]="aircraft.aircraft.rows"
                 [seatsMatrix]="seatsMatrix"
                 [selectedClass]="SeatClass.UNASSIGNED"
-                (seatsMatrixChange)="onSeatsMatrixChange($event)"
+                [isInteractible]="false"
               ></app-seats-grid>
               }
             </div>

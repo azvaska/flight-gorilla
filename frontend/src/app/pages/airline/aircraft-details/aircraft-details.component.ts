@@ -9,7 +9,7 @@ import { AirlineFetchService } from '@/app/services/airline/airline-fetch.servic
 import { LoadingService } from '@/app/services/loading.service';
 import { IAirlineAircraft } from '@/types/airline/aircraft';
 import { firstValueFrom } from 'rxjs';
-import { SeatsGridComponent } from '@/app/pages/airline/aircraft-add/seats-grid/seats-grid.component';
+import { SeatsGridComponent } from '@/app/components/airline/seats-grid/seats-grid.component';
 import { SeatClass } from '@/app/pages/airline/aircraft-add/aircraft-add.component';
 
 @Component({
@@ -107,11 +107,6 @@ export class AircraftDetailsComponent implements OnInit {
     const row = parseInt(seatName.slice(0, -1), 10) - 1; // Convert seat row to index (1-based to 0-based)
     const col = seatName.slice(-1).toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0); // Convert column letter to index (A=0, B=1, ...)
     return { row, col };
-  }
-
-  // Dummy handler for seats grid - we don't want to modify seats in details view
-  protected onSeatsMatrixChange(matrix: SeatClass[][]) {
-    // Do nothing - this is a read-only view
   }
 
   protected readonly SeatClass = SeatClass;

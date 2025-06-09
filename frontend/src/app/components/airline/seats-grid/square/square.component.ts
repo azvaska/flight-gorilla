@@ -20,8 +20,10 @@ export class SquareComponent implements OnChanges {
   @Input() row: number = -1;
   @Input() column: number = -1;
 
+  @Input() isInteractible!: boolean;
+
   /** The seat’s current assignment/status (unassigned, economy, business, first, or unavailable) */
-  @Input() status: SeatClass = SeatClass.UNASSIGNED;
+  @Input() status: SeatClass | 'occupied' = SeatClass.UNASSIGNED;
 
   /** Emits whenever this square is clicked (unless UNAVAILABLE) */
   @Output() selected = new EventEmitter<{ row: number; col: number }>();
@@ -49,6 +51,8 @@ export class SquareComponent implements OnChanges {
         return 'bg-purple-300';
       case SeatClass.FIRST:
         return 'bg-red-300';
+      case 'occupied':
+        return 'bg-red-700';
       default:
         return '';
     }
@@ -56,7 +60,7 @@ export class SquareComponent implements OnChanges {
 
   onclick() {
     // Only emit if the seat is not "unavailable"
-    if (this.status !== SeatClass.UNAVAILABLE) {
+    if (this.status !== SeatClass.UNAVAILABLE && this.isInteractible) {
       this.selected.emit({ row: this.row, col: this.column });
     }
   }

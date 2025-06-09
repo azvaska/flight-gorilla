@@ -1,7 +1,8 @@
 import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges,} from '@angular/core';
 import {NgForOf, NgIf} from '@angular/common';
-import {SquareComponent} from '../seats-grid/square/square.component';
+import {SquareComponent} from './square/square.component';
 import {SeatClass} from '@/app/pages/airline/aircraft-add/aircraft-add.component';
+
 
 @Component({
   selector: 'app-seats-grid',
@@ -30,6 +31,12 @@ export class SeatsGridComponent implements OnChanges {
    * If null, clicks do nothing.
    */
   @Input({required: true}) selectedClass: SeatClass = SeatClass.ECONOMY;
+
+  /**
+   * Controls whether the grid is interactible or just for display.
+   * If false, no clicks are processed and the grid is read-only.
+   */ 
+  @Input() isInteractible: boolean = true;
 
   /** Helper array [0,1,2,…,rows−1] for the template */
   protected rowIndices: number[] = [];
@@ -68,7 +75,7 @@ export class SeatsGridComponent implements OnChanges {
    */
   selectedSeat(event: { row: number; col: number }) {
     const { row, col } = event;
-    if (this.selectedClass === null) {
+    if (this.selectedClass === null || !this.isInteractible) {
       // If parent hasn't chosen a class, we do nothing.
       return;
     }
@@ -86,7 +93,7 @@ export class SeatsGridComponent implements OnChanges {
 
   selectRow(row: number) {
     // Selects all seats in the given row, toggling them to the selected class
-    if (this.selectedClass === null) {
+    if (this.selectedClass === null || !this.isInteractible) {
       return; // If no class is selected, do nothing
     }
 

@@ -11,11 +11,18 @@
         <ng-container *ngFor="let ex of extras; let i = index">
           <hlm-trow>
             <hlm-th class="w-1/4 font-medium">{{ ex.name }}</hlm-th>
-            <hlm-th class="w-1/4 font-light text-sm">{{ ex.description }}</hlm-th>
+            <hlm-th class="w-1/4 font-light text-sm">{{
+              ex.description
+            }}</hlm-th>
             <hlm-th class="w-1/4 text-center">
-              <div class="inline-flex items-center px-2 py-1" [class.scale-75]="!ex.stackable">
+              <div
+                class="inline-flex items-center px-2 py-1"
+                [class.scale-75]="!ex.stackable"
+              >
                 <img
-                  [ngSrc]="ex.stackable ? '/assets/check.png' : '/assets/close.png'"
+                  [ngSrc]="
+                    ex.stackable ? '/assets/check.png' : '/assets/close.png'
+                  "
                   alt="Stackable"
                   class="h-3 w-3"
                   height="32"
@@ -24,15 +31,26 @@
               </div>
             </hlm-th>
             <hlm-th class="w-1/4 flex justify-end gap-2">
-              <app-popover [popoverRelativePosition]="{ top: 0, right: 0 }">
+              <app-popover
+                [popoverRelativePosition]="{ top: 0, right: 0 }"
+                #popover="appPopover"
+              >
                 <button type="button" variant="ghost" hlmBtn popover-trigger>
                   <ng-icon name="lucideEllipsis" class="h-5 w-5" />
                 </button>
                 <div popover-content class="p-1 flex flex-col gap-1">
                   <ul>
-                    <li class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer">Edit</li>
-                    <li class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer">Duplicate</li>
-                    <li class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer">Delete</li>
+                    <li
+                      class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
+                      (click)="openModalForEdit(i)"
+                    >
+                      Edit
+                    </li>
+                    <li
+                      class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
+                    >
+                      Delete
+                    </li>
                   </ul>
                 </div>
               </app-popover>
@@ -43,7 +61,11 @@
     </div>
   </div>
   <div class="flex w-full max-w-5xl justify-end">
-    <button hlmBtn class="bg-black text-white px-10 mt-2" (click)="openModalForNew()">
+    <button
+      hlmBtn
+      class="bg-black text-white px-10 mt-2"
+      (click)="openModalForNew()"
+    >
       + Add new extra
     </button>
   </div>
@@ -52,13 +74,18 @@
 <!-- Extras Modal -->
 <div
   class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 transition-opacity duration-300 opacity-0"
-  [ngClass]="{ '!opacity-100': showModal, 'opacity-0 pointer-events-none': !showModal }"
+  [ngClass]="{
+    '!opacity-100': showModal,
+    'opacity-0 pointer-events-none': !showModal
+  }"
 >
   <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 relative">
     <!-- Header -->
-    <div class="flex justify-between items-center border-b border-zinc-200 px-6 py-4">
+    <div
+      class="flex justify-between items-center border-b border-zinc-200 px-6 py-4"
+    >
       <h2 class="text-2xl font-semibold">
-        {{ editingIndex === null ? 'Add Extra' : 'Edit Extra' }}
+        {{ editingIndex === null ? "Add Extra" : "Edit Extra" }}
       </h2>
       <button
         (click)="closeModal()"
@@ -99,9 +126,13 @@
           class="mr-2"
         >
         </hlm-checkbox>
-        <label for="stackableCheckbox" class="select-none cursor-pointer"
-               (click)="editableExtra.stackable = !editableExtra.stackable">
-        Stackable</label>
+        <label
+          for="stackableCheckbox"
+          class="select-none cursor-pointer"
+          (click)="editableExtra.stackable = !editableExtra.stackable"
+        >
+          Stackable</label
+        >
       </div>
       <button
         hlmBtn

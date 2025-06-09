@@ -45,10 +45,14 @@
       <div
         class="
           w-6 text-[15px] text-gray-700 text-center mr-2 font-semibold border-transparent
-          transition-all duration-300 border-1 hover:border-black hover:scale-130
-          rounded-3xl cursor-pointer select-none
+          transition-all duration-300 border-1
+          rounded-3xl
         "
         (click)="selectRow(i)"
+        [class.cursor-pointer]="isInteractible"
+        [class.cursor-default]="!isInteractible"
+        [class.hover:border-black]="isInteractible"
+        [class.hover:scale-130]="isInteractible"
       >
         {{ i + 1 }}
       </div>
@@ -60,6 +64,7 @@
           [column]="j"
           [status]="seatsMatrix[i][j]"
           (selected)="selectedSeat($event)"
+          [isInteractible]="isInteractible"
         ></app-square>
         <!-- Insert spacer after the 3rd seat -->
         <div *ngIf="j === 2" class="w-4"></div>

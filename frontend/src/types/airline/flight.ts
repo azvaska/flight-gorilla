@@ -20,4 +20,5 @@ export interface IAirlineFlight {
   checkin_end_time: string;
   boarding_start_time: string;
   boarding_end_time: string;
+  booked_seats: string[];
 }

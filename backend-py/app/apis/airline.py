@@ -31,6 +31,14 @@ extra_model = api.model('Extra', {
     'stackable': fields.Boolean(default=False, description='Can be stacked with other extras')
 })
 
+airline_aircraft_input_model = api.model('AirlineAircraftInput', {
+    'aircraft_id': fields.Integer(required=True, description='Aircraft ID'),
+    'first_class_seats': fields.List(fields.String, description='First class seat numbers'),
+    'business_class_seats': fields.List(fields.String, description='Business class seat numbers'),
+    'economy_class_seats': fields.List(fields.String, description='Economy class seat numbers'),
+    'tail_number': fields.String(required=False, description='Aircraft tail number')
+})
+
 airline_aircraft_model = api.model('AirlineAircraft', {
     'id': fields.String(readonly=True, description='Airline Aircraft ID'),
     'aircraft': fields.Nested(aircraft_model, required=True, description='Aircraft'),
@@ -373,7 +381,7 @@ class MyAirlineAircraftList(Resource):
         aircraft = AirlineAircraft.query.filter_by(airline_id=airline_id).all()
         return marshal(airline_aircrafts_schema.dump(aircraft),airline_aircraft_model), 200
 
-    @api.expect(airline_aircraft_model)
+    @api.expect(airline_aircraft_input_model)
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()

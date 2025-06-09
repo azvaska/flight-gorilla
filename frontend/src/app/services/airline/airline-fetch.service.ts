@@ -23,10 +23,10 @@ export class AirlineFetchService {
   }
 
   public addAircraft(aircraft: {
-    aircraft_id: string;
-    first_class_seats: number;
-    business_class_seats: number;
-    economy_class_seats: number;
+    aircraft_id: number;
+    first_class_seats: string[];
+    business_class_seats: string[];
+    economy_class_seats: string[];
     tail_number: string;
   }): Observable<IAirlineAircraft> {
     return this.http.post<IAirlineAircraft>(
@@ -45,9 +45,9 @@ export class AirlineFetchService {
     aircraftId: string,
     aircraft: Partial<{
       aircraft_id: string;
-      first_class_seats: number;
-      business_class_seats: number;
-      economy_class_seats: number;
+      first_class_seats: string[];
+      business_class_seats: string[];
+      economy_class_seats: string[];
       tail_number: string;
     }>
   ): Observable<IAirlineAircraft> {
