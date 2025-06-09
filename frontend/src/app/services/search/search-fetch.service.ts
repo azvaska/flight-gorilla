@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin, map, Observable } from 'rxjs';
+import { filter, forkJoin, map, Observable } from 'rxjs';
 import { ICity, ILocation, INation } from '@/types/search/location';
 import { environment } from '@/app/environments/environment';
 import { IFlightSearchParams } from '@/types/search/params';
 import { IJourney } from '@/types/search/journey';
+import { IAirport } from '@/types/airport';
 
 @Injectable({ providedIn: 'root' })
 export class SearchFetchService {
@@ -78,15 +79,37 @@ export class SearchFetchService {
     return this.http.get<INation[]>(`${environment.apiUrl}/location/nations`);
   }
 
-  public getAirport(airportId: string): Observable<{ name: string }> {
+  public getAirport(airportId: string): Observable<IAirport> {
     return this.http
-      .get<{ name: string; iata_code: string }>(
-        `${environment.apiUrl}/airports/${airportId}`
-      )
+      .get<IAirport>(`${environment.apiUrl}/airports/${airportId}`)
       .pipe(
         map((airport) => ({
+          ...airport,
           name: `${airport.name} (${airport.iata_code})`,
         }))
+      );
+  }
+
+  public getAirports(params?: {
+    name?: string;
+    city_name?: string;
+    nation_name?: string;}): Observable<IAirport[]> {
+    const queryParams = new URLSearchParams({
+      name: params?.name ?? '',
+      city_name: params?.city_name ?? '',
+      nation_name: params?.nation_name ?? '',
+    });
+    return this.http
+      .get<IAirport[]>(
+        `${environment.apiUrl}/airports/?${queryParams.toString()}`
+      )
+      .pipe(
+        map((airports) =>
+          airports.map((airport) => ({
+            ...airport,
+            name: `${airport.name} (${airport.iata_code})`,
+          }))
+        )
       );
   }
 
@@ -94,8 +117,6 @@ export class SearchFetchService {
     journeys: IJourney[];
     total_pages: number;
   }> {
-
-
     const queryParams = new URLSearchParams({
       departure_id: params.departureId,
       departure_type: params.departureType,
@@ -116,9 +137,7 @@ export class SearchFetchService {
     return this.http.get<{
       journeys: IJourney[];
       total_pages: number;
-    }>(
-      `${environment.apiUrl}/search/flights?${queryParams.toString()}`
-    );
+    }>(`${environment.apiUrl}/search/flights?${queryParams.toString()}`);
   }
 
   public getFlexibleDates({

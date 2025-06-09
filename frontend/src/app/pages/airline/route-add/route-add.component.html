@@ -1,71 +1,73 @@
-<div class="flex w-full justify-center mb-16 text-3xl font-bold">
-  Add Route
-</div>
+<div class="flex w-full justify-center mb-16 text-3xl font-bold ">Add Route</div>
 
-<div class="flex space-x-3 mb-2">
-  <div class="relative col-span-2">
-    <label hlmLabel class="block">
-      Departure airport
-      <input
-        hlmInput
-        id="departureAirport"
-        type="text"
-        class="mt-1 w-full"
-      />
-    </label>
-  </div>
-  <div class="relative col-span-2">
-    <label hlmLabel class="block">
-      Arrival airport
-      <input
-        hlmInput
-        id="arrivalAirport"
-        type="text"
-        class="mt-1 w-full"
-      />
-    </label>
-  </div>
-</div>
-<div class="flex space-x-3 mt-2">
-  <div class="relative col-span-2">
-    <label hlmLabel class="block">
-      Period start
-      <input
-        hlmInput
-        id="periodStart"
-        type="text"
-        class="mt-1 w-full"
-      />
-    </label>
-  </div>
-  <div class="relative col-span-2">
-    <label hlmLabel class="block">
-      Period end
-      <input
-        hlmInput
-        id="periodEnd"
-        type="text"
-        class="mt-1 w-full"
-      />
-    </label>
-  </div>
-</div>
-<div class="relative col-span-2  mt-2">
-  <label hlmLabel class="block">
-    Flight number
-    <input
-      hlmInput
-      id="flightNumber"
-      type="text"
-      class="mt-1 w-full"
-    />
-  </label>
-</div>
 <div class="flex w-full justify-center">
-  <button
-    hlmBtn
-    class="bg-black text-white px-10 mt-4"
-  >
-    + Add Route
-  </button>
+
+  <div class="flex flex-col gap-6 max-w-5xl w-full">
+  
+    <div class="flex space-x-3 mb-2">
+      <div class="flex flex-col gap-2 flex-1/2">
+        <label hlmLabel class="block"> Departure airport </label>
+        <div hlmCard class="p-3">
+          <search-input
+            [placeHolder]="'Choose an airport'"
+            [popoverRelativePosition]="{ top: 20, left: -20 }"
+            [popoverWidth]="'200px'"
+            [inputValue]="departureAirport"
+            (inputValueChange)="departureAirport = $event"
+            [searchList]="airportsList"
+          />
+        </div>
+      </div>
+      <div class="flex flex-col gap-2 flex-1/2">
+        <label hlmLabel class="block"> Arrival airport </label>
+        <div hlmCard class="p-3">
+          <search-input
+            [placeHolder]="'Choose an airport'"
+            [popoverRelativePosition]="{ top: 20, left: -20 }"
+            [popoverWidth]="'200px'"
+            [inputValue]="arrivalAirport"
+            (inputValueChange)="arrivalAirport = $event"
+            [searchList]="airportsList"
+          />
+        </div>
+      </div>
+    </div>
+    
+    <div class="flex space-x-3 mt-2 w-full">
+      <div class="flex flex-col gap-2 flex-1/2">
+        <label hlmLabel class="block"> Period start </label>
+        <div hlmCard class="p-3">
+          <date-input
+            [popoverRelativePosition]="{ top: 20, left: -20 }"
+            [popoverWidth]="'auto'"
+            [(value)]="periodStart"
+            [placeholder]="'Add a date'"
+            [enableFlexibleDate]="false"
+          />
+        </div>
+      </div>
+      <div class="flex flex-col gap-2 flex-1/2">
+        <label hlmLabel class="block"> Period end </label>
+        <div hlmCard class="p-3">
+          <date-input
+            [minDate]="periodStart"
+            [popoverRelativePosition]="{ top: 20, left: -20 }"
+            [popoverWidth]="'auto'"
+            [(value)]="periodEnd"
+            [placeholder]="'Add a date'"
+            [enableFlexibleDate]="true"
+          />
+        </div>
+      </div>
+    </div>
+    <div  class="flex flex-col gap-2">
+      <label hlmLabel class="block">
+        Flight number
+      </label>
+      <input hlmInput id="flightNumber" type="text" class="mt-1 w-full bg-white" [(ngModel)]="flightNumber" />
+    </div>
+    <div class="flex w-full justify-center">
+      <button hlmBtn class="bg-black text-white px-10 mt-4" (click)="onSubmit()" [disabled]="!departureAirport || !arrivalAirport || !periodStart || !periodEnd || !flightNumber">+ Add Route</button>
+    </div>
+  </div>
 </div>

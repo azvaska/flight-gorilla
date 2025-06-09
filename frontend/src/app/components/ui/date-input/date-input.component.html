@@ -27,6 +27,7 @@
   </button>
   <div popover-content>
     <div class="flex flex-col pt-4 px-4">
+      @if (enableFlexibleDate) {
       <hlm-tabs [tab]="dateType" class="w-max">
         <hlm-tabs-list
           class="w-full grid grid-cols-2"
@@ -72,6 +73,20 @@
           />
         </div>
       </hlm-tabs>
+      } @else {
+      <div class="flex justify-center items-center py-4 -mt-4">
+        <div class="w-fit">
+          <hlm-calendar
+            [date]="value"
+            (dateChange)="value = $event; onValueChange($event)"
+            [min]="minDate"
+            [max]="maxDate"
+            [disabled]="false"
+            [weekStartsOn]="1"
+          />
+        </div>
+      </div>
+      }
     </div>
   </div>
 </app-popover>

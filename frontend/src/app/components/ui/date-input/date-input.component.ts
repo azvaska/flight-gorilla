@@ -64,7 +64,11 @@ export class DateInputComponent {
   @Input() public value: Date | undefined = undefined;
   @Output() public valueChange = new EventEmitter<Date>();
 
+  @Input() public enableFlexibleDate: boolean = true;
+
   protected formatDate = formatDate;
+
+
 
   public focus() {
     this.popover.open();
