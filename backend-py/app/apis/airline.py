@@ -31,6 +31,16 @@ extra_model = api.model('Extra', {
     'stackable': fields.Boolean(default=False, description='Can be stacked with other extras')
 })
 
+airline_aircraft_model = api.model('AirlineAircraft', {
+    'id': fields.String(readonly=True, description='Airline Aircraft ID'),
+    'aircraft': fields.Nested(aircraft_model, required=True, description='Aircraft'),
+    'airline_id': fields.String(readonly=True, description='Airline ID'),
+    'first_class_seats': fields.List(fields.String, description='First class seat numbers'),
+    'business_class_seats': fields.List(fields.String, description='Business class seat numbers'),
+    'economy_class_seats': fields.List(fields.String, description='Economy class seat numbers'),
+    'tail_number': fields.String(required=False, description='Aircraft tail number')
+})
+
 airline_aircraft_input_model = api.model('AirlineAircraftInput', {
     'aircraft_id': fields.Integer(required=True, description='Aircraft ID'),
     'first_class_seats': fields.List(fields.String, description='First class seat numbers'),
@@ -39,10 +49,8 @@ airline_aircraft_input_model = api.model('AirlineAircraftInput', {
     'tail_number': fields.String(required=False, description='Aircraft tail number')
 })
 
-airline_aircraft_model = api.model('AirlineAircraft', {
-    'id': fields.String(readonly=True, description='Airline Aircraft ID'),
-    'aircraft': fields.Nested(aircraft_model, required=True, description='Aircraft'),
-    'airline_id': fields.String(readonly=True, description='Airline ID'),
+airline_aircraft_put_model = api.model('AirlineAircraftPut', {
+    'aircraft_id': fields.Integer(required=False, description='Aircraft ID'),
     'first_class_seats': fields.List(fields.String, description='First class seat numbers'),
     'business_class_seats': fields.List(fields.String, description='Business class seat numbers'),
     'economy_class_seats': fields.List(fields.String, description='Economy class seat numbers'),
@@ -96,8 +104,23 @@ route_model = api.model('Route', {
     'flight_number': fields.String(required=True, description='Flight number')
 })
 
+route_input_model = api.model('RouteInput', {
+    'departure_airport_id': fields.Integer(required=True, description='Departure airport ID'),
+    'arrival_airport_id': fields.Integer(required=True, description='Arrival airport ID'),
+    'period_start': fields.DateTime(required=True, description='Start of the route period'),
+    'period_end': fields.DateTime(required=True, description='End of the route period'),
+    'flight_number': fields.String(required=True, description='Flight number'),
+})
+
+route_put_model = api.model('RoutePut', {
+    'departure_airport_id': fields.Integer(required=False, description='Departure airport ID'),
+    'arrival_airport_id': fields.Integer(required=False, description='Arrival airport ID'),
+    'period_start': fields.DateTime(required=False, description='Start of the route period'),
+    'period_end': fields.DateTime(required=False, description='End of the route period'),
+    'flight_number': fields.String(required=False, description='Flight number'),
+})
+
 flight_model_input = api.model('Flight', {
-    'id': fields.String(readonly=True, description='Flight ID'),
     'route_id': fields.Integer(required=True, description='Route ID'),
     'aircraft_id': fields.String(required=True, description='Airline Aircraft ID'),
     'departure_time': fields.DateTime(required=True, description='Departure time'),
@@ -106,6 +129,17 @@ flight_model_input = api.model('Flight', {
     'price_business_class': fields.Float(required=True, description='Business class price'),
     'price_first_class': fields.Float(required=True, description='First class price'),
     'price_insurance': fields.Float(description='Insurance price'),
+})
+
+flight_put_model = api.model('FlightPut', {
+    'route_id': fields.Integer(required=False, description='Route ID'),
+    'aircraft_id': fields.String(required=False, description='Airline Aircraft ID'),
+    'departure_time': fields.DateTime(required=False, description='Departure time'),
+    'arrival_time': fields.DateTime(required=False, description='Arrival time'),
+    'price_economy_class': fields.Float(required=False, description='Economy class price'),
+    'price_business_class': fields.Float(required=False, description='Business class price'),
+    'price_first_class': fields.Float(required=False, description='First class price'),
+    'price_insurance': fields.Float(required=False, description='Insurance price'),
 })
 
 flight_model_output = api.model('AirlineFlightOutput', {
@@ -432,7 +466,7 @@ class AirlineAircraftResource(Resource):
     
     @roles_required('airline-admin')
     @airline_id_from_user()
-    @api.expect(airline_aircraft_model, validate=False)
+    @api.expect(airline_aircraft_put_model)
     @api.response(200, 'OK', airline_aircraft_model)
     @api.response(400, 'Bad Request')
     @api.response(403, 'Unauthorized')
@@ -490,7 +524,7 @@ class MyAirlineRouteList(Resource):
         route = Route.query.filter_by(airline_id=airline_id).all()
         return marshal(routes_schema.dump(route), route_model), 200
     
-    @api.expect(route_model)
+    @api.expect(route_input_model)
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
@@ -531,7 +565,7 @@ class AirlineRouteResource(Resource):
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
-    @api.expect(route_model, validate=False)
+    @api.expect(route_put_model, validate=False)
     @api.response(200, 'OK', route_model)
     @api.response(400, 'Bad Request')
     @api.response(403, 'Unauthorized')
@@ -629,7 +663,7 @@ class MyAirlineFlightResource(Resource):
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
-    @api.expect(flight_model_input)
+    @api.expect(flight_put_model)
     @api.response(200, 'OK', flight_model_output)
     @api.response(400, 'Bad Request')
     @api.response(403, 'Forbidden')
