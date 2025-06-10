@@ -13,83 +13,162 @@
       hlmCardContent
       class="space-y-4"
     >
-      <label hlmLabel class="block">
-        Name
-        <input
-          hlmInput
-          type="text"
-          formControlName="name"
-          placeholder="First name"
-          class="mt-1 w-full"
-        />
-      </label>
-      <label hlmLabel class="block">
-        Surname
-        <input
-          hlmInput
-          type="text"
-          formControlName="surname"
-          placeholder="Last name"
-          class="mt-1 w-full"
-        />
-      </label>
-      <label hlmLabel class="block">
-        Email
-        <input
-          hlmInput
-          type="email"
-          formControlName="email"
-          placeholder="you@example.com"
-          class="mt-1 w-full"
-        />
-      </label>
-      <label hlmLabel class="block">
-        Password
-        <input
-          hlmInput
-          type="password"
-          formControlName="password"
-          placeholder="••••••••"
-          class="mt-1 w-full"
-        />
-      </label>
-      <label hlmLabel class="block">
-        Country
-        <select
-          hlmInput
-          formControlName="country"
-          class="mt-1 w-full"
-          [class.text-muted-foreground]="!registerForm.get('country')?.value"
-          [class.text-foreground]="registerForm.get('country')?.value"
-        >
-          <option value="" disabled class="text-muted-foreground">Select your country</option>
-          <option *ngFor="let c of countries" [value]="c">{{ c }}</option>
-        </select>
-      </label>
-      <label hlmLabel class="block">
-        Address
-        <input
-          hlmInput
-          type="text"
-          formControlName="address"
-          placeholder="Street address"
-          class="mt-1 w-full"
-        />
-      </label>
-      <label hlmLabel class="block">
-        ZIP Code
-        <input
-          hlmInput
-          type="text"
-          formControlName="zipCode"
-          placeholder="Postal code"
-          class="mt-1 w-full"
-        />
-      </label>
-      <button hlmBtn type="submit" class="w-full">Register</button>
+      <!-- General error message -->
+      <div *ngIf="errorMessage" class="p-3 bg-red-50 border border-red-200 rounded-md">
+        <p class="text-sm text-red-700">{{ errorMessage }}</p>
+      </div>
+
+      <!-- Name -->
+      <div class="space-y-1">
+        <label hlmLabel class="block">
+          Name
+          <input
+            hlmInput
+            type="text"
+            formControlName="name"
+            placeholder="First name"
+            class="mt-1 w-full"
+            [class.border-red-500]="getFieldError('name')"
+          />
+        </label>
+        <p *ngIf="getFieldError('name')" class="text-sm text-red-600">
+          {{ getFieldError('name') }}
+        </p>
+      </div>
+
+      <!-- Surname -->
+      <div class="space-y-1">
+        <label hlmLabel class="block">
+          Surname
+          <input
+            hlmInput
+            type="text"
+            formControlName="surname"
+            placeholder="Last name"
+            class="mt-1 w-full"
+            [class.border-red-500]="getFieldError('surname')"
+          />
+        </label>
+        <p *ngIf="getFieldError('surname')" class="text-sm text-red-600">
+          {{ getFieldError('surname') }}
+        </p>
+      </div>
+
+      <!-- Email -->
+      <div class="space-y-1">
+        <label hlmLabel class="block">
+          Email
+          <input
+            hlmInput
+            type="email"
+            formControlName="email"
+            placeholder="you@example.com"
+            class="mt-1 w-full"
+            [class.border-red-500]="getFieldError('email')"
+          />
+        </label>
+        <p *ngIf="getFieldError('email')" class="text-sm text-red-600">
+          {{ getFieldError('email') }}
+        </p>
+      </div>
+
+      <!-- Password -->
+      <div class="space-y-1">
+        <label hlmLabel class="block">
+          Password
+          <input
+            hlmInput
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+            class="mt-1 w-full"
+            [class.border-red-500]="getFieldError('password')"
+          />
+        </label>
+        <p *ngIf="getFieldError('password')" class="text-sm text-red-600">
+          {{ getFieldError('password') }}
+        </p>
+      </div>
+
+      <!-- Country with search-input -->
+      <div class="space-y-1">
+        <label hlmLabel class="block">
+          Country
+          <div class="mt-1 relative bg-white border border-gray-300 rounded-md w-full"
+               [class.border-red-500]="getFieldError('nation_id')">
+            <search-input
+              [inputValue]="selectedNation"
+              (inputValueChange)="onNationChange($event)"
+              (searchValueChange)="onSearchValueChange($event)"
+              [popoverRelativePosition]="{ top: 5, left: 0 }"
+              [searchList]="nations"
+              placeHolder="Select your country..."
+              noResultsText="No countries found"
+              class="text-sm font-normal py-2 h-fit px-3"
+            >
+            </search-input>
+          </div>
+        </label>
+        <p *ngIf="getFieldError('nation_id')" class="text-sm text-red-600">
+          {{ getFieldError('nation_id') }}
+        </p>
+      </div>
+
+      <!-- Address -->
+      <div class="space-y-1">
+        <label hlmLabel class="block">
+          Address
+          <input
+            hlmInput
+            type="text"
+            formControlName="address"
+            placeholder="Street address"
+            class="mt-1 w-full"
+            [class.border-red-500]="getFieldError('address')"
+          />
+        </label>
+        <p *ngIf="getFieldError('address')" class="text-sm text-red-600">
+          {{ getFieldError('address') }}
+        </p>
+      </div>
+
+      <!-- ZIP Code -->
+      <div class="space-y-1">
+        <label hlmLabel class="block">
+          ZIP Code
+          <input
+            hlmInput
+            type="text"
+            formControlName="zipCode"
+            placeholder="Postal code"
+            class="mt-1 w-full"
+            [class.border-red-500]="getFieldError('zipCode')"
+          />
+        </label>
+        <p *ngIf="getFieldError('zipCode')" class="text-sm text-red-600">
+          {{ getFieldError('zipCode') }}
+        </p>
+      </div>
+
+      <!-- Register button -->
+      <button 
+        hlmBtn 
+        type="submit" 
+        class="w-full"
+        [disabled]="isLoading"
+      >
+        <span *ngIf="!isLoading">Register</span>
+        <span *ngIf="isLoading" class="flex items-center justify-center">
+          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Registering...
+        </span>
+      </button>
     </form>
     <div hlmCardFooter class="text-center">
-      <a class="text-sm underline" href="/auth/login"
+      <a class="text-sm underline cursor-pointer" (click)="navigateToLogin()"
         >Already have an account?</a
       >
     </div>

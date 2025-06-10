@@ -57,8 +57,11 @@
         Sign In
       </button>
     </form>
-    <div hlmCardFooter class="text-center flex flex-col gap-4 justify-center items-start">
-      <a class="text-sm underline" href="/forgot-password">Forgot password?</a>
+    <div
+      hlmCardFooter
+      class="text-center flex flex-col gap-4 justify-center items-start"
+    >
+      <a class="text-sm underline cursor-pointer" (click)="navigateToRegister()">Don't have an account?</a>
       <div *ngIf="loginForm.hasError('error')" class="text-sm text-red-600">
         {{ loginForm.getError("error") }}
       </div>

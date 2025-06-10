@@ -76,4 +76,13 @@ export class LoginComponent {
         });
     }
   }
+
+  protected navigateToRegister(): void {
+    this.router.navigate(['/auth/register'], {
+      state: {
+        redirectUrl: this.redirectUrl,
+        originalState: this.originalState
+      }
+    });
+  }
 }

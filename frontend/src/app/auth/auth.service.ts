@@ -27,20 +27,31 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  register(creds: {email: string; password: string}) {
-    return this.http.post<AuthResp>(`${this.authUrl}/register`, creds)
-      .pipe(tap(res => this.storeTokens(res)));
+  register(creds: {
+    email: string;
+    password: string;
+    name: string;
+    surname: string;
+    address: string;
+    zip: string;
+    nation_id: number;
+  }) {
+    return this.http
+      .post<AuthResp>(`${this.authUrl}/register`, creds)
+      .pipe(tap((res) => this.storeTokens(res)));
   }
 
-  login(creds: {email: string; password: string}) {
-    return this.http.post<AuthResp>(`${this.authUrl}/login`, creds)
-      .pipe(tap(res => this.storeTokens(res)));
+  login(creds: { email: string; password: string }) {
+    return this.http
+      .post<AuthResp>(`${this.authUrl}/login`, creds)
+      .pipe(tap((res) => this.storeTokens(res)));
   }
 
   refreshToken() {
     const rt = localStorage.getItem(this.refreshTokenKey);
-    return this.http.post<AuthResp>(`${this.authUrl}/refresh`, { refreshToken: rt })
-      .pipe(tap(res => this.storeTokens(res, false)));
+    return this.http
+      .post<AuthResp>(`${this.authUrl}/refresh`, { refreshToken: rt })
+      .pipe(tap((res) => this.storeTokens(res, false)));
   }
 
   logout() {
@@ -65,15 +76,16 @@ export class AuthService {
 
   getUser() {
     const userJson = localStorage.getItem(this.userKey);
-    return userJson ? JSON.parse(userJson) as AuthUser : null;
+    return userJson ? (JSON.parse(userJson) as AuthUser) : null;
   }
 
   private storeTokens = (res: AuthResp, includesUser: boolean = true): void => {
+    console.log(res);
     localStorage.setItem(this.accessTokenKey, res.access_token);
     localStorage.setItem(this.refreshTokenKey, res.refresh_token);
     if (includesUser) {
       localStorage.setItem(this.userKey, JSON.stringify(res.user));
     }
     this.loggedIn$.next(true);
-  }
+  };
 }

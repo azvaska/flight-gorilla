@@ -145,13 +145,11 @@ class RefreshTokenResource(Resource):
         except Exception as e:
             return {'error': str(e)}, 500
 
-
-# TODO: Implement full registration: name, surname etc
 @api.route('/register')
 class Register(Resource):
     @api.expect(register_model)
     @api.doc(security=None)
-    @api.response(201, 'Created')
+    @api.response(200, 'OK', login_model_output)
     @api.response(400, 'Bad Request')
     @api.response(500, 'Internal Server Error')
     def post(self):
@@ -177,7 +175,7 @@ class Register(Resource):
             security.datastore.db.session.add(user)
             security.datastore.db.session.commit()
 
-            return {'message': 'User registered successfully'}, 201
+            return generate_token(user)
         except ValueError as e:
             current_app.extensions['security'].datastore.db.session.rollback()
             return {'error': str(e)}, 400
