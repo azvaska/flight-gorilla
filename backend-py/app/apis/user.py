@@ -8,6 +8,7 @@ from app.core.auth import roles_required
 from app.models.user import User, PayementCard, CardType
 from app.schemas.user import UserSchema, user_schema, users_schema, debit_card_schema, debit_cards_schema
 from app.extensions import db
+from app.apis.location import nation_model, city_model
 
 api = Namespace('user', description='User related operations')
 
@@ -52,7 +53,7 @@ user_output_model = api.model('UserOutput', {
     'surname': fields.String(required=True, description='Last name'),
     'address': fields.String(description='Address'),
     'zip': fields.String(description='ZIP/postal code'),
-    'nation_id': fields.Integer(description='Nation ID'),
+    'nation': fields.Nested(nation_model, description='Nation'),
     'airline_id': fields.String(description='Airline ID'),
     'active': fields.Boolean(description='Account active status'),
     'cards': fields.List(fields.Nested(payement_card_model_output), description='List of cards'),
@@ -121,7 +122,7 @@ class UserResource(Resource):
 
     @jwt_required()
     @api.expect(user_put_model)
-    @api.response(200, 'User updated successfully', user_model)
+    @api.response(200, 'User updated successfully', user_output_model)
     @api.response(400, 'Bad Request')
     @api.response(403, 'Forbidden')
     def put(self, user_id):
@@ -162,7 +163,7 @@ class UserResource(Resource):
 
 
             db.session.commit()
-            return marshal(user_schema.dump(user),user_model), 200
+            return marshal(user_schema.dump(user),user_output_model), 200
 
         except ValidationError as err:
             return {"errors": err.messages, "code": 400}, 400

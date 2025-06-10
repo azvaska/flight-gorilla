@@ -2,6 +2,7 @@ from marshmallow import validates, ValidationError, validate
 from app.extensions import ma, db
 from app.models.user import User, PayementCard
 from app.models.location import Nation
+from app.schemas.location import NationSchema
 
 class DebitCardSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
@@ -11,6 +12,7 @@ class DebitCardSchema(ma.SQLAlchemyAutoSchema):
 
 class UserSchema(ma.SQLAlchemyAutoSchema):
     cards = ma.Nested(DebitCardSchema, many=True)
+    nation = ma.Nested(NationSchema, only=['id', 'name', 'code', 'alpha2'])
     class Meta:
         model = User
         load_instance = True

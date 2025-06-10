@@ -13,7 +13,15 @@ export class UserFetchService {
     return this.http.get<IUser>(`${environment.apiUrl}/user/me`);
   }
 
-  public updateUser(userId: string, user: Partial<IUser>): Observable<IUser> {
+  public updateUser(userId: string, user: {
+    name: string;
+    surname: string;
+    email: string;
+    nation_id: number;
+    address: string;
+    zip: string;
+    
+  }): Observable<IUser> {
     return this.http.put<IUser>(`${environment.apiUrl}/user/${userId}`, user);
   }
 

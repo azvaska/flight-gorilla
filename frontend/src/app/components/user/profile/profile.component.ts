@@ -20,6 +20,9 @@ import { IUser } from '@/types/user/user';
 import { firstValueFrom } from 'rxjs';
 import { UserFetchService } from '@/app/services/user/user-fetch.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { SearchFetchService } from '@/app/services/search/search-fetch.service';
+import { INation } from '@/types/search/location';
+import { SearchInputComponent, SearchInputValue } from '@/app/components/ui/search-input/search-input.component';
 
 @Component({
   selector: 'app-profile',
@@ -35,23 +38,51 @@ import { HttpErrorResponse } from '@angular/common/http';
     NgIcon,
     BrnSelectImports,
     HlmSelectImports,
+    SearchInputComponent,
   ],
   templateUrl: './profile.component.html',
   providers: [provideIcons({ lucideLoaderCircle })],
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent {
   @Input() user!: IUser;
   @Input() isEditMode = false;
   @Output() isEditModeChange = new EventEmitter<boolean>();
   @Output() userChange = new EventEmitter<IUser>();
 
   protected isLoading = false;
-
   protected profileForm!: FormGroup;
+  protected nations: SearchInputValue<INation>[] = [];
+  protected selectedNation: SearchInputValue<INation> | undefined = undefined;
+  protected searchValue: string = '';
 
-  constructor(private userFetchService: UserFetchService) {}
+  constructor(
+    private userFetchService: UserFetchService,
+    private searchFetchService: SearchFetchService
+  ) {
+    this.fetchNations().then(() => {
+      this.initForm();
+    });
+  }
 
-  ngOnInit(): void {
+  private async fetchNations(): Promise<void> {
+    try {
+      const nationsData = await firstValueFrom(this.searchFetchService.getNations());
+      this.nations = nationsData.map(nation => ({
+        value: nation.name,
+        data: nation
+      }));
+      
+      // Trova la nazione selezionata basata sull'ID dell'utente
+      if (this.user.nation) {
+        this.selectedNation = this.nations.find(n => n.data?.id === this.user.nation.id);
+        this.searchValue = this.selectedNation?.value || '';
+      }
+    } catch (error) {
+      console.error('Error fetching nations:', error);
+    }
+  }
+
+  private initForm(): void {
     this.profileForm = new FormGroup({
       email: new FormControl(this.user.email, [
         Validators.required,
@@ -83,7 +114,10 @@ export class ProfileComponent implements OnInit {
         Validators.required,
         Validators.pattern(/^\d{5}$/),
       ]),
+      nation_id: new FormControl(this.user.nation.id),
     });
+
+
     this.profileForm
       .get('password')
       ?.valueChanges.subscribe((passwordValue) => {
@@ -95,11 +129,69 @@ export class ProfileComponent implements OnInit {
         }
         oldPasswordControl?.updateValueAndValidity();
       });
+
+  }
+
+  protected onNationChange(nation: SearchInputValue<INation> | undefined): void {
+    this.selectedNation = nation;
+    const nationControl = this.profileForm.get('nation_id');
+    
+    if (nation?.data) {
+      nationControl?.setValue(nation.data.id);
+      nationControl?.setErrors(null);
+    } else {
+      nationControl?.setValue(null);
+      // Se c'è del testo nella ricerca ma nessuna nazione selezionata, marca come errore
+      if (this.searchValue.trim().length > 0) {
+        nationControl?.setErrors({ invalidNation: true });
+      }
+    }
+    
+    // Marca il controllo come "touched" e "dirty" per attivare la validazione
+    nationControl?.markAsTouched();
+    nationControl?.markAsDirty();
+  }
+
+  protected onSearchValueChange(searchValue: string): void {
+    this.searchValue = searchValue;
+    const nationControl = this.profileForm.get('nation_id');
+    
+    // Se l'utente sta digitando ma non ha selezionato una nazione valida
+    if (searchValue.trim().length > 0 && !this.selectedNation?.data) {
+      nationControl?.setErrors({ invalidNation: true });
+      nationControl?.markAsTouched();
+      nationControl?.markAsDirty();
+    } else if (searchValue.trim().length === 0 && !this.selectedNation?.data) {
+      // Se il campo è vuoto e non c'è selezione, rimuovi gli errori (campo opzionale)
+      nationControl?.setErrors(null);
+    }
   }
 
   protected toggleEditMode() {
     this.isEditMode = !this.isEditMode;
-    this.profileForm.reset(this.user);
+    
+    // Reset del form con i valori corretti
+    this.profileForm.reset({
+      email: this.user.email,
+      oldPassword: '',
+      password: '',
+      name: this.user.name,
+      surname: this.user.surname,
+      address: this.user.address,
+      zip: this.user.zip,
+      nation_id: this.user.nation?.id || null
+    });
+    
+    if (!this.isEditMode) {
+      // Ripristina la nazione selezionata
+      if (this.user.nation) {
+        this.selectedNation = this.nations.find(n => n.data?.id === this.user.nation.id);
+      } else {
+        this.selectedNation = undefined;
+      }
+      this.searchValue = this.selectedNation?.value || '';
+    }
+    
     this.isEditModeChange.emit(this.isEditMode);
   }
 
@@ -109,7 +201,13 @@ export class ProfileComponent implements OnInit {
       return;
     }
     
-    const updatedUser: Partial<IUser> & {
+    const updatedUser: {
+      name: string;
+      surname: string;
+      email: string;
+      nation_id: number;
+      address: string;
+      zip: string;
       password?: string;
       oldPassword?: string;
     } = this.profileForm.value;
@@ -117,17 +215,15 @@ export class ProfileComponent implements OnInit {
     
     this.isLoading = true;
 
-    const changedValues = Object.fromEntries(
-      Object.entries(this.user).flatMap(([key, value]) => {
-        const newValue = updatedUser[key as keyof typeof updatedUser];
-        return newValue !== undefined && newValue !== value
-          ? [[key, newValue]]
-          : [];
-      })
-    );
-
     const newUser = await firstValueFrom(
-      this.userFetchService.updateUser(this.user.id, changedValues)
+      this.userFetchService.updateUser(this.user.id, {
+        name: updatedUser.name!,
+        surname: updatedUser.surname!,
+        email: updatedUser.email!,
+        nation_id: updatedUser.nation_id!,
+        address: updatedUser.address!,
+        zip: updatedUser.zip!,
+      })
     );
 
     if (updatedUser.password && updatedUser.oldPassword) {
@@ -150,6 +246,7 @@ export class ProfileComponent implements OnInit {
         }
       } 
     }
+
 
     this.isLoading = false;
     this.userChange.emit(newUser);

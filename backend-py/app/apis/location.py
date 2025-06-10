@@ -7,7 +7,6 @@ from app.schemas.location import nations_schema, cities_schema, nation_schema, c
 from app.schemas.airport import airports_schema
 from sqlalchemy import func, text
 
-
 api = Namespace('location', description='Location related operations')
 
 
