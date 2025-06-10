@@ -80,7 +80,6 @@ export class AuthService {
   }
 
   private storeTokens = (res: AuthResp, includesUser: boolean = true): void => {
-    console.log(res);
     localStorage.setItem(this.accessTokenKey, res.access_token);
     localStorage.setItem(this.refreshTokenKey, res.refresh_token);
     if (includesUser) {

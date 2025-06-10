@@ -1,5 +1,5 @@
 <div class="flex w-full justify-center mb-16 text-3xl font-bold">
-  {{ isEditMode ? 'Modifica Volo' : 'Aggiungi Volo' }}
+  {{ isEditMode ? 'Edit Flight' : 'Add Flight' }}
 </div>
 
 <div class="flex flex-col justify-between w-[550px] space-y-1">
@@ -13,9 +13,9 @@
         <hlm-command *brnPopoverContent="let ctx" hlmPopoverContent class="p-0 w-[350px]">
           <hlm-command-search>
             <ng-icon hlm name="lucideSearch"/>
-            <input placeholder="Cerca rotta..." hlm-command-search-input/>
+            <input placeholder="Search route..." hlm-command-search-input/>
           </hlm-command-search>
-          <div *brnCommandEmpty hlmCommandEmpty>Nessun risultato trovato.</div>
+          <div *brnCommandEmpty hlmCommandEmpty>No results found.</div>
           <hlm-command-list>
             <hlm-command-group>
               <button
@@ -51,9 +51,9 @@
         <hlm-command *brnPopoverContent="let ctx" hlmPopoverContent class="p-0 w-[350px]">
           <hlm-command-search>
             <ng-icon hlm name="lucideSearch"/>
-            <input placeholder="Cerca aeromobile..." hlm-command-search-input/>
+            <input placeholder="Search aircraft..." hlm-command-search-input/>
           </hlm-command-search>
-          <div *brnCommandEmpty hlmCommandEmpty>Nessun risultato trovato.</div>
+          <div *brnCommandEmpty hlmCommandEmpty>No results found.</div>
           <hlm-command-list>
             <hlm-command-group>
               <button
@@ -105,16 +105,15 @@
        'opacity-0 translate-x-[20px]': page === 'forms'}"
   >
     <div class="flex w-full justify-center mb-4 text-xl font-bold">
-      Extra
+      Extras
     </div>
     <div hlmCard class="w-full max-w-4xl p-[2px]">
       <div class="overflow-y-auto overflow-x-hidden max-h-[350px] custom-scrollbar">
         <hlm-table class="w-full">
           <hlm-trow class="sticky top-0 bg-white z-10">
-            <hlm-th class="w-1/4">Nome</hlm-th>
-            <hlm-th class="w-1/4">Prezzo</hlm-th>
-            <hlm-th class="w-1/4">Limite</hlm-th>
-            <hlm-th class="w-1/4">Azioni</hlm-th>
+            <hlm-th class="w-1/4">Name</hlm-th>
+            <hlm-th class="w-1/4">Price</hlm-th>
+            <hlm-th class="w-1/4">Limit</hlm-th>
           </hlm-trow>
           <ng-container *ngFor="let ex of flightExtras; let i = index">
             <hlm-trow>
@@ -135,27 +134,27 @@
                         class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
                         (click)="openDetails(i); popover.close()"
                       >
-                        Modifica
+                        Edit
                       </li>
                       <hlm-alert-dialog>
                         <button
                           class="py-2 px-4 w-full text-left rounded-sm hover:bg-gray-100 cursor-pointer"
                           brnAlertDialogTrigger
                         >
-                          Elimina
+                          Delete
                         </button>
                         <hlm-alert-dialog-content *brnAlertDialogContent="let ctx">
                           <hlm-alert-dialog-header>
                             <h3 hlmAlertDialogTitle>
-                              Sei sicuro di voler eliminare questo extra?
+                              Are you sure you want to delete this extra?
                             </h3>
                             <p hlmAlertDialogDescription>
-                              Questa azione rimuoverà l'extra dal volo.
+                              This action will remove the extra from the flight.
                             </p>
                           </hlm-alert-dialog-header>
                           <hlm-alert-dialog-footer>
                             <button hlmAlertDialogCancel (click)="ctx.close()">
-                              Annulla
+                              Cancel
               </button>
                             <button
                               hlmAlertDialogAction
@@ -163,7 +162,7 @@
                             >
                               @if(isDeleteExtraLoading) {
                               <hlm-spinner size="sm" />
-                              } @else { Elimina extra }
+                              } @else { Delete extra }
               </button>
                           </hlm-alert-dialog-footer>
                         </hlm-alert-dialog-content>
@@ -183,7 +182,7 @@
         class="bg-black text-white px-10 mt-2"
         (click)="openDetails('new')"
       >
-        + Aggiungi nuovo extra
+        + Add new extra
       </button>
     </div>
   </div>
@@ -196,14 +195,14 @@
     <!--    FLIGHT DATE-->
     <div class="relative col-span-2">
       <label hlmLabel class="block mb-2">
-        Data del volo
+        Flight date
       </label>
       <div class="w-full border border-input rounded-md p-3 bg-white shadow-sm">
         <date-input
           [popoverRelativePosition]="{ top: 20, left: -20 }"
           [popoverWidth]="'auto'"
           [(value)]="flightDate"
-          [placeholder]="'Seleziona una data'"
+          [placeholder]="'Select a date'"
           [enableFlexibleDate]="false"
           [minDate]="currentRoute() ? toDate(currentRoute()!.period_start) : undefined"
           [maxDate]="currentRoute() ? toDate(currentRoute()!.period_end) : undefined"
@@ -216,7 +215,7 @@
     <div class="flex space-x-4 w-full justify-between">
       <div class="relative flex-1">
         <label hlmLabel class="block mb-2">
-          Orario di partenza
+          Departure time
         </label>
         <input
           hlmInput
@@ -227,7 +226,7 @@
       </div>
       <div class="relative flex-1">
         <label hlmLabel class="block mb-2">
-          Durata del volo (minuti)
+          Flight duration (minutes)
         </label>
         <input
           hlmInput
@@ -236,7 +235,7 @@
           [(ngModel)]="flightDurationMinutes"
           min="1"
           step="1"
-          placeholder="es. 120"
+          placeholder="e.g. 120"
         />
       </div>
     </div>
@@ -245,7 +244,7 @@
     <div class="flex space-x-4 w-full justify-between">
       <div class="relative flex-1">
         <label hlmLabel class="block mb-2">
-          Inizio check-in
+          Check-in start
         </label>
         <input
           hlmInput
@@ -256,7 +255,7 @@
       </div>
       <div class="relative flex-1">
         <label hlmLabel class="block mb-2">
-          Fine check-in
+          Check-in end
         </label>
         <input
           hlmInput
@@ -271,7 +270,7 @@
     <div class="flex space-x-4 w-full justify-between">
       <div class="relative flex-1">
         <label hlmLabel class="block mb-2">
-          Inizio imbarco
+          Boarding start
         </label>
         <input
           hlmInput
@@ -282,7 +281,7 @@
       </div>
       <div class="relative flex-1">
         <label hlmLabel class="block mb-2">
-          Fine imbarco
+          Boarding end
         </label>
         <input
           hlmInput
@@ -304,7 +303,7 @@
           type="text"
           class="w-full bg-white shadow-sm"
           [(ngModel)]="gate"
-          placeholder="es. A12"
+          placeholder="e.g. A12"
         />
       </div>
       <div class="relative flex-1">
@@ -316,7 +315,7 @@
           type="text"
           class="w-full bg-white shadow-sm"
           [(ngModel)]="terminal"
-          placeholder="es. T1"
+          placeholder="e.g. T1"
         />
       </div>
     </div>
@@ -325,7 +324,7 @@
     <div class="flex w-full space-x-3 justify-between">
       <div class="flex-1">
         <label hlmLabel class="block mb-2">
-          Prezzo Prima Classe
+          First Class Price
         </label>
         <input
           hlmInput
@@ -339,7 +338,7 @@
       </div>
       <div class="flex-1">
         <label hlmLabel class="block mb-2">
-          Prezzo Business Class
+          Business Class Price
         </label>
         <input
           hlmInput
@@ -353,7 +352,7 @@
       </div>
       <div class="flex-1">
         <label hlmLabel class="block mb-2">
-          Prezzo Economy Class
+          Economy Class Price
         </label>
         <input
           hlmInput
@@ -370,7 +369,7 @@
     <!--   INSURANCE PRICE -->
     <div class="relative">
       <label hlmLabel class="block mb-2">
-        Prezzo assicurazione
+        Insurance price
       </label>
       <input
         hlmInput
@@ -397,7 +396,7 @@
         <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
       </div>
     } @else {
-      {{ isEditMode ? 'Aggiorna Volo' : 'Salva Volo' }}
+      {{ isEditMode ? 'Update Flight' : 'Save Flight' }}
     }
   </button>
 </div>
@@ -414,7 +413,7 @@
   <div class="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 relative">
     <!-- Header with title and close button -->
     <div class="flex justify-between items-center border-b border-zinc-200 px-6 py-4">
-      <h2 class="text-2xl font-semibold">Dettagli Extra</h2>
+      <h2 class="text-2xl font-semibold">Extra Details</h2>
       <button
         (click)="closeDetails()"
         class="text-zinc-500 hover:text-zinc-800 font-bold text-xl"
@@ -427,19 +426,19 @@
     <!-- Body: all fields, one row each (start/end pairs grouped) -->
     <div class="px-6 py-6 flex flex-col space-y-6">
       <div>
-        <label hlmLabel class="block mb-2">Tipo di extra</label>
+        <label hlmLabel class="block mb-2">Extra type</label>
         <brn-popover [state]="state2()" (stateChanged)="state2Changed($event)" sideOffset="5">
           <button class="w-full bg-white justify-between shadow-sm" id="edit-profile" variant="outline" brnPopoverTrigger hlmBtn
                   [disabled]="extrasDetail !== 'new'">
-            {{ currentExtra()?.name ?? 'Seleziona tipo di extra...' }}
+            {{ currentExtra()?.name ?? 'Select extra type...' }}
             <ng-icon hlm size="sm" name="lucideChevronsUpDown"/>
           </button>
           <hlm-command *brnPopoverContent="let ctx" hlmPopoverContent class="p-0 w-[350px]">
             <hlm-command-search>
               <ng-icon hlm name="lucideSearch"/>
-              <input placeholder="Cerca extra..." hlm-command-search-input/>
+              <input placeholder="Search extra..." hlm-command-search-input/>
             </hlm-command-search>
-            <div *brnCommandEmpty hlmCommandEmpty>Nessun risultato trovato.</div>
+            <div *brnCommandEmpty hlmCommandEmpty>No results found.</div>
             <hlm-command-list>
               <hlm-command-group>
                 <button
@@ -468,7 +467,7 @@
       >
         <div class="relative flex-[2]">
           <label hlmLabel class="block mb-2">
-            Prezzo
+            Price
           </label>
           <div class="relative w-full">
             <!-- € symbol -->
@@ -486,7 +485,7 @@
         </div>
         <div class="relative flex-[1]">
           <label hlmLabel class="block mb-2">
-            Limite
+            Limit
           </label>
           <div class="flex w-full rounded-md border border-input bg-white shadow-sm overflow-hidden"
                [ngClass]="{
@@ -522,7 +521,7 @@
         [disabled]="!currentExtra()"
         (click)="saveExtra()"
       >
-        Salva Extra
+        Save Extra
       </button>
     </div>
   </div>

@@ -340,13 +340,13 @@ export class FlightsAddComponent implements OnInit {
 
   get routeDisplayName() {
     const route = this.currentRoute();
-    if (!route) return 'Seleziona rotta...';
+    if (!route) return 'Select route...';
     return `${route.departure_airport.iata_code}-${route.arrival_airport.iata_code} ${route.flight_number}`;
   }
 
   get aircraftDisplayName() {
     const aircraft = this.currentAircraft();
-    if (!aircraft) return 'Seleziona aeromobile...';
+    if (!aircraft) return 'Select aircraft...';
     return `${aircraft.aircraft.name} (${aircraft.tail_number})`;
   }
 
