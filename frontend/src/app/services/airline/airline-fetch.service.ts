@@ -117,7 +117,7 @@ export class AirlineFetchService {
     return this.http.get<{
       items: IAirlineFlight[];
       total_pages: number;
-    }>(`${environment.apiUrl}/airline/flights?page=${page}&limit=${limit}`);
+    }>(`${environment.apiUrl}/airline/flights?page_number=${page}&limit=${limit}`);
   }
 
   public addFlight(flight: {

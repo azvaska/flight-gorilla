@@ -804,7 +804,7 @@ class MyAirlineFlightResource(Resource):
 
         try:
             # Validate data with Marshmallow schema
-            validated_data = flight_schema.load(data, partial=True)
+            validated_data = flight_schema.load(data, partial=True, instance=flight)
 
             # Handle extras if provided
             if extras_data is not None:
