@@ -100,10 +100,8 @@ interface FlightExtra {
     HlmCommandSearchInputComponent,
     NgForOf,
     NgClass,
-    NgOptimizedImage,
     FormsModule,
     DateInputComponent,
-    SearchInputComponent,
     HlmCardDirective,
     HlmTableComponent,
     HlmTrowComponent,
@@ -203,7 +201,7 @@ export class FlightsAddComponent implements OnInit {
 
   async ngOnInit() {
     await this.loadData();
-    
+
     // If in edit mode, load existing flight data
     if (this.isEditMode && this.flightId) {
       await this.loadExistingFlight();
@@ -233,41 +231,41 @@ export class FlightsAddComponent implements OnInit {
   private async loadExistingFlight() {
     try {
       this.loadingService.startLoadingTask();
-      
+
       const [flight, flightExtras] = await Promise.all([
         firstValueFrom(this.airlineFetchService.getFlight(this.flightId!)),
         firstValueFrom(this.flightFetchService.getFlightExtras(this.flightId!)),
       ]);
       this.existingFlight = flight;
       this.flightExtras = flightExtras;
-      
+
       // Set route
       const route = this.routes.find(r => r.id.toString() === this.existingFlight!.route_id.toString());
       if (route) {
         this.currentRoute.set(route);
       }
-      
+
       // Set aircraft
       const aircraft = this.aircrafts.find(a => a.id.toString() === this.existingFlight!.aircraft.id.toString());
       if (aircraft) {
         this.currentAircraft.set(aircraft);
       }
-      
+
       // Set form values
       this.flightDate = new Date(this.existingFlight.departure_time);
       this.departureTime = this.formatTimeForInput(this.existingFlight.departure_time);
-      
+
       // Calculate duration
       const depTime = new Date(this.existingFlight.departure_time);
       const arrTime = new Date(this.existingFlight.arrival_time);
       this.flightDurationMinutes = Math.round((arrTime.getTime() - depTime.getTime()) / (1000 * 60));
-      
+
       // Set prices
       this.priceFirstClass = this.existingFlight.price_first_class;
       this.priceBusinessClass = this.existingFlight.price_business_class;
       this.priceEconomyClass = this.existingFlight.price_economy_class;
       this.priceInsurance = this.existingFlight.price_insurance;
-      
+
       // Set optional fields if they exist
       if (this.existingFlight.gate) this.gate = this.existingFlight.gate;
       if (this.existingFlight.terminal) this.terminal = this.existingFlight.terminal;
@@ -283,7 +281,7 @@ export class FlightsAddComponent implements OnInit {
       if (this.existingFlight.boarding_end_time) {
         this.boardingEndTime = this.formatTimeForInput(this.existingFlight.boarding_end_time);
       }
-      
+
     } catch (error) {
       console.error('Error loading existing flight:', error);
     } finally {

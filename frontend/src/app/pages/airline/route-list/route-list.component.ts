@@ -51,7 +51,6 @@ export interface AirlineRoute {
   selector: 'app-route-list',
   imports: [
     NgForOf,
-    NgOptimizedImage,
     HlmButtonDirective,
     RouterLink,
     HlmTableComponent,
@@ -84,7 +83,7 @@ export class RouteListComponent {
   protected isDeleteRouteLoading = false;
 
   constructor(
-    private airlineFetchService: AirlineFetchService, 
+    private airlineFetchService: AirlineFetchService,
     private loadingService: LoadingService,
     private router: Router
   ) {
