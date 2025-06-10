@@ -14,13 +14,26 @@
             </app-switcher>
           </div>
 
-          <!-- National ID -->
+          <!-- Nation -->
           <div class="flex">
-            <span class="w-52 font-medium text-gray-700 flex items-center">Nation ID:</span>
+            <span class="w-52 font-medium text-gray-700 flex items-center">Nation:</span>
             <app-switcher [isActive]="isEditMode">
-              <span inactive>{{ airline.nation_id }}</span>
-              <div active class="relative">
-                <input hlmInput id="nation_id" formControlName="nation_id" type="text" class="w-64 h-8" />
+              <span inactive>{{ selectedNation?.value || 'Not selected' }}</span>
+              <div active class="relative bg-white border border-gray-300 rounded-md w-64 ">
+                <search-input
+                  [inputValue]="selectedNation"
+                  (inputValueChange)="onNationChange($event)"
+                  (searchValueChange)="onSearchValueChange($event)"
+                  [popoverRelativePosition]="{ top: 20, left: -20 }"
+                  [searchList]="nations"
+                  placeHolder="Select a nation..."
+                  noResultsText="No nations found"
+                  class="text-sm font-normal py-2 h-fit px-4">
+                </search-input>
+                <div *ngIf="profileForm.get('nation_id')?.invalid && profileForm.get('nation_id')?.touched" class="absolute left-full top-0 w-40 ml-1 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow">
+                  <span *ngIf="profileForm.get('nation_id')?.errors?.['required']">Nation is required.</span>
+                  <span *ngIf="profileForm.get('nation_id')?.errors?.['invalidNation']">Please select a valid nation.</span>
+                </div>
               </div>
             </app-switcher>
           </div>
@@ -109,7 +122,7 @@
           <button hlmBtn variant="outline" (click)="toggleEditMode()">
             {{ isEditMode ? 'Back' : 'Edit' }}
           </button>
-          <button hlmBtn *ngIf="isEditMode" [disabled]="!profileForm.valid || isLoading" (click)="onFormSubmit()">
+          <button hlmBtn *ngIf="isEditMode" [disabled]="!profileForm.valid || isLoading || profileForm.pristine" (click)="onFormSubmit()">
             <ng-icon *ngIf="isLoading" hlm name="lucideLoaderCircle" size="sm" class="mr-2 animate-spin"></ng-icon>
             Save
           </button>

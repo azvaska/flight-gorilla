@@ -21,6 +21,7 @@
         [nextInputRef]="secondLocationInput"
         [searchList]="departureLocationsList"
         [searchWithinComponent]="false"
+        class="text-lg"
       />
     </div>
     <div class="flex flex-col p-4">
@@ -43,6 +44,7 @@
         [searchList]="arrivalLocationsList"
         [searchWithinComponent]="false"
         [alwaysVisibleItems]="[anywhereObject]"
+        class="text-lg"
       />
     </div>
     <div class="flex flex-col p-4">
@@ -57,6 +59,7 @@
         [nextInputRef]="secondDateInput"
         [dateType]="dateType"
         (dateTypeChange)="onDateTypeChange($event)"
+        class="text-lg"
       />
     </div>
     <div class="flex flex-col p-4">
@@ -71,6 +74,7 @@
         [dateType]="dateType"
         (dateTypeChange)="onDateTypeChange($event)"
         [minDate]="departureDateMinDate"
+        class="text-lg"
       />
     </div>
   </div>

@@ -11,7 +11,10 @@ import { CommonModule, NgClass } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { LoadingService } from '@/app/services/loading.service';
 import { AirlineFetchService } from '@/app/services/airline/airline-fetch.service';
+import { SearchFetchService } from '@/app/services/search/search-fetch.service';
 import { IAirline } from '@/types/airline/airline';
+import { INation } from '@/types/search/location';
+import { SearchInputComponent, SearchInputValue } from '@/app/components/ui/search-input/search-input.component';
 
 @Component({
   selector: 'app-airline-profile',
@@ -24,7 +27,8 @@ import { IAirline } from '@/types/airline/airline';
     HlmIconDirective,
     NgIcon,
     NgIf,
-    CommonModule
+    CommonModule,
+    SearchInputComponent
   ],
   templateUrl: './airline-profile.component.html',
   providers: [provideIcons({ lucideLoaderCircle })],
@@ -38,13 +42,28 @@ export class AirlineProfileComponent {
   protected profileForm!: FormGroup;
   protected isEditMode = false;
   protected isLoading = false;
+  protected nations: SearchInputValue<INation>[] = [];
+  protected selectedNation: SearchInputValue<INation> | undefined = undefined;
+  protected searchValue: string = '';
 
   constructor(
     private airlineFetchService: AirlineFetchService,
+    private searchFetchService: SearchFetchService,
     private loadingService: LoadingService
   ) {
-    this.fetchAirline().then((data) => {
-      this.airline = data;
+    Promise.all([
+      this.fetchAirline(),
+      this.fetchNations()
+    ]).then(([airlineData, nationsData]) => {
+      this.airline = airlineData;
+      this.nations = nationsData.map(nation => ({
+        value: nation.name,
+        data: nation
+      }));
+      
+      // Trova la nazione selezionata basata sull'ID della compagnia aerea
+      this.selectedNation = this.nations.find(n => n.data?.id === this.airline.nation_id);
+      
       this.initForm();
     });
   }
@@ -70,10 +89,57 @@ export class AirlineProfileComponent {
     return data;
   }
 
+  private async fetchNations(): Promise<INation[]> {
+    this.loadingService.startLoadingTask();
+    const data = await firstValueFrom(this.searchFetchService.getNations());
+    this.loadingService.endLoadingTask();
+    return data;
+  }
+
+  protected onNationChange(nation: SearchInputValue<INation> | undefined): void {
+    this.selectedNation = nation;
+    const nationControl = this.profileForm.get('nation_id');
+    
+    if (nation?.data) {
+      nationControl?.setValue(nation.data.id);
+      nationControl?.setErrors(null);
+    } else {
+      nationControl?.setValue('');
+      // Se c'è del testo nella ricerca ma nessuna nazione selezionata, marca come errore
+      if (this.searchValue.trim().length > 0) {
+        nationControl?.setErrors({ invalidNation: true });
+      }
+    }
+    
+    // Marca il controllo come "touched" e "dirty" per attivare la validazione
+    nationControl?.markAsTouched();
+    nationControl?.markAsDirty();
+  }
+
+  protected onSearchValueChange(searchValue: string): void {
+    this.searchValue = searchValue;
+    const nationControl = this.profileForm.get('nation_id');
+    
+    // Se l'utente sta digitando ma non ha selezionato una nazione valida
+    if (searchValue.trim().length > 0 && !this.selectedNation?.data) {
+      nationControl?.setErrors({ invalidNation: true });
+      nationControl?.markAsTouched();
+      nationControl?.markAsDirty();
+    } else if (searchValue.trim().length === 0 && !this.selectedNation?.data) {
+      // Se il campo è vuoto e non c'è selezione, usa la validazione required standard
+      nationControl?.setErrors({ required: true });
+      nationControl?.markAsTouched();
+      nationControl?.markAsDirty();
+    }
+  }
+
   protected toggleEditMode(): void {
     this.isEditMode = !this.isEditMode;
     if (!this.isEditMode) {
       this.profileForm.reset({ ...this.airline });
+      // Ripristina la nazione selezionata
+      this.selectedNation = this.nations.find(n => n.data?.id === this.airline.nation_id);
+      this.searchValue = this.selectedNation?.value || '';
     }
   }
 

@@ -35,6 +35,9 @@ import { lucideCircleX } from '@ng-icons/lucide';
   ],
   templateUrl: './date-input.component.html',
   providers: [provideIcons({ lucideCircleX })],
+  host: {
+    class: 'block',
+  }
 })
 export class DateInputComponent {
   @Input() public popoverRelativePosition: {

@@ -25,6 +25,9 @@ export interface SearchInputValue<T> {
   templateUrl: './search-input.component.html',
   imports: [CommonModule, PopoverComponent, PopoverTriggerDirective, NgIcon],
   providers: [provideIcons({ lucideCircleX })],
+  host: {
+    class: 'block',
+  }
 })
 export class SearchInputComponent<T> {
   @Input() public placeHolder: string = '';
@@ -73,15 +76,16 @@ export class SearchInputComponent<T> {
     return fuse.search(search).slice(0, 5).map((result) => result.item);
   }
 
+  ngOnInit(): void {
+    this.search = this.inputValue?.value ?? '';
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['searchList']) {
       this.filteredList = this.filterList(this.searchList, this.search);
     }
-
-    if (changes['inputValue']) {
-      this.search = this.inputValue?.value ?? '';
-    }
   }
+
 
   protected get isOpen() {
     return this.popover?.showPopover ?? false;
@@ -100,6 +104,11 @@ export class SearchInputComponent<T> {
 
     if (this.searchWithinComponent) {
       this.filteredList = this.filterList(this.searchList, this.search);
+    }
+
+    if(this.inputValue) {
+      this.inputValue = undefined;
+      this.inputValueChange.emit(this.inputValue);
     }
 
     if (this.search.length === 0) {

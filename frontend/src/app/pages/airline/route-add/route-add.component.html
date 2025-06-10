@@ -1,22 +1,22 @@
 <div class="flex w-full justify-center mb-16 text-3xl font-bold">
-  {{ isEditMode ? 'Edit Route' : 'Add Route' }}
+  {{ isEditMode ? "Edit Route" : "Add Route" }}
 </div>
 
 <div class="flex w-full justify-center">
-
   <div class="flex flex-col gap-6 max-w-5xl w-full">
-  
     <div class="flex space-x-3 mb-2">
       <div class="flex flex-col gap-2 flex-1/2">
         <label hlmLabel class="block"> Departure airport </label>
         <div hlmCard class="p-3">
           <search-input
+            *ngIf="departureAirport || !isEditMode"
             [placeHolder]="'Choose an airport'"
             [popoverRelativePosition]="{ top: 20, left: -20 }"
             [popoverWidth]="'200px'"
             [inputValue]="departureAirport"
             (inputValueChange)="departureAirport = $event"
             [searchList]="airportsList"
+            class="text-base"
           />
         </div>
       </div>
@@ -24,17 +24,19 @@
         <label hlmLabel class="block"> Arrival airport </label>
         <div hlmCard class="p-3">
           <search-input
+            *ngIf="arrivalAirport || !isEditMode"
             [placeHolder]="'Choose an airport'"
             [popoverRelativePosition]="{ top: 20, left: -20 }"
             [popoverWidth]="'200px'"
             [inputValue]="arrivalAirport"
             (inputValueChange)="arrivalAirport = $event"
             [searchList]="airportsList"
+            class="text-base"
           />
         </div>
       </div>
     </div>
-    
+
     <div class="flex space-x-3 mt-2 w-full">
       <div class="flex flex-col gap-2 flex-1/2">
         <label hlmLabel class="block"> Period start </label>
@@ -45,6 +47,7 @@
             [(value)]="periodStart"
             [placeholder]="'Add a date'"
             [enableFlexibleDate]="false"
+            class="text-base"
           />
         </div>
       </div>
@@ -58,24 +61,43 @@
             [(value)]="periodEnd"
             [placeholder]="'Add a date'"
             [enableFlexibleDate]="true"
+            class="text-base"
           />
         </div>
       </div>
     </div>
-    <div  class="flex flex-col gap-2">
-      <label hlmLabel class="block">
-        Flight number
-      </label>
-      <input hlmInput id="flightNumber" type="text" class="mt-1 w-full bg-white" [(ngModel)]="flightNumber" />
+    <div class="flex flex-col gap-2">
+      <label hlmLabel class="block"> Flight number </label>
+      <input
+        hlmInput
+        id="flightNumber"
+        type="text"
+        class="mt-1 w-full bg-white !text-base"
+        [(ngModel)]="flightNumber"
+      />
     </div>
     <div class="flex w-full justify-center">
-      <button hlmBtn class="bg-black text-white px-10 mt-4" (click)="onSubmit()" [disabled]="!departureAirport || !arrivalAirport || !periodStart || !periodEnd || !flightNumber || isLoading">
+      <button
+        hlmBtn
+        class="bg-black text-white px-10 mt-4"
+        (click)="onSubmit()"
+        [disabled]="
+          !departureAirport ||
+          !arrivalAirport ||
+          !periodStart ||
+          !periodEnd ||
+          !flightNumber ||
+          isLoading
+        "
+      >
         @if(isLoading) {
-          <div class="flex items-center justify-center">
-            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-          </div>
+        <div class="flex items-center justify-center">
+          <div
+            class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"
+          ></div>
+        </div>
         } @else {
-          {{ isEditMode ? '+ Update Route' : '+ Add Route' }}
+        {{ isEditMode ? "+ Update Route" : "+ Add Route" }}
         }
       </button>
     </div>

@@ -25,7 +25,8 @@ import { IRoute } from '@/types/airline/route';
     HlmButtonDirective,
     SearchInputComponent,
     HlmCardDirective,
-    DateInputComponent
+    DateInputComponent,
+    NgIf
   ],
   templateUrl: './route-add.component.html',
   host: {
