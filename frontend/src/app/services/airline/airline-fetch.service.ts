@@ -138,7 +138,7 @@ export class AirlineFetchService {
   public updateFlight(
     flightId: string,
     flight: Partial<{
-      route_id: string;
+      route_id: number;
       aircraft_id: string;
       departure_time: string;
       arrival_time: string;
@@ -146,6 +146,11 @@ export class AirlineFetchService {
       price_business_class: number;
       price_first_class: number;
       price_insurance: number;
+      extras: {
+        extra_id: string;
+        price: number;
+        limit: number;
+      }[]
     }>
   ): Observable<IAirlineFlight> {
     return this.http.put<IAirlineFlight>(

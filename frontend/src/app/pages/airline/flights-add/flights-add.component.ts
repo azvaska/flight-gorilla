@@ -41,7 +41,7 @@ import { IRoute } from '@/types/airline/route';
 import { IExtra } from '@/types/airline/extra';
 import { IAirlineAircraft } from '@/types/airline/aircraft';
 import { firstValueFrom } from 'rxjs';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HlmCardDirective } from '@spartan-ng/ui-card-helm';
 import {
   HlmTableComponent,
@@ -65,6 +65,8 @@ import {
   HlmAlertDialogTitleDirective,
 } from '@spartan-ng/ui-alertdialog-helm';
 import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
+import { IAirlineFlight } from '@/types/airline/flight';
+import { FlightFetchService } from '@/app/services/flight/flight-fetch.service';
 
 interface FlightExtra {
   id: string;
@@ -73,6 +75,7 @@ interface FlightExtra {
   price: number;
   limit: number;
   stackable: boolean;
+  extra_id?: string;
 }
 
 @Component({
@@ -178,17 +181,33 @@ export class FlightsAddComponent implements OnInit {
   protected isSaving = false;
   protected isDeleteExtraLoading = false;
 
+  // Edit mode
+  protected isEditMode = false;
+  protected flightId: string | null = null;
+  protected existingFlight: IAirlineFlight | null = null;
+
   // Date helper
   protected readonly today = new Date();
 
   constructor(
     private airlineFetchService: AirlineFetchService,
+    private flightFetchService: FlightFetchService,
     private loadingService: LoadingService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private activatedRoute: ActivatedRoute
+  ) {
+    // Check if we're in edit mode
+    this.flightId = this.activatedRoute.snapshot.paramMap.get('flightId');
+    this.isEditMode = !!this.flightId;
+  }
 
   async ngOnInit() {
     await this.loadData();
+    
+    // If in edit mode, load existing flight data
+    if (this.isEditMode && this.flightId) {
+      await this.loadExistingFlight();
+    }
   }
 
   private async loadData() {
@@ -209,6 +228,72 @@ export class FlightsAddComponent implements OnInit {
     } finally {
       this.loadingService.endLoadingTask();
     }
+  }
+
+  private async loadExistingFlight() {
+    try {
+      this.loadingService.startLoadingTask();
+      
+      const [flight, flightExtras] = await Promise.all([
+        firstValueFrom(this.airlineFetchService.getFlight(this.flightId!)),
+        firstValueFrom(this.flightFetchService.getFlightExtras(this.flightId!)),
+      ]);
+      this.existingFlight = flight;
+      this.flightExtras = flightExtras;
+      
+      // Set route
+      const route = this.routes.find(r => r.id.toString() === this.existingFlight!.route_id.toString());
+      if (route) {
+        this.currentRoute.set(route);
+      }
+      
+      // Set aircraft
+      const aircraft = this.aircrafts.find(a => a.id.toString() === this.existingFlight!.aircraft.id.toString());
+      if (aircraft) {
+        this.currentAircraft.set(aircraft);
+      }
+      
+      // Set form values
+      this.flightDate = new Date(this.existingFlight.departure_time);
+      this.departureTime = this.formatTimeForInput(this.existingFlight.departure_time);
+      
+      // Calculate duration
+      const depTime = new Date(this.existingFlight.departure_time);
+      const arrTime = new Date(this.existingFlight.arrival_time);
+      this.flightDurationMinutes = Math.round((arrTime.getTime() - depTime.getTime()) / (1000 * 60));
+      
+      // Set prices
+      this.priceFirstClass = this.existingFlight.price_first_class;
+      this.priceBusinessClass = this.existingFlight.price_business_class;
+      this.priceEconomyClass = this.existingFlight.price_economy_class;
+      this.priceInsurance = this.existingFlight.price_insurance;
+      
+      // Set optional fields if they exist
+      if (this.existingFlight.gate) this.gate = this.existingFlight.gate;
+      if (this.existingFlight.terminal) this.terminal = this.existingFlight.terminal;
+      if (this.existingFlight.checkin_start_time) {
+        this.checkinStartTime = this.formatTimeForInput(this.existingFlight.checkin_start_time);
+      }
+      if (this.existingFlight.checkin_end_time) {
+        this.checkinEndTime = this.formatTimeForInput(this.existingFlight.checkin_end_time);
+      }
+      if (this.existingFlight.boarding_start_time) {
+        this.boardingStartTime = this.formatTimeForInput(this.existingFlight.boarding_start_time);
+      }
+      if (this.existingFlight.boarding_end_time) {
+        this.boardingEndTime = this.formatTimeForInput(this.existingFlight.boarding_end_time);
+      }
+      
+    } catch (error) {
+      console.error('Error loading existing flight:', error);
+    } finally {
+      this.loadingService.endLoadingTask();
+    }
+  }
+
+  private formatTimeForInput(dateTimeString: string): string {
+    const date = new Date(dateTimeString);
+    return date.toTimeString().slice(0, 5); // HH:MM format
   }
 
   // Route selection methods
@@ -379,29 +464,48 @@ export class FlightsAddComponent implements OnInit {
       );
       const arrivalDateTime = this.calculateArrivalTime();
 
-      // Create the flight
-      const createdFlight = await firstValueFrom(
-        this.airlineFetchService.addFlight({
-          route_id: route.id,
-          aircraft_id: aircraft.id,
-          departure_time: departureDateTime,
-          arrival_time: arrivalDateTime,
-          price_economy_class: this.priceEconomyClass,
-          price_business_class: this.priceBusinessClass,
-          price_first_class: this.priceFirstClass,
-          price_insurance: this.priceInsurance,
-          extras: this.flightExtras.map((extra) => ({
-            extra_id: extra.id,
-            price: extra.price,
-            limit: extra.limit,
-          })),
-        })
-      );
+      const flightData = {
+        route_id: route.id,
+        aircraft_id: aircraft.id,
+        departure_time: departureDateTime,
+        arrival_time: arrivalDateTime,
+        price_economy_class: this.priceEconomyClass,
+        price_business_class: this.priceBusinessClass,
+        price_first_class: this.priceFirstClass,
+        price_insurance: this.priceInsurance,
+        gate: this.gate || undefined,
+        terminal: this.terminal || undefined,
+        checkin_start_time: this.checkinStartTime ? this.timeStringToDateTime(this.checkinStartTime, this.flightDate!) : undefined,
+        checkin_end_time: this.checkinEndTime ? this.timeStringToDateTime(this.checkinEndTime, this.flightDate!) : undefined,
+        boarding_start_time: this.boardingStartTime ? this.timeStringToDateTime(this.boardingStartTime, this.flightDate!) : undefined,
+        boarding_end_time: this.boardingEndTime ? this.timeStringToDateTime(this.boardingEndTime, this.flightDate!) : undefined,
+        extras: this.flightExtras.map((extra) => ({
+          extra_id: this.isEditMode ? extra.extra_id! : extra.id,
+          price: extra.price,
+          limit: extra.limit,
+        })),
+      };
+
+      if (this.isEditMode && this.flightId) {
+        // Update existing flight - convert route_id to string for update
+        const updateData = {
+          ...flightData,
+          route_id: flightData.route_id
+        };
+        await firstValueFrom(
+          this.airlineFetchService.updateFlight(this.flightId, updateData)
+        );
+      } else {
+        // Create new flight
+        await firstValueFrom(
+          this.airlineFetchService.addFlight(flightData)
+        );
+      }
 
       // Navigate back to flights list
       this.router.navigate(['/flights']);
     } catch (error) {
-      console.error('Errore nel salvataggio del volo:', error);
+      console.error(this.isEditMode ? 'Errore nell\'aggiornamento del volo:' : 'Errore nel salvataggio del volo:', error);
     } finally {
       this.isSaving = false;
       this.loadingService.endLoadingTask();

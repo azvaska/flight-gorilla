@@ -1,5 +1,5 @@
 <div class="flex w-full justify-center mb-16 text-3xl font-bold">
-  Aggiungi Volo
+  {{ isEditMode ? 'Modifica Volo' : 'Aggiungi Volo' }}
 </div>
 
 <div class="flex flex-col justify-between w-[550px] space-y-1">
@@ -395,7 +395,7 @@
         <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
       </div>
     } @else {
-      Salva Volo
+      {{ isEditMode ? 'Aggiorna Volo' : 'Salva Volo' }}
     }
   </button>
 </div>

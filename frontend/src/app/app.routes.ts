@@ -122,6 +122,11 @@ export const routes: Routes = [
     component: FlightsAddComponent,
   },
   {
+    path: 'flights/edit/:flightId',
+    pathMatch: 'full',
+    component: FlightsAddComponent,
+  },
+  {
     path: 'flights/:flightId',
     pathMatch: 'full',
     component: FlightDetailsComponent,
