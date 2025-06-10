@@ -81,13 +81,76 @@
     </div>
   </div>
 
-  <div class="flex w-full max-w-5xl justify-end">
-    <button
-      hlmBtn
-      class="bg-black text-white px-10 mt-4"
-      [routerLink]="'/flights/add'"
-    >
-      + Add new Flight
-    </button>
+  <div class="flex w-full  max-w-5xl justify-center items-center mt-4">
+
+    <!-- Paginazione -->
+    <div hlmCard class="flex w-fit justify-center p-3" *ngIf="totalPages > 1">
+      <nav hlmPagination>
+        <div hlmPaginationContent>
+          <!-- Bottone Previous -->
+          <hlm-pagination-previous 
+            [class.opacity-50]="currentPage === 1"
+            [class.cursor-not-allowed]="currentPage === 1"
+            (click)="currentPage > 1 && onPageChange(currentPage - 1)">
+          </hlm-pagination-previous>
+  
+          <!-- Prima pagina -->
+          <div hlmPaginationItem *ngIf="currentPage > 2">
+            <button hlmPaginationLink (click)="onPageChange(1)">1</button>
+          </div>
+  
+          <!-- Ellipsis iniziale -->
+          <hlm-pagination-ellipsis *ngIf="currentPage > 3"></hlm-pagination-ellipsis>
+  
+          <!-- Pagina precedente -->
+          <div hlmPaginationItem *ngIf="currentPage > 1">
+            <button hlmPaginationLink (click)="onPageChange(currentPage - 1)">
+              {{ currentPage - 1 }}
+            </button>
+          </div>
+  
+          <!-- Pagina corrente -->
+          <div hlmPaginationItem>
+            <button hlmPaginationLink [attr.aria-current]="'page'" class="bg-primary text-primary-foreground">
+              {{ currentPage }}
+            </button>
+          </div>
+  
+          <!-- Pagina successiva -->
+          <div hlmPaginationItem *ngIf="currentPage < totalPages">
+            <button hlmPaginationLink (click)="onPageChange(currentPage + 1)">
+              {{ currentPage + 1 }}
+            </button>
+          </div>
+  
+          <!-- Ellipsis finale -->
+          <hlm-pagination-ellipsis *ngIf="currentPage < totalPages - 2"></hlm-pagination-ellipsis>
+  
+          <!-- Ultima pagina -->
+          <div hlmPaginationItem *ngIf="currentPage < totalPages - 1">
+            <button hlmPaginationLink (click)="onPageChange(totalPages)">
+              {{ totalPages }}
+            </button>
+          </div>
+  
+          <!-- Bottone Next -->
+          <hlm-pagination-next 
+            [class.opacity-50]="currentPage === totalPages"
+            [class.cursor-not-allowed]="currentPage === totalPages"
+            (click)="currentPage < totalPages && onPageChange(currentPage + 1)">
+          </hlm-pagination-next>
+        </div>
+      </nav>
+    </div>
+  
+    <div class="flex w-full justify-end">
+      <button
+        hlmBtn
+        [routerLink]="'/flights/add'"
+      >
+        + Add new Flight
+      </button>
+    </div>
   </div>
+
 </div>

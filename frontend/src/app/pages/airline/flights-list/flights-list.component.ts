@@ -32,7 +32,15 @@ import {
   HlmAlertDialogTitleDirective,
 } from '@spartan-ng/ui-alertdialog-helm';
 import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
-
+import {
+  HlmPaginationContentDirective,
+  HlmPaginationDirective,
+  HlmPaginationEllipsisComponent,
+  HlmPaginationItemDirective,
+  HlmPaginationLinkDirective,
+  HlmPaginationNextComponent,
+  HlmPaginationPreviousComponent,
+} from '@spartan-ng/ui-pagination-helm';
 @Component({
   selector: 'app-flights-list',
   imports: [
@@ -58,6 +66,13 @@ import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
     BrnAlertDialogContentDirective,
     BrnAlertDialogTriggerDirective,
     HlmAlertDialogCancelButtonDirective,
+    HlmPaginationContentDirective,
+    HlmPaginationDirective,
+    HlmPaginationEllipsisComponent,
+    HlmPaginationItemDirective,
+    HlmPaginationLinkDirective,
+    HlmPaginationNextComponent,
+    HlmPaginationPreviousComponent,
   ],
   providers: [provideIcons({ lucideEllipsis })  ],
   templateUrl: './flights-list.component.html',
@@ -68,22 +83,35 @@ import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
 export class FlightsListComponent {
   protected flights: IAirlineFlight[] = [];
   protected isDeleteFlightLoading = false;
+  protected currentPage = 1;
+  protected totalPages = 1;
+  protected readonly limit = 10;
 
   constructor(
     private airlineFetchService: AirlineFetchService, 
     private loadingService: LoadingService,
     private router: Router
   ) {
-    this.fetchFlights().then((flights) => {
-      this.flights = flights;
+    this.fetchFlights().then((response) => {
+      this.flights = response.items;
+      this.totalPages = response.total_pages;
     });
   }
 
-  protected async fetchFlights() {
+  protected async fetchFlights(page: number = 1) {
     this.loadingService.startLoadingTask();
-    const flights = await firstValueFrom(this.airlineFetchService.getFlights());
+    const response = await firstValueFrom(
+      this.airlineFetchService.getFlights(page, this.limit)
+    );
     this.loadingService.endLoadingTask();
-    return flights;
+    return response;
+  }
+
+  protected async onPageChange(page: number) {
+    this.currentPage = page;
+    const response = await this.fetchFlights(page);
+    this.flights = response.items;
+    this.totalPages = response.total_pages;
   }
 
   protected formatTime(time: string) {

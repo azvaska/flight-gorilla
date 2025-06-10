@@ -79,6 +79,9 @@
       ],
       "@spartan-ng/ui-table-helm": [
         "./libs/ui/ui-table-helm/src/index.ts"
+      ],
+      "@spartan-ng/ui-pagination-helm": [
+        "./libs/ui/ui-pagination-helm/src/index.ts"
       ]
     }
   },

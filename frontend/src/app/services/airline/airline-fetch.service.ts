@@ -40,7 +40,7 @@ export class AirlineFetchService {
       `${environment.apiUrl}/airline/aircrafts/${aircraftId}`
     );
   }
- 
+
   public updateAircraft(
     aircraftId: string,
     aircraft: Partial<{
@@ -110,8 +110,14 @@ export class AirlineFetchService {
     );
   }
 
-  public getFlights(): Observable<IAirlineFlight[]> {
-    return this.http.get<IAirlineFlight[]>(`${environment.apiUrl}/airline/flights`);
+  public getFlights(page?: number, limit?: number): Observable<{
+    items: IAirlineFlight[];
+    total_pages: number;
+  }> {
+    return this.http.get<{
+      items: IAirlineFlight[];
+      total_pages: number;
+    }>(`${environment.apiUrl}/airline/flights?page=${page}&limit=${limit}`);
   }
 
   public addFlight(flight: {
@@ -127,7 +133,7 @@ export class AirlineFetchService {
       extra_id: string;
       price: number;
       limit: number;
-    }[]
+    }[];
   }): Observable<IAirlineFlight> {
     return this.http.post<IAirlineFlight>(
       `${environment.apiUrl}/airline/flights`,
@@ -150,7 +156,7 @@ export class AirlineFetchService {
         extra_id: string;
         price: number;
         limit: number;
-      }[]
+      }[];
     }>
   ): Observable<IAirlineFlight> {
     return this.http.put<IAirlineFlight>(
