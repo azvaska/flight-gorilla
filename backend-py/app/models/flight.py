@@ -75,8 +75,8 @@ class Flight(db.Model):
     aircraft: Mapped[AirlineAircraft] = relationship(AirlineAircraft, back_populates='flights', foreign_keys=[aircraft_id])
     available_extras: Mapped[List['FlightExtra']] = relationship('FlightExtra', back_populates='flight', cascade='all, delete-orphan',lazy='noload' )
 
-    departure_bookings = relationship("BookingDepartureFlight", back_populates="flight")
-    return_bookings = relationship("BookingReturnFlight", back_populates="flight")
+    departure_bookings = relationship("BookingDepartureFlight", back_populates="flight",lazy='joined')
+    return_bookings = relationship("BookingReturnFlight", back_populates="flight",lazy='joined')
 
     __table_args__ = (
         # For flight search queries - most important

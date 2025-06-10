@@ -15,7 +15,7 @@ from app.models.airlines import Airline, AirlineAircraft
 from app.models.extra import Extra
 from app.apis.location import nation_model
 from app.models.flight import Route, Flight, FlightExtra
-from app.schemas.flight import FlightSchema, flight_schema, flight_extra_schema, flights_extra_schema
+from app.schemas.flight import FlightSchema, flight_schema,all_flights_schema, flight_extra_schema, flights_extra_schema
 from app.schemas.airline import AirlineSchema, airline_schema, airlines_schema,route_schema,routes_schema, extra_schema, extras_schema, airline_aircraft_schema, airline_aircrafts_schema
 from app.apis.airport import airport_model
 
@@ -637,7 +637,7 @@ class MyAirlineFlightsList(Resource):
     def get(self, airline_id):
         """Get all flights for the current airline"""
         flights = Flight.query.join(Flight.route).filter(Route.airline_id == airline_id).all()
-        return marshal([flight_schema.dump(flight) for flight in flights], all_flight_output_model), 200
+        return all_flights_schema.dump(flights), 200
 
     @api.expect(flight_model_input)
     @jwt_required()

@@ -59,7 +59,32 @@ class FlightSchema(ma.SQLAlchemyAutoSchema):
         if aircraft_id and not AirlineAircraft.query.get(aircraft_id):
             raise ValidationError("Airline aircraft with given ID does not exist.", field_name="aircraft_id")
 
+class AirlineAircraftSchemaMinified(ma.SQLAlchemyAutoSchema):
+    
+    airline_id = ma.UUID(dump_only=True)
+    
+    aircraft = ma.Nested('app.schemas.aircraft.AircraftSchema', dump_only=True)
+    class Meta:
+        model = AirlineAircraft
+        load_instance = False
+        include_fk = True
+        only = ('id', 'aircraft_id', 'airline_id','tail_number')
+
 # Create schema instances
+class AllFlightSchema(ma.SQLAlchemyAutoSchema):
+    departure_airport = ma.Nested(AirportSchema, dump_only=True)
+    arrival_airport = ma.Nested(AirportSchema, dump_only=True)
+    flight_number = ma.String(dump_only=True)
+    aircraft = ma.Nested(AirlineAircraftSchemaMinified, dump_only=True)
+    route_id = ma.Integer(dump_only=True)
+    class Meta:
+        model = Flight
+        load_instance = False
+        include_fk = False
+        exclude = ('checkin_start_time','checkin_end_time', 'boarding_start_time', 'boarding_end_time', 'gate', 'terminal', 'price_first_class', 'price_business_class', 'price_economy_class', 'price_insurance', )
+
+
+
 
 class FlightExtraSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
@@ -79,6 +104,8 @@ class FlightExtraSchema(ma.SQLAlchemyAutoSchema):
 flight_schema = FlightSchema()
 flights_schema = FlightSchema(many=True)
 
+all_flight_schema = AllFlightSchema()
+all_flights_schema = AllFlightSchema(many=True)
 
 flight_extra_schema = FlightExtraSchema()
 flights_extra_schema = FlightExtraSchema(many=True)
