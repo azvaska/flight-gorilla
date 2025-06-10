@@ -110,6 +110,7 @@ class Flight(db.Model):
     def bookings(self):
         return [*self.departure_bookings, *self.return_bookings]
     
+
     @property
     def booked_seats(self):
         booked_seats = []
@@ -119,7 +120,8 @@ class Flight(db.Model):
             booked_seats.append(booking.seat_number)
 
         session_seats_obj = (Seat.query.join(SeatSession)
-                             .filter(SeatSession.session_end_time > datetime.datetime.now(datetime.UTC),Seat.flight_id == self.id).all())
+                             .filter(SeatSession.session_end_time > datetime.datetime.now(datetime.UTC),
+                                     Seat.flight_id == self.id).all())
         session_seats = [seat.seat_number for seat in session_seats_obj]
         return booked_seats + session_seats
     

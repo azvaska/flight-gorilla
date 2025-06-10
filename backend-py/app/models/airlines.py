@@ -38,62 +38,103 @@ class AirlineAircraft(db.Model):
     aircraft = relationship('Aircraft', back_populates='airline_aircrafts', foreign_keys=[aircraft_id])
     flights: Mapped[List['Flight']] = relationship('Flight', back_populates='aircraft', cascade='all, delete-orphan') #TODO ha senso che cancelli anche i voli?
     
+    def _get_seats_by_class(self, class_type: ClassType) -> List[str]:
+        """Efficient method to get seats by class type with caching"""
+        cache_key = f'_cached_{class_type.value}_seats'
+        
+        if hasattr(self, cache_key):
+            return getattr(self, cache_key)
+        
+        seats = db.session.query(AirlineAircraftSeat.seat_number).filter_by(
+            airline_aircraft_id=self.id,
+            class_type=class_type
+        ).all()
+        
+        result = [seat[0] for seat in seats]
+        setattr(self, cache_key, result)
+        return result
+    
     @property
     def first_class_seats(self) -> List[str]:
-        seats = AirlineAircraftSeat.query.filter_by(
-            airline_aircraft_id=self.id,
-            class_type=ClassType.FIRST_CLASS
-        ).all()
-        return [seat.seat_number for seat in seats]
+        return self._get_seats_by_class(ClassType.FIRST_CLASS)
     
-    def add_seats(self, value: List[str],class_type: ClassType):
-        #TODO ADD TRIGGER to check se ci sono troppi posti
+    @property
+    def business_class_seats(self) -> List[str]:
+        return self._get_seats_by_class(ClassType.BUSINESS_CLASS)
+    
+    @property
+    def economy_class_seats(self) -> List[str]:
+        return self._get_seats_by_class(ClassType.ECONOMY_CLASS)
+    
+    def _get_all_existing_seats(self) -> set:
+        """Get all existing seats in a single query"""
+        seats = db.session.query(AirlineAircraftSeat.seat_number).filter_by(
+            airline_aircraft_id=self.id
+        ).all()
+        return {seat[0] for seat in seats}
+    
+    def add_seats(self, value: List[str], class_type: ClassType):
         if not isinstance(value, list):
             raise ValueError("seats must be a list")
-        business_class_seats = self.business_class_seats
-        economy_class_seats = self.economy_class_seats
-        first_class_seats = self.first_class_seats
+        
+        if not value:  # Empty list
+            return
+        
+        # Validate all seats first
+        normalized_seats = []
         for seat in value:
             seat = seat.strip().upper()
             if not re.match(r'^\d+[A-Z]$', seat):
                 raise ValueError(f"Invalid seat number format: {seat}")
-            if seat in business_class_seats or seat in economy_class_seats or seat in first_class_seats:
-                AirlineAircraftSeat.query.filter_by(
-                    airline_aircraft_id=self.id,
-                    seat_number=seat
-                ).delete()
-                db.session.commit()
-            seat_in = AirlineAircraftSeat(airline_aircraft_id=self.id, seat_number=seat, class_type=class_type)
-            db.session.add(seat_in)
+            normalized_seats.append(seat)
+        
+        # Get all existing seats in one query
+        existing_seats = self._get_all_existing_seats()
+        
+        # Remove existing seats that conflict (batch delete)
+        seats_to_remove = [seat for seat in normalized_seats if seat in existing_seats]
+        if seats_to_remove:
+            db.session.query(AirlineAircraftSeat).filter(
+                AirlineAircraftSeat.airline_aircraft_id == self.id,
+                AirlineAircraftSeat.seat_number.in_(seats_to_remove)
+            ).delete(synchronize_session=False)
+        
+        # Batch insert new seats
+        new_seats = [
+            AirlineAircraftSeat(
+                airline_aircraft_id=self.id,
+                seat_number=seat,
+                class_type=class_type
+            )
+            for seat in normalized_seats
+        ]
+        
+        db.session.add_all(new_seats)
+        
+        # Clear caches
+        self._clear_seat_caches()
+        
+        # Single commit at the end
         db.session.commit()
+    
+    def _clear_seat_caches(self):
+        """Clear all cached seat data"""
+        for class_type in ClassType:
+            cache_key = f'_cached_{class_type.value}_seats'
+            if hasattr(self, cache_key):
+                delattr(self, cache_key)
     
     @first_class_seats.setter
     def first_class_seats(self, value: List[str]):
-        self.add_seats(value,ClassType.FIRST_CLASS)
+        self.add_seats(value, ClassType.FIRST_CLASS)
 
-    @property
-    def business_class_seats(self) -> List[str]:
-        seats = AirlineAircraftSeat.query.filter_by(
-            airline_aircraft_id=self.id,
-            class_type=ClassType.BUSINESS_CLASS
-        ).all()
-        return [seat.seat_number for seat in seats]
-    
     @business_class_seats.setter
     def business_class_seats(self, value: List[str]):
-        self.add_seats(value,ClassType.BUSINESS_CLASS)
-    @property
-    def economy_class_seats(self) -> List[str]:
-        seats = AirlineAircraftSeat.query.filter_by(
-            airline_aircraft_id=self.id,
-            class_type=ClassType.ECONOMY_CLASS
-        ).all()
-        return [seat.seat_number for seat in seats]
-    
-    
+        self.add_seats(value, ClassType.BUSINESS_CLASS)
+        
     @economy_class_seats.setter
     def economy_class_seats(self, value: List[str]):
-        self.add_seats(value,ClassType.ECONOMY_CLASS)   
+        self.add_seats(value, ClassType.ECONOMY_CLASS)
 
 class AirlineAircraftSeat(db.Model):
     __tablename__ = 'airline_aircraft_seat'
@@ -102,3 +143,7 @@ class AirlineAircraftSeat(db.Model):
     class_type: Mapped[ClassType] = mapped_column(db.Enum(ClassType), nullable=False)
 
     airline_aircraft: Mapped[AirlineAircraft] = relationship(AirlineAircraft, back_populates='seats', foreign_keys=[airline_aircraft_id])
+    __table_args__ = (
+        # Index for efficient seat queries by aircraft and class
+        db.Index('ix_airline_aircraft_seat_class', 'airline_aircraft_id', 'class_type'),
+    )
