@@ -640,9 +640,9 @@ class RealisticFlightGenerator:
         return original_flights_created
 
 
-@click.command('generate-comprehensive-flights')
+@click.command('seed-flights')
 @click.option('--start-hours', default=2, help='Hours in the future to start generating routes (default: 2)')
-@click.option('--max-routes-per-airline', default=30, help='Maximum routes per airline (default: 80)')
+@click.option('--max-routes-per-airline', default=5, help='Maximum routes per airline (default: 80)')
 @click.option('--include-original', is_flag=True, default=True, help='Include original test flights (default: True)')
 @click.option('--include-intercontinental', is_flag=True, default=True, help='Include intercontinental flights (default: True)')
 @click.option('--italian-focus', is_flag=True, default=True, help='Focus on Italian airports and routes (default: True)')

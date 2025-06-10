@@ -173,10 +173,18 @@ flight_model_output = api.model('AirlineFlightOutput', {
     'boarding_end_time': fields.DateTime(required=True, description='Boarding end time'),
 })
 
+
+airline_aircraft_minified_model = api.model('AirlineAircraftMinified', {
+    "id": fields.String(readonly=True, description='Airline Aircraft ID'),
+    "tail_number": fields.String(required=False, description='Aircraft tail number'),
+    "aircraft": fields.Nested(aircraft_model, required=True, description='Aircraft')
+})
+
+
 all_flight_output_model = api.model('AllFlightOutput', {
     'id': fields.String(readonly=True, description='Flight ID'),
     'flight_number': fields.String(required=True, description='Flight number'),
-    'aircraft': fields.Nested(airline_aircraft_model, description='Aircraft'),
+    'aircraft': fields.Nested(airline_aircraft_minified_model, description='Aircraft'),
     'route_id': fields.String(readonly=True, description='Route ID'),
     'departure_time': fields.DateTime(required=True, description='Departure time'),
     'arrival_time': fields.DateTime(required=True, description='Arrival time'),
