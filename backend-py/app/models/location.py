@@ -11,7 +11,9 @@ class Nation(db.Model):
     cities: Mapped[List['City']] = relationship('City', back_populates='nation')
     __table_args__ = (
         db.Index('ix_nation_alpha2', 'alpha2'),
-        db.Index('ix_nation_name', 'name'),
+        # db.Index('ix_nation_name', 'name'),
+        db.Index('idx_nation_name_trgm', 'name', postgresql_using='gin', postgresql_ops={'name': 'gin_trgm_ops'}),
+
     )
 
 class City(db.Model):

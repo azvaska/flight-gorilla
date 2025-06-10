@@ -6,6 +6,7 @@ import os
 from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_security import SQLAlchemySessionUserDatastore, Security
+from sqlalchemy import text, event
 
 from app.commands import init_app as init_commands
 from app.models import Airline
@@ -39,9 +40,9 @@ jwt = JWTManager(app_flask)
 
 with app_flask.app_context():
     import app.models
-
     register_task(scheduler, app_flask)
     api.init_app(app_flask)
+    # app_flask.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
     ma.init_app(app_flask)
     api.handle_errors = False  # Disable Flask-RESTful
     scheduler.init_app(app_flask)
@@ -59,4 +60,5 @@ with app_flask.app_context():
     
 
 if __name__ == '__main__':
+    # dashboard.bind(app_flask)  # Should be added after all endpoints have been defined
     app_flask.run()

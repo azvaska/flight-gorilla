@@ -8,12 +8,13 @@ from sqlalchemy import text
 @with_appcontext
 def seed_nations():
     db_session = current_app.extensions['sqlalchemy'].session
-
+    click.echo('Seeding nations into the database...')
     with open('./init/nation.sql', 'r') as f:
         sql = f.read()
         for statement in sql.split(';'):
             stmt = statement.strip()
             if stmt:
+
                 db_session.execute(text(stmt))
     
     db_session.commit()

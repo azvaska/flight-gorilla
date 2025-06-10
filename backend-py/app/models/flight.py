@@ -73,7 +73,7 @@ class Flight(db.Model):
 
     route: Mapped[Route] = relationship(Route, back_populates='flights', foreign_keys=[route_id])
     aircraft: Mapped[AirlineAircraft] = relationship(AirlineAircraft, back_populates='flights', foreign_keys=[aircraft_id])
-    available_extras: Mapped[List['FlightExtra']] = relationship('FlightExtra', back_populates='flight', cascade='all, delete-orphan', lazy='joined')
+    available_extras: Mapped[List['FlightExtra']] = relationship('FlightExtra', back_populates='flight', cascade='all, delete-orphan',lazy='noload' )
 
     departure_bookings = relationship("BookingDepartureFlight", back_populates="flight")
     return_bookings = relationship("BookingReturnFlight", back_populates="flight")
@@ -146,7 +146,7 @@ class FlightExtra(db.Model):
     limit: Mapped[int] = mapped_column(db.Integer, nullable=False)
 
     flight: Mapped[Flight] = relationship(Flight, back_populates='available_extras')
-    extra: Mapped[Extra] = relationship(Extra, back_populates='flight_extras', lazy='joined')
+    extra: Mapped[Extra] = relationship(Extra, back_populates='flight_extras', foreign_keys=[extra_id], lazy='joined')
     
     #i want flight and extra_id to be unique together
     __table_args__ = (

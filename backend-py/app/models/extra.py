@@ -18,5 +18,5 @@ class Extra(db.Model):
     )
 
     airline: Mapped[Airline] = relationship(Airline, back_populates="extras", foreign_keys=[airline_id], lazy='joined')
-    flight_extras: Mapped[List['FlightExtra']] = relationship('FlightExtra', back_populates='extra', cascade='all, delete-orphan', lazy='joined')
+    flight_extras: Mapped[List['FlightExtra']] = relationship('FlightExtra', back_populates='extra', cascade='all, delete-orphan',lazy='raise' )
     
