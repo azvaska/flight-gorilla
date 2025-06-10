@@ -13,7 +13,7 @@ export class AirlineFetchService {
   constructor(private http: HttpClient) {}
 
   public getAirline(): Observable<IAirline> {
-    return this.http.get<IAirline>(`${environment.apiUrl}/airline`);
+    return this.http.get<IAirline>(`${environment.apiUrl}/airline/`);
   }
 
   public getAircrafts(): Observable<IAirlineAircraft[]> {
