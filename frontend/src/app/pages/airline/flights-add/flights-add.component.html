@@ -205,7 +205,8 @@
           [(value)]="flightDate"
           [placeholder]="'Seleziona una data'"
           [enableFlexibleDate]="false"
-          [minDate]="today"
+          [minDate]="currentRoute() ? toDate(currentRoute()!.period_start) : undefined"
+          [maxDate]="currentRoute() ? toDate(currentRoute()!.period_end) : undefined"
         />
       </div>
     </div>

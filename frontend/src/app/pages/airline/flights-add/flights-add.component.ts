@@ -515,4 +515,7 @@ export class FlightsAddComponent implements OnInit {
   protected readonly formatTime = formatTime;
   protected readonly dateToString = dateToString;
   protected readonly Math = Math;
+  protected toDate(date: string) {
+    return new Date(date);
+  }
 }
