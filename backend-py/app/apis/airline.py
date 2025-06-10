@@ -223,6 +223,12 @@ flight_model_seats_output = api.model('AirlineFlightSeatsOutput', {
 })
 
 
+flights_pagination_model = api.model('FlightsPagination', {
+    'items': fields.List(fields.Nested(all_flight_output_model), description='List of flights'),
+    'total_pages': fields.Integer(description='Total number of flight pages'),
+})
+
+
 
 
 
@@ -230,6 +236,12 @@ flight_model_seats_output = api.model('AirlineFlightSeatsOutput', {
 airline_list_parser = reqparse.RequestParser()
 airline_list_parser.add_argument('name', type=str, help='Filter by airline name (case-insensitive)', location='args')
 airline_list_parser.add_argument('nation_id', type=int, help='Filter by nation ID', location='args')
+
+flight_page_parser = reqparse.RequestParser()
+flight_page_parser.add_argument('page_number', type=int, default=1, help='Page number for pagination', location='args')
+flight_page_parser.add_argument('limit', type=int, default=10,
+                        help='Limit the number of results returned for page', location='args')
+
 
 @api.route('/all')
 class AirlineList(Resource):
@@ -632,12 +644,46 @@ class MyAirlineFlightsList(Resource):
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
-    @api.response(200, 'OK', [all_flight_output_model])
+    @api.expect(flight_page_parser)
+    @api.response(200, 'OK', flights_pagination_model)
     @api.response(404, 'Not Found')
     def get(self, airline_id):
         """Get all flights for the current airline"""
-        flights = Flight.query.join(Flight.route).filter(Route.airline_id == airline_id).all()
-        return all_flights_schema.dump(flights), 200
+        # Handle pagination parameters
+        page_number = request.args.get('page_number', 1, type=int)
+        limit = request.args.get('limit', 10, type=int)
+        
+        if page_number < 1:
+            return {'error': 'Page number must be greater than 0'}, 400
+        if limit < 1:
+            return {'error': 'Limit must be greater than 0'}, 400
+        
+        # Use database pagination instead of loading all flights
+        flights_query = Flight.query.join(Flight.route).filter(Route.airline_id == airline_id)
+        
+        # Get total count for pagination info
+        total_flights = flights_query.count()
+        
+        if total_flights == 0:
+            return {'error': 'No flights found for the current airline'}, 404
+        
+        # Calculate pagination
+        total_pages = (total_flights + limit - 1) // limit
+        offset = (page_number - 1) * limit
+        
+        # Apply pagination at database level
+        flights = flights_query.offset(offset).limit(limit).all()
+        
+        # Serialize the flights
+        flight_data = all_flights_schema.dump(flights)
+        
+        # Return paginated response
+        flights_pagination = {
+            'items': flight_data,
+            'total_pages': total_pages
+        }
+
+        return flights_pagination, 200
 
     @api.expect(flight_model_input)
     @jwt_required()
