@@ -47,7 +47,7 @@
 
   <flight-card [flights]="mappedDepartureFlights" title="Departure Flights" />
 
-  @if (mappedReturnFlights) {
+  @if (mappedReturnFlights &&mappedReturnFlights.length > 0) {
   <flight-card [flights]="mappedReturnFlights" title="Return Flights" />
   }
   <!--  align the flex to have all items that starts from right -->

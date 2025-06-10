@@ -29,7 +29,9 @@
           <li>Dedicated service</li>
         </ul>
       </div>
-      <div class="text-xl font-bold text-black ml-4">$299</div>
+      <div class="text-xl font-bold text-black ml-4">
+        {{ currentFlight!.price_first_class }}€
+      </div>
     </div>
     } @if(currentFlightSeats.seats_info.business_class_seats.length > 0) {
     <!-- BUSINESS ROW -->
@@ -53,7 +55,9 @@
           <li>Priority boarding</li>
         </ul>
       </div>
-      <div class="text-xl font-bold text-black ml-4">$199</div>
+      <div class="text-xl font-bold text-black ml-4">
+        {{ currentFlight!.price_business_class }}€
+      </div>
     </div>
     } @if(currentFlightSeats.seats_info.economy_class_seats.length > 0) {
     <!-- ECONOMY ROW -->
@@ -77,7 +81,9 @@
           <li>Complimentary water</li>
         </ul>
       </div>
-      <div class="text-xl font-bold text-black ml-4">$99</div>
+      <div class="text-xl font-bold text-black ml-4">
+        {{ currentFlight!.price_economy_class }}€
+      </div>
     </div>
     }
     <button

@@ -50,8 +50,9 @@ export class AuthService {
     this.loggedIn$.next(false);
 
     // We need this to fully reload the page if we logout
-    this.router.navigate(['/']);
-    window.location.reload();
+    this.router.navigate(['/']).then(() => {
+      window.location.reload();
+    });
   }
 
   get isLoggedIn() {

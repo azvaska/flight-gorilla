@@ -1,5 +1,5 @@
 @if (booking) {
-<div class="flex flex-col items-center space-y-8 w-full">
+<div class="flex flex-col items-center space-y-8 w-full relative">
   <div class="flex flex-row justify-between w-full">
     <button
       hlmBtn
@@ -8,9 +8,9 @@
       class="bg-white"
       [routerLink]="['/user/bookings']"
     >
-      <ng-icon name="lucideArrowLeft" size="sm" hlm></ng-icon>
+    Back to bookings
     </button>
-    <h1 class="text-2xl font-semibold text-gray-800">
+    <h1 class="text-2xl font-semibold text-gray-800 absolute left-1/2 -translate-x-1/2">
       Your trip to
       {{
         booking.departure_flights[booking.departure_flights.length - 1].flight
