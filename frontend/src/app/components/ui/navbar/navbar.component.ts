@@ -1,5 +1,5 @@
 // navbar.component.ts
-import {Component, ViewChild} from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import {
   HlmAvatarComponent,
@@ -10,7 +10,8 @@ import { PopoverComponent } from '@/app/components/ui/popover/popover.component'
 import { PopoverTriggerDirective } from '@/app/components/ui/popover/popover-trigger.directive';
 import { UserFetchService } from '@/app/services/user/user-fetch.service';
 import { IUser } from '@/types/user/user';
-import {RouterLink} from '@angular/router';
+import { RouterLink } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -43,16 +44,13 @@ export class NavbarComponent {
       this.isLoggedIn = isLoggedIn;
       if (this.isLoggedIn) {
         // We try and fetch user infos
-        this.userFetchService.getUser().subscribe({
-          next: (user) => {
-            this.user = user;
-          },
-          error: (error) => {
+        firstValueFrom(this.userFetchService.getUser())
+          .then((user) => (this.user = user))
+          .catch((error) => {
             console.error(error);
             // If the user is not found, we logout
             this.authService.logout();
-          },
-        });
+          });
       } else {
         this.user = null;
       }
@@ -60,6 +58,6 @@ export class NavbarComponent {
   }
 
   protected logout() {
-    this.authService.logout();
+    firstValueFrom(this.authService.logout());
   }
 }

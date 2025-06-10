@@ -17,7 +17,7 @@ from app.apis import api
 from app.models.user import User, Role
 
 app_flask = Flask(__name__)
-CORS(app_flask, supports_credentials=True, allow_headers=["Content-Type", "Authorization"])
+CORS(app_flask, supports_credentials=True, allow_headers=["Content-Type", "Authorization", "X-CSRF-TOKEN"])
 app_flask.config.from_object(Config)
 login = LoginManager(app_flask)
 import logging

@@ -1,9 +1,9 @@
 import secrets
 import string
 
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, set_access_cookies, set_refresh_cookies, unset_jwt_cookies, unset_refresh_cookies
 from flask_restx import Namespace, Resource, fields, marshal
-from flask import request,current_app
+from flask import request,current_app, make_response
 from flask_security import hash_password
 from sqlalchemy.exc import IntegrityError
 
@@ -31,7 +31,6 @@ user_login_model = api.model('UserLoginModel', {
 
 login_model_output = api.model('LoginOutput', {
     'access_token': fields.String(required=True, description='Access Token'),
-    'refresh_token': fields.String(required=True, description='Refresh Token'),
     'user': fields.Nested(user_login_model, required=True, description='User')
 })
 
@@ -74,15 +73,23 @@ def generate_token(user):
     token = create_access_token(identity=str(user.id))
     refresh_token = create_refresh_token(identity=str(user.id))
 
-    return marshal({
+    # Create the JSON data
+    data = marshal({
         "access_token": token,
-        "refresh_token": refresh_token,
         "user": {
             "id": str(user.id),
             "active": user.active,
             "type": user.roles[0].name
         }
-    }, login_model_output), 200
+    }, login_model_output)
+
+    # Create response with the data
+    response = make_response(data, 200)
+    
+    # Set only the refresh token as HTTP-only cookie
+    set_refresh_cookies(response, refresh_token)
+
+    return response
 
 @api.route('/login')
 class LoginResource(Resource):
@@ -144,6 +151,17 @@ class RefreshTokenResource(Resource):
             
         except Exception as e:
             return {'error': str(e)}, 500
+
+@api.route('/logout')
+class LogoutResource(Resource):
+    @api.doc(security=None)
+    @api.response(200, 'OK')
+    def post(self):
+        """Logout and clear refresh token cookie"""
+        data = {'message': 'Successfully logged out'}
+        response = make_response(data, 200)
+        unset_refresh_cookies(response)
+        return response
 
 @api.route('/register')
 class Register(Resource):

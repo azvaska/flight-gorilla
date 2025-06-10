@@ -41,8 +41,14 @@ class Config:
     PROPAGATE_EXCEPTIONS = True
     # JWT Settings (Flask-JWT-Extended)
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "change-this-jwt-secret")
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=120)  # 2 hours
-    JWT_TOKEN_LOCATION = ['headers']  # Allow tokens in headers and cookies
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=1)  # 2 hours
+    JWT_TOKEN_LOCATION = ['headers', 'cookies']  # Support both headers and cookies
+    JWT_COOKIE_SECURE = True  # Only send cookies over HTTPS
+    JWT_COOKIE_HTTPONLY = True  # Prevent JavaScript access
+    JWT_COOKIE_SAMESITE = 'Lax'  # CSRF protection
+    JWT_ACCESS_COOKIE_PATH = '/'
+    JWT_REFRESH_COOKIE_PATH = '/auth/refresh'
+    JWT_COOKIE_CSRF_PROTECT = True  # Enable CSRF protection
 
     MAIL_SERVER = 'smtp.example.com'
     MAIL_PORT = 587
