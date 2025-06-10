@@ -1,30 +1,73 @@
-import {Component, signal} from '@angular/core';
-import {HlmInputDirective} from '@spartan-ng/ui-input-helm';
-import {HlmLabelDirective} from '@spartan-ng/ui-label-helm';
-import {HlmButtonDirective} from '@spartan-ng/ui-button-helm';
-import {BrnPopoverComponent, BrnPopoverContentDirective, BrnPopoverTriggerDirective} from '@spartan-ng/brain/popover';
-import {HlmPopoverContentDirective} from '@spartan-ng/ui-popover-helm';
+import { Component, signal, OnInit } from '@angular/core';
+import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
+import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
+import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import {
-  HlmCommandComponent, HlmCommandEmptyDirective,
-  HlmCommandGroupComponent, HlmCommandIconDirective, HlmCommandItemComponent,
+  BrnPopoverComponent,
+  BrnPopoverContentDirective,
+  BrnPopoverTriggerDirective,
+} from '@spartan-ng/brain/popover';
+import { HlmPopoverContentDirective } from '@spartan-ng/ui-popover-helm';
+import {
+  HlmCommandComponent,
+  HlmCommandEmptyDirective,
+  HlmCommandGroupComponent,
+  HlmCommandIconDirective,
+  HlmCommandItemComponent,
   HlmCommandListComponent,
-  HlmCommandSearchComponent, HlmCommandSearchInputComponent
+  HlmCommandSearchComponent,
+  HlmCommandSearchInputComponent,
 } from '@spartan-ng/ui-command-helm';
-import {NgIcon, provideIcons} from '@ng-icons/core';
-import {lucideCheck, lucideChevronsUpDown, lucideSearch} from '@ng-icons/lucide';
-import {BrnCommandEmptyDirective} from '@spartan-ng/brain/command';
-import {NgClass, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
-import {RouterLink} from '@angular/router';
-import {dateToString, formatTime} from '@/utils/date';
-import {FormsModule} from '@angular/forms';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  lucideCheck,
+  lucideChevronsUpDown,
+  lucideSearch,
+  lucideEllipsis,
+} from '@ng-icons/lucide';
+import { BrnCommandEmptyDirective } from '@spartan-ng/brain/command';
+import { NgClass, NgForOf, NgIf, NgOptimizedImage } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { dateToString, formatTime } from '@/utils/date';
+import { FormsModule } from '@angular/forms';
+import { DateInputComponent } from '@/app/components/ui/date-input/date-input.component';
+import {
+  SearchInputComponent,
+  SearchInputValue,
+} from '@/app/components/ui/search-input/search-input.component';
+import { AirlineFetchService } from '@/app/services/airline/airline-fetch.service';
+import { LoadingService } from '@/app/services/loading.service';
+import { IRoute } from '@/types/airline/route';
+import { IExtra } from '@/types/airline/extra';
+import { IAirlineAircraft } from '@/types/airline/aircraft';
+import { firstValueFrom } from 'rxjs';
+import { Router } from '@angular/router';
+import { HlmCardDirective } from '@spartan-ng/ui-card-helm';
+import {
+  HlmTableComponent,
+  HlmTrowComponent,
+  HlmThComponent,
+} from '@spartan-ng/ui-table-helm';
+import { PopoverComponent } from '@/app/components/ui/popover/popover.component';
+import { PopoverTriggerDirective } from '@/app/components/ui/popover/popover-trigger.directive';
+import {
+  BrnAlertDialogContentDirective,
+  BrnAlertDialogTriggerDirective,
+} from '@spartan-ng/brain/alert-dialog';
+import {
+  HlmAlertDialogActionButtonDirective,
+  HlmAlertDialogCancelButtonDirective,
+  HlmAlertDialogComponent,
+  HlmAlertDialogContentComponent,
+  HlmAlertDialogDescriptionDirective,
+  HlmAlertDialogFooterComponent,
+  HlmAlertDialogHeaderComponent,
+  HlmAlertDialogTitleDirective,
+} from '@spartan-ng/ui-alertdialog-helm';
+import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
 
-interface Route {
-  id: number;
-  name: string;
-}
-
-interface Extra {
-  id: number;
+interface FlightExtra {
+  id: string;
   name: string;
   description: string;
   price: number;
@@ -55,48 +98,72 @@ interface Extra {
     NgForOf,
     NgClass,
     NgOptimizedImage,
-    FormsModule
+    FormsModule,
+    DateInputComponent,
+    SearchInputComponent,
+    HlmCardDirective,
+    HlmTableComponent,
+    HlmTrowComponent,
+    HlmThComponent,
+    PopoverComponent,
+    PopoverTriggerDirective,
+    HlmAlertDialogComponent,
+    HlmAlertDialogContentComponent,
+    HlmAlertDialogHeaderComponent,
+    HlmAlertDialogTitleDirective,
+    HlmAlertDialogDescriptionDirective,
+    HlmAlertDialogFooterComponent,
+    HlmAlertDialogActionButtonDirective,
+    HlmSpinnerComponent,
+    BrnAlertDialogContentDirective,
+    BrnAlertDialogTriggerDirective,
+    HlmAlertDialogCancelButtonDirective,
   ],
-  providers: [provideIcons({ lucideChevronsUpDown, lucideSearch, lucideCheck })],
-  templateUrl: './flights-add.component.html'
+  providers: [
+    provideIcons({
+      lucideChevronsUpDown,
+      lucideSearch,
+      lucideCheck,
+      lucideEllipsis,
+    }),
+  ],
+  templateUrl: './flights-add.component.html',
 })
-export class FlightsAddComponent {
-  routes: Route[] = [
-    { id: 1, name: 'VCE-CTA  02/25-09/25' },
-    { id: 2, name: 'FCO-CTA  04/24-02/27' },
-    { id: 3, name: 'MXP-CTA  05/25-03/26' },
-    { id: 4, name: 'NAP-CTA  12/24-07/28' },
-    { id: 5, name: 'TRN-CTA  01/25-06/25' },
-    { id: 6, name: 'BLQ-CTA  11/22-07/26' },
-    { id: 7, name: 'PMO-CTA  03/25-09/26' },
-    { id: 8, name: 'PSR-CTA  09/25-12/29' }
-  ]
+export class FlightsAddComponent implements OnInit {
+  // Data from API
+  routes: IRoute[] = [];
+  availableExtras: IExtra[] = [];
+  aircrafts: IAirlineAircraft[] = [];
 
-  availableExtras: Extra[] = [
-    { id: 1, name: 'Extra Baggage', description: 'Add an extra baggage to your flight', price: 0, limit: 1, stackable: true },
-    { id: 2, name: 'Priority Boarding', description: 'Board the plane first', price: 0, limit: 1, stackable: false },
-    { id: 3, name: 'Seat Selection', description: 'Select your preferred seat', price: 0, limit: 1, stackable: false },
-    { id: 4, name: 'In-Flight Meal', description: 'Enjoy a meal during your flight', price: 0, limit: 1, stackable: true },
-    { id: 5, name: 'Wi-Fi Access', description: 'Stay connected with in-flight Wi-Fi', price: 0, limit: 1, stackable: false }
-  ]
-  extras: Extra[] = [
-    { id: 1, name: 'Extra Baggage', description: 'Add an extra baggage to your flight', price: 59, limit: 1, stackable: false },
-    { id: 1, name: 'Extra Baggage', description: 'Add an extra baggage to your flight', price: 65, limit: 1, stackable: false },
-    // { id: 1, name: 'Extra Baggage', description: 'Add an extra baggage to your flight', price: 59, limit: 0, stackable: false },
-    // { id: 1, name: 'Extra Baggage', description: 'Add an extra baggage to your flight', price: 59, limit: 0, stackable: false },
-    // { id: 1, name: 'Extra Baggage', description: 'Add an extra baggage to your flight', price: 59, limit: 0, stackable: false },
-    // { id: 1, name: 'Extra Baggage', description: 'Add an extra baggage to your flight', price: 59, limit: 0, stackable: false },
-    // { id: 1, name: 'Extra Baggage', description: 'Add an extra baggage to your flight', price: 59, limit: 0, stackable: false },
-    // { id: 1, name: 'Extra Baggage', description: 'Add an extra baggage to your flight', price: 59, limit: 0, stackable: false },
-  ];
+  // Selected flight extras
+  flightExtras: FlightExtra[] = [];
 
   // Route popover
-  public currentRoute = signal<Route | undefined>(undefined);
+  public currentRoute = signal<IRoute | undefined>(undefined);
   public state1 = signal<'closed' | 'open'>('closed');
 
+  // Aircraft popover
+  public currentAircraft = signal<IAirlineAircraft | undefined>(undefined);
+  public stateAircraft = signal<'closed' | 'open'>('closed');
+
   // Extra popover
-  public currentExtra = signal<Extra | undefined>(undefined);
+  public currentExtra = signal<IExtra | undefined>(undefined);
   public state2 = signal<'closed' | 'open'>('closed');
+
+  // Flight form data
+  protected flightDate: Date | undefined = undefined;
+  protected departureTime: string = '';
+  protected flightDurationMinutes: number = 0;
+  protected checkinStartTime: string = '';
+  protected checkinEndTime: string = '';
+  protected boardingStartTime: string = '';
+  protected boardingEndTime: string = '';
+  protected gate: string = '';
+  protected terminal: string = '';
+  protected priceFirstClass: number = 0;
+  protected priceBusinessClass: number = 0;
+  protected priceEconomyClass: number = 0;
+  protected priceInsurance: number = 0;
 
   // extras Popup
   protected extrasDetail: 'new' | number | null = null;
@@ -106,23 +173,75 @@ export class FlightsAddComponent {
   // page switcher (forms-extras)
   protected page: 'forms' | 'extras' = 'forms';
 
+  // Loading states
+  protected isLoading = false;
+  protected isSaving = false;
+  protected isDeleteExtraLoading = false;
+
+  // Date helper
+  protected readonly today = new Date();
+
+  constructor(
+    private airlineFetchService: AirlineFetchService,
+    private loadingService: LoadingService,
+    private router: Router
+  ) {}
+
+  async ngOnInit() {
+    await this.loadData();
+  }
+
+  private async loadData() {
+    try {
+      this.loadingService.startLoadingTask();
+
+      const [routes, extras, aircrafts] = await Promise.all([
+        firstValueFrom(this.airlineFetchService.getRoutes()),
+        firstValueFrom(this.airlineFetchService.getExtras()),
+        firstValueFrom(this.airlineFetchService.getAircrafts()),
+      ]);
+
+      this.routes = routes;
+      this.availableExtras = extras;
+      this.aircrafts = aircrafts;
+    } catch (error) {
+      console.error('Errore nel caricamento dei dati:', error);
+    } finally {
+      this.loadingService.endLoadingTask();
+    }
+  }
+
+  // Route selection methods
   state1Changed(state: 'open' | 'closed') {
     this.state1.set(state);
   }
 
-  command1Selected(route: Route) {
-    if (this.currentRoute()?.name !== route.name) {
+  command1Selected(route: IRoute) {
+    if (this.currentRoute()?.id !== route.id) {
       this.currentRoute.set(route);
     }
     this.state1.set('closed');
   }
 
+  // Aircraft selection methods
+  stateAircraftChanged(state: 'open' | 'closed') {
+    this.stateAircraft.set(state);
+  }
+
+  commandAircraftSelected(aircraft: IAirlineAircraft) {
+    if (this.currentAircraft()?.id !== aircraft.id) {
+      this.currentAircraft.set(aircraft);
+    }
+    this.stateAircraft.set('closed');
+  }
+
+  // Extra selection methods
   state2Changed(state: 'open' | 'closed') {
     this.state2.set(state);
   }
 
-  command2Selected(extra: Extra) {
-    if (this.currentExtra()?.name !== extra.name) {
+  command2Selected(extra: IExtra) {
+    if (this.currentExtra()?.id !== extra.id) {
       this.currentExtra.set(extra);
     }
     this.state2.set('closed');
@@ -131,46 +250,165 @@ export class FlightsAddComponent {
   get showForms() {
     return this.page === 'forms' && this.currentRoute();
   }
-  get showExtras(){
+
+  get showExtras() {
     return this.page === 'extras' && this.currentRoute();
   }
 
-  protected readonly formatTime = formatTime;
-  protected readonly dateToString = dateToString;
+  get routeDisplayName() {
+    const route = this.currentRoute();
+    if (!route) return 'Seleziona rotta...';
+    return `${route.departure_airport.iata_code}-${route.arrival_airport.iata_code} ${route.flight_number}`;
+  }
 
+  get aircraftDisplayName() {
+    const aircraft = this.currentAircraft();
+    if (!aircraft) return 'Seleziona aeromobile...';
+    return `${aircraft.aircraft.name} (${aircraft.tail_number})`;
+  }
+
+  // Time input helpers
+  private timeStringToDateTime(timeStr: string, baseDate: Date): string {
+    if (!timeStr || !baseDate) return '';
+
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    const dateTime = new Date(baseDate);
+    dateTime.setHours(hours, minutes, 0, 0);
+
+    return dateTime.toISOString();
+  }
+
+  private calculateArrivalTime(): string {
+    if (!this.departureTime || !this.flightDurationMinutes || !this.flightDate)
+      return '';
+
+    const [depHours, depMinutes] = this.departureTime.split(':').map(Number);
+
+    const departure = new Date(this.flightDate);
+    departure.setHours(depHours, depMinutes, 0, 0);
+
+    const arrival = new Date(departure);
+    arrival.setMinutes(arrival.getMinutes() + this.flightDurationMinutes);
+
+    return arrival.toISOString();
+  }
+
+  // Extra management methods
   closeDetails() {
     this.extrasDetail = null;
     this.currentExtra.set(undefined);
     this.extraPrice = 0;
+    this.extraLimit = 1;
   }
+
   openDetails(type: 'new' | number) {
     this.extrasDetail = type;
-    if(type == 'new'){
+    if (type == 'new') {
       this.currentExtra.set(undefined);
+      this.extraPrice = 0;
+      this.extraLimit = 1;
     } else {
-      this.currentExtra.set(this.extras[type]);
-      this.extraPrice = this.extras[type].price;
-      this.extraLimit = this.extras[type].limit;
+      const extra = this.flightExtras[type];
+      // Find the corresponding available extra
+      const availableExtra = this.availableExtras.find(
+        (ae) => ae.name === extra.name
+      );
+      this.currentExtra.set(availableExtra);
+      this.extraPrice = extra.price;
+      this.extraLimit = extra.limit;
     }
   }
+
   saveExtra() {
     if (this.extrasDetail === 'new') {
       // Add new extra logic
-      const newExtra: Extra = {
-        id: this.availableExtras.length + 1,
-        name: this.currentExtra()!.name,
-        description: this.currentExtra()!.description,
+      const selectedExtra = this.currentExtra();
+      if (!selectedExtra) return;
+
+      const newExtra: FlightExtra = {
+        id: selectedExtra.id,
+        name: selectedExtra.name,
+        description: selectedExtra.description,
         price: this.extraPrice,
         limit: this.extraLimit,
-        stackable: this.currentExtra()!.stackable
+        stackable: selectedExtra.stackable,
       };
-      this.extras.push(newExtra);
+      this.flightExtras.push(newExtra);
     } else if (typeof this.extrasDetail === 'number') {
-      this.extras[this.extrasDetail].price = this.extraPrice;
-      this.extras[this.extrasDetail].limit = this.extraLimit;
+      this.flightExtras[this.extrasDetail].price = this.extraPrice;
+      this.flightExtras[this.extrasDetail].limit = this.extraLimit;
     }
     this.closeDetails();
   }
 
+  removeExtra(index: number, modalCtx: any) {
+    this.flightExtras.splice(index, 1);
+
+    modalCtx.close();
+  }
+
+  // Form validation
+  get isFormValid(): boolean {
+    return !!(
+      this.currentRoute() &&
+      this.currentAircraft() &&
+      this.flightDate &&
+      this.departureTime &&
+      this.flightDurationMinutes > 0 &&
+      this.priceEconomyClass > 0 &&
+      this.priceBusinessClass > 0 &&
+      this.priceFirstClass > 0 &&
+      this.priceInsurance >= 0
+    );
+  }
+
+  // Save flight
+  async saveFlight() {
+    if (!this.isFormValid || this.isSaving) return;
+
+    try {
+      this.isSaving = true;
+      this.loadingService.startLoadingTask();
+
+      const route = this.currentRoute()!;
+      const aircraft = this.currentAircraft()!;
+
+      const departureDateTime = this.timeStringToDateTime(
+        this.departureTime,
+        this.flightDate!
+      );
+      const arrivalDateTime = this.calculateArrivalTime();
+
+      // Create the flight
+      const createdFlight = await firstValueFrom(
+        this.airlineFetchService.addFlight({
+          route_id: route.id,
+          aircraft_id: aircraft.id,
+          departure_time: departureDateTime,
+          arrival_time: arrivalDateTime,
+          price_economy_class: this.priceEconomyClass,
+          price_business_class: this.priceBusinessClass,
+          price_first_class: this.priceFirstClass,
+          price_insurance: this.priceInsurance,
+          extras: this.flightExtras.map((extra) => ({
+            extra_id: extra.id,
+            price: extra.price,
+            limit: extra.limit,
+          })),
+        })
+      );
+
+      // Navigate back to flights list
+      this.router.navigate(['/flights']);
+    } catch (error) {
+      console.error('Errore nel salvataggio del volo:', error);
+    } finally {
+      this.isSaving = false;
+      this.loadingService.endLoadingTask();
+    }
+  }
+
+  protected readonly formatTime = formatTime;
+  protected readonly dateToString = dateToString;
   protected readonly Math = Math;
 }

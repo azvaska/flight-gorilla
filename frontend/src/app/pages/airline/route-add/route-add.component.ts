@@ -44,7 +44,7 @@ export class RouteAddComponent {
 
   protected isLoading: boolean = false;
   protected isEditMode = false;
-  protected routeId: string | null = null;
+  protected routeId: number | null = null;
   protected existingRoute: IRoute | null = null;
   
 
@@ -56,7 +56,7 @@ export class RouteAddComponent {
     private activatedRoute: ActivatedRoute
   ) {
     // Check if we're in edit mode
-    this.routeId = this.activatedRoute.snapshot.paramMap.get('routeId');
+    this.routeId = Number(this.activatedRoute.snapshot.paramMap.get('routeId'));
     this.isEditMode = !!this.routeId;
 
     this.initializeComponent();

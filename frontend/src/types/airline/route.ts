@@ -1,7 +1,7 @@
 import { IAirport } from "../airport";
 
 export interface IRoute {
-  id: string;
+  id: number;
   departure_airport: IAirport;
   arrival_airport: IAirport;
   airline_id: string;

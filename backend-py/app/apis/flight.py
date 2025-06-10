@@ -11,7 +11,6 @@ from app.models.flight import Flight, Route, FlightExtra
 from app.models.airlines import AirlineAircraft
 from app.schemas.flight import FlightSchema, flight_schema, flight_extra_schema, flights_extra_schema
 from app.apis.airport import airport_model
-from app.apis.airline import extra_flight_model
 
 api = Namespace('flight', description='Flight related operations')
 
@@ -64,6 +63,17 @@ booked_seats_model = api.model('BookedSeats', {
     'flight_id': fields.String(readonly=True, description='Flight ID'),
     'seats_info': fields.Nested(seats_info_model, description='Seats info'),
     'rows': fields.Integer(description='Rows of the aircraft'),
+})
+
+extra_flight_model = api.model('FlightExtra', {
+    'id': fields.String(readonly=True, description='Flight Extra ID'),
+    'name': fields.String(readonly=True,required=True, description='Name of the extra'),
+    'description': fields.String(readonly=True,required=True, description='Description of the extra'),
+    'extra_id': fields.String(required=True, description='Extra ID'),
+    'price': fields.Float(required=True, description='Price of the extra'),
+    'limit': fields.Integer(readonly=True,required=True, description='Limit of the extra'),
+    'stackable': fields.Boolean(readonly=True,required=True, description='Is the extra stackable'),
+    'required_on_all_segments': fields.Boolean(readonly=True,required=True, description='Is the extra required on all segments'),
 })
 
 @api.route('/extra/<uuid:flight_id>')

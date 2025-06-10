@@ -28,7 +28,7 @@ import { formatDate, formatTime } from '@/utils/date';
 })
 export class RouteDetailsComponent implements OnInit {
   protected route: IRoute | null = null;
-  private routeId: string = '';
+  private routeId: number | null = null;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -37,7 +37,7 @@ export class RouteDetailsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.routeId = this.activatedRoute.snapshot.paramMap.get('routeId') || '';
+    this.routeId = Number(this.activatedRoute.snapshot.paramMap.get('routeId'));
     if (this.routeId) {
       this.fetchRoute();
     }
@@ -46,7 +46,7 @@ export class RouteDetailsComponent implements OnInit {
   private async fetchRoute() {
     try {
       this.loadingService.startLoadingTask();
-      this.route = await firstValueFrom(this.airlineFetchService.getRoute(this.routeId));
+      this.route = await firstValueFrom(this.airlineFetchService.getRoute(this.routeId!));
     } catch (error) {
       console.error('Error fetching route:', error);
     } finally {

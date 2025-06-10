@@ -95,7 +95,7 @@ new_airline_model = api.model('NewAirline', {
     "admin_credentials": fields.Nested(admin_credentials_model)})
 
 route_model = api.model('Route', {
-    'id': fields.String(readonly=True, description='Route ID'),
+    'id': fields.Integer(readonly=True, description='Route ID'),
     'departure_airport': fields.Nested(airport_model, required=True, description='Departure airport'),
     'arrival_airport': fields.Nested(airport_model, required=True, description='Arrival airport'),
     'airline_id': fields.String(readonly=True, description='Airline ID'),
@@ -129,6 +129,11 @@ flight_model_input = api.model('Flight', {
     'price_business_class': fields.Float(required=True, description='Business class price'),
     'price_first_class': fields.Float(required=True, description='First class price'),
     'price_insurance': fields.Float(description='Insurance price'),
+    'extras': fields.List(fields.Nested(api.model('ExtraItem', {
+        'extra_id': fields.String(required=True, description='Extra ID'),
+        'price': fields.Float(required=True, description='Price of the extra'),
+        'limit': fields.Integer(required=True, description='Limit of the extra'),
+    })), required=False, description='List of extras to add to the flight')
 })
 
 flight_put_model = api.model('FlightPut', {
@@ -140,6 +145,11 @@ flight_put_model = api.model('FlightPut', {
     'price_business_class': fields.Float(required=False, description='Business class price'),
     'price_first_class': fields.Float(required=False, description='First class price'),
     'price_insurance': fields.Float(required=False, description='Insurance price'),
+    'extras': fields.List(fields.Nested(api.model('ExtraItemPut', {
+        'extra_id': fields.String(required=True, description='Extra ID'),
+        'price': fields.Float(required=True, description='Price of the extra'),
+        'limit': fields.Integer(required=True, description='Limit of the extra'),
+    })), required=False, description='List of extras to add to the flight')
 })
 
 flight_model_output = api.model('AirlineFlightOutput', {
@@ -161,6 +171,17 @@ flight_model_output = api.model('AirlineFlightOutput', {
     'checkin_end_time': fields.DateTime(required=True, description='Checkin end time'),
     'boarding_start_time': fields.DateTime(required=True, description='Boarding start time'),
     'boarding_end_time': fields.DateTime(required=True, description='Boarding end time'),
+})
+
+all_flight_output_model = api.model('AllFlightOutput', {
+    'id': fields.String(readonly=True, description='Flight ID'),
+    'flight_number': fields.String(required=True, description='Flight number'),
+    'aircraft': fields.Nested(airline_aircraft_model, description='Aircraft'),
+    'route_id': fields.String(readonly=True, description='Route ID'),
+    'departure_time': fields.DateTime(required=True, description='Departure time'),
+    'arrival_time': fields.DateTime(required=True, description='Arrival time'),
+    'departure_airport': fields.Nested(airport_model, description='Departure Airport'),
+    'arrival_airport': fields.Nested(airport_model, description='Arrival Airport'),
 })
 
 seats_info_model = api.model('SeatsInfo', {
@@ -195,24 +216,7 @@ flight_model_seats_output = api.model('AirlineFlightSeatsOutput', {
 
 
 
-extra_flight_model = api.model('FlightExtra', {
-    'id': fields.String(readonly=True, description='Flight Extra ID'),
-    'name': fields.String(readonly=True,required=True, description='Name of the extra'),
-    'description': fields.String(readonly=True,required=True, description='Description of the extra'),
-    'extra_id': fields.String(required=True, description='Extra ID'),
-    'price': fields.Float(required=True, description='Price of the extra'),
-    'limit': fields.Integer(readonly=True,required=True, description='Limit of the extra'),
-    'stackable': fields.Boolean(readonly=True,required=True, description='Is the extra stackable'),
-    'required_on_all_segments': fields.Boolean(readonly=True,required=True, description='Is the extra required on all segments'),
-})
 
-extra_flight_input_model = api.model('FlightExtraInput', {
-    'extras': fields.List(fields.Nested(api.model('ExtraItem', {
-        'extra_id': fields.String(required=True, description='Extra ID'),
-        'price': fields.Float(required=True, description='Price of the extra'),
-        'limit': fields.Integer(required=True, description='Limit of the extra'),
-    })), required=True, description='List of extras to add to the flight')
-})
 
 # --- Request Parsers ---
 airline_list_parser = reqparse.RequestParser()
@@ -620,12 +624,12 @@ class MyAirlineFlightsList(Resource):
     @jwt_required()
     @roles_required('airline-admin')
     @airline_id_from_user()
-    @api.response(200, 'OK', [flight_model_output])
+    @api.response(200, 'OK', [all_flight_output_model])
     @api.response(404, 'Not Found')
     def get(self, airline_id):
         """Get all flights for the current airline"""
         flights = Flight.query.join(Flight.route).filter(Route.airline_id == airline_id).all()
-        return marshal([flight_schema.dump(flight) for flight in flights], flight_model_output), 200
+        return marshal([flight_schema.dump(flight) for flight in flights], all_flight_output_model), 200
 
     @api.expect(flight_model_input)
     @jwt_required()
@@ -637,13 +641,15 @@ class MyAirlineFlightsList(Resource):
     def post(self, airline_id):
         """Create a new flight for the current airline"""
         data = request.json
-        data['airline_id'] = airline_id
 
         try:
             # Validate that the airline aircraft belongs to the airline
             aircraft = AirlineAircraft.query.get(data['aircraft_id'])
             if not aircraft or str(aircraft.airline_id) != str(airline_id):
                 return {"error": "The specified aircraft does not belong to your airline"}, 403
+            
+            # Extract extras from data before flight creation
+            extras_data = data.pop('extras', [])
             
             new_flight = flight_schema.load(data)
             
@@ -657,6 +663,35 @@ class MyAirlineFlightsList(Resource):
             new_flight.boarding_end_time = new_flight.departure_time
 
             db.session.add(new_flight)
+            db.session.flush()  # Get the flight ID without committing
+
+            # Handle extras if provided
+            if extras_data:
+                airline = Airline.query.get(airline_id)
+                airline_extras = {str(extra.id): extra for extra in airline.extras}
+
+                for extra in extras_data:
+                    # Check if extra belongs to airline
+                    if extra['extra_id'] not in airline_extras:
+                        return {'error': f"Extra {extra['extra_id']} does not belong to airline {airline_id}"}, 403
+
+                    # Get the original extra to check if it's stackable
+                    extra_original = airline_extras[extra['extra_id']]
+                    
+                    # Check if extra is stackable and if limit is appropriate
+                    if not extra_original.stackable and extra['limit'] > 1:
+                        return {'error': f"Extra {extra_original.name} is not stackable, limit must be 1"}, 400
+
+                    extra_data = {
+                        'flight_id': str(new_flight.id),
+                        'extra_id': extra['extra_id'],
+                        'price': extra['price'],
+                        'limit': extra['limit']
+                    }
+                    
+                    new_extra = flight_extra_schema.load(extra_data)
+                    db.session.add(new_extra)
+
             db.session.commit()
 
             return marshal(flight_schema.dump(new_flight), flight_model_output), 201
@@ -710,9 +745,44 @@ class MyAirlineFlightResource(Resource):
         if 'airline_id' in data:
             del data['airline_id']
 
+        # Extract extras from data before flight update
+        extras_data = data.pop('extras', None)
+
         try:
             # Validate data with Marshmallow schema
             validated_data = flight_schema.load(data, partial=True)
+
+            # Handle extras if provided
+            if extras_data is not None:
+                # Remove existing extras
+                FlightExtra.query.filter_by(flight_id=flight_id).delete()
+                
+                # Add new extras
+                if extras_data:  # Only if extras_data is not empty
+                    airline = Airline.query.get(airline_id)
+                    airline_extras = {str(extra.id): extra for extra in airline.extras}
+
+                    for extra in extras_data:
+                        # Check if extra belongs to airline
+                        if extra['extra_id'] not in airline_extras:
+                            return {'error': f"Extra {extra['extra_id']} does not belong to airline {airline_id}"}, 403
+
+                        # Get the original extra to check if it's stackable
+                        extra_original = airline_extras[extra['extra_id']]
+                        
+                        # Check if extra is stackable and if limit is appropriate
+                        if not extra_original.stackable and extra['limit'] > 1:
+                            return {'error': f"Extra {extra_original.name} is not stackable, limit must be 1"}, 400
+
+                        extra_data = {
+                            'flight_id': str(flight_id),
+                            'extra_id': extra['extra_id'],
+                            'price': extra['price'],
+                            'limit': extra['limit']
+                        }
+                        
+                        new_extra = flight_extra_schema.load(extra_data)
+                        db.session.add(new_extra)
 
             db.session.commit()
             return marshal(flight_schema.dump(flight), flight_model_output), 200
@@ -749,55 +819,4 @@ class MyAirlineFlightResource(Resource):
         except Exception as e:
             return {'error': str(e)}, 500
 
-@api.route('/flights/extra/<uuid:flight_id>')
-@api.param('flight_id', 'The flight identifier')
-class MyAirlineFlightExtraResource(Resource):
-    @jwt_required()
-    @roles_required('airline-admin')
-    @airline_id_from_user()
-    @api.response(403, 'Forbidden')
-    @api.response(400, 'Bad Request')
-    @api.response(201, 'Created', extra_flight_model)
-    @api.expect(extra_flight_input_model)
-    def post(self, flight_id, airline_id):
-        """Create new flight extras for the current airline"""
-        data = request.json
-        flight = Flight.query.get_or_404(flight_id)
-        airline = flight.airline
-        
-        # Check if flight belongs to the airline
-        if airline.id != airline_id:
-            return {'error': 'You do not have permission to modify this flight'}, 403
-        
-        # Create a dictionary of airline extras for faster lookup
-        airline_extras = {str(extra.id): extra for extra in airline.extras}
 
-        try:
-            results = []
-            for extra in data['extras']:
-                extra_data = {
-                    'flight_id': str(flight_id),
-                    'extra_id': extra['extra_id'],
-                    'price': extra['price'],
-                    'limit': extra['limit']
-                }
-                
-                # Check if extra belongs to airline
-                if extra['extra_id'] not in airline_extras:
-                    return {'error': f"Extra {extra['extra_id']} does not belong to airline {airline_id}"}, 403
-
-                # Get the original extra to check if it's stackable
-                extra_original = airline_extras[extra['extra_id']]
-                
-                # Check if extra is stackable and if limit is appropriate
-                if not extra_original.stackable and extra['limit'] > 1:
-                    return {'error': f"Extra {extra_original.name} is not stackable, limit must be 1"}, 400
-
-                new_extra = flight_extra_schema.load(extra_data)
-                db.session.add(new_extra)
-                results.append(new_extra)
-
-            db.session.commit()
-            return marshal(flights_extra_schema.dump(results), extra_flight_model), 201
-        except ValidationError as err:
-            return {'error': 'validation Failed'}, 400

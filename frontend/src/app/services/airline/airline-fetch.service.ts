@@ -115,7 +115,7 @@ export class AirlineFetchService {
   }
 
   public addFlight(flight: {
-    route_id: string;
+    route_id: number;
     aircraft_id: string;
     departure_time: string;
     arrival_time: string;
@@ -123,35 +123,16 @@ export class AirlineFetchService {
     price_business_class: number;
     price_first_class: number;
     price_insurance: number;
-  }): Observable<IAirlineFlight> {
-    return this.http.post<IAirlineFlight>(
-      `${environment.apiUrl}/airline/flights`,
-      flight
-    );
-  }
-
-  public addExtraToFlight(
-    flightId: string,
     extras: {
       extra_id: string;
       price: number;
       limit: number;
     }[]
-  ): Observable<void> {
-    return this.http.post<void>(
-      `${environment.apiUrl}/airline/flights/extra/${flightId}`,
-      extras
+  }): Observable<IAirlineFlight> {
+    return this.http.post<IAirlineFlight>(
+      `${environment.apiUrl}/airline/flights`,
+      flight
     );
-  }
-
-  public deleteExtraFromFlight(
-    flightId: string,
-    extraId: string
-  ): Observable<void> {
-    throw new Error('Not implemented');
-    // return this.http.delete<void>(
-    //   `${environment.apiUrl}/airline/flights/extra/${flightId}/${extraId}`
-    // );
   }
 
   public updateFlight(
@@ -203,7 +184,7 @@ export class AirlineFetchService {
   }
 
   public updateRoute(
-    routeId: string,
+    routeId: number,
     route: Partial<{
       departure_airport_id: string;
       arrival_airport_id: string;
@@ -218,13 +199,13 @@ export class AirlineFetchService {
     );
   }
 
-  public deleteRoute(routeId: string): Observable<void> {
+  public deleteRoute(routeId: number): Observable<void> {
     return this.http.delete<void>(
       `${environment.apiUrl}/airline/routes/${routeId}`
     );
   }
 
-  public getRoute(routeId: string): Observable<IRoute> {
+  public getRoute(routeId: number): Observable<IRoute> {
     return this.http.get<IRoute>(
       `${environment.apiUrl}/airline/routes/${routeId}`
     );

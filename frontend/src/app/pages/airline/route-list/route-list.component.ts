@@ -109,7 +109,7 @@ export class RouteListComponent {
     });
   }
 
-  protected async deleteRoute(routeId: string, modalCtx: any) {
+  protected async deleteRoute(routeId: number, modalCtx: any) {
     this.isDeleteRouteLoading = true;
     try {
       await firstValueFrom(this.airlineFetchService.deleteRoute(routeId));
