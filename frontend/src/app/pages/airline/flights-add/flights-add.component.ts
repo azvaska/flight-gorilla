@@ -67,6 +67,8 @@ import {
 import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
 import { IAirlineFlight } from '@/types/airline/flight';
 import { FlightFetchService } from '@/app/services/flight/flight-fetch.service';
+import { toast } from 'ngx-sonner';
+import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
 
 interface FlightExtra {
   id: string;
@@ -119,6 +121,7 @@ interface FlightExtra {
     BrnAlertDialogContentDirective,
     BrnAlertDialogTriggerDirective,
     HlmAlertDialogCancelButtonDirective,
+    HlmToasterComponent,
   ],
   providers: [
     provideIcons({
@@ -508,8 +511,13 @@ export class FlightsAddComponent implements OnInit {
 
       // Navigate back to flights list
       this.router.navigate(['/flights']);
-    } catch (error) {
+    } catch (error: any) {
       console.error(this.isEditMode ? 'Errore nell\'aggiornamento del volo:' : 'Errore nel salvataggio del volo:', error);
+      toast('Unknown error', {
+        description: `An unexpected error occurred while ${
+          this.isEditMode ? 'updating' : 'adding'
+        } the flight.`,
+      });
     } finally {
       this.isSaving = false;
       this.loadingService.endLoadingTask();

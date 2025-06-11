@@ -140,6 +140,10 @@ export class FlightsListComponent {
           description:
             'This flight cannot be deleted because it is currently in use.',
         });
+      } else {
+        toast('Unknown error', {
+          description: 'An unexpected error occurred while deleting the flight.',
+        });
       }
     } finally {
       this.isDeleteFlightLoading = false;

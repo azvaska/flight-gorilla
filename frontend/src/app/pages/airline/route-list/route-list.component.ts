@@ -125,6 +125,10 @@ export class RouteListComponent {
           description:
             'This route cannot be deleted because it is currently in use.',
         });
+      } else {
+        toast('Unknown error', {
+          description: 'An unexpected error occurred while deleting the route.',
+        });
       }
     } finally {
       this.isDeleteRouteLoading = false;

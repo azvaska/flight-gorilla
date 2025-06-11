@@ -1,7 +1,7 @@
 // extras-list.component.ts
 import { Component, QueryList, ViewChild, viewChild, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgClass, NgForOf, NgOptimizedImage } from '@angular/common';
+import { NgClass, NgForOf, NgOptimizedImage, NgIf } from '@angular/common';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
 import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
@@ -38,6 +38,7 @@ import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
 import { toast } from 'ngx-sonner';
 import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
 
+
 @Component({
   selector: 'app-extras-list',
   standalone: true,
@@ -72,6 +73,7 @@ import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
     BrnAlertDialogTriggerDirective,
     HlmAlertDialogCancelButtonDirective,
     HlmToasterComponent,
+    NgIf,
   ],
 })
 export class ExtrasListComponent {
@@ -80,6 +82,7 @@ export class ExtrasListComponent {
 
   protected isLoading = false;
   protected isDeleteExtraLoading = false;
+  protected modalError: string | null = null;
 
   @ViewChildren('popover') public popovers!: QueryList<PopoverComponent>;
 
@@ -122,6 +125,7 @@ export class ExtrasListComponent {
       airline_id: '',
       stackable: false,
     };
+    this.modalError = null;
     this.showModal = true;
   }
 
@@ -131,12 +135,14 @@ export class ExtrasListComponent {
     this.editingIndex = index;
     // Create a copy so we don't mutate the list until saving
     this.editableExtra = { ...this.extras[index] };
+    this.modalError = null;
     this.showModal = true;
   }
 
   // Close the modal without saving changes
   closeModal() {
     this.showModal = false;
+    this.modalError = null;
   }
 
   // Save the new or edited extra back into the list
@@ -150,6 +156,7 @@ export class ExtrasListComponent {
     };
 
     this.isLoading = true;
+    this.modalError = null;
 
     try {
       if (this.editingIndex === null) {
@@ -176,12 +183,13 @@ export class ExtrasListComponent {
         );
         this.extras[this.editingIndex] = extraCopy;
       }
-    } catch (error) {
-      console.error(error);
+      this.closeModal();
+    } catch (error: any) {
+      console.error('Error saving extra:', error);
+      this.modalError = 'Unknown error';
     } finally {
       this.isLoading = false;
     }
-    this.closeModal();
   }
 
   protected async deleteExtra(extraId: string, modalCtx: any) {
@@ -197,6 +205,10 @@ export class ExtrasListComponent {
         toast('Cannot delete this element', {
           description:
             'This extra cannot be deleted because it is currently in use.',
+        });
+      } else {
+        toast('Unknown error', {
+          description: 'An unexpected error occurred while deleting the extra.',
         });
       }
     } finally {

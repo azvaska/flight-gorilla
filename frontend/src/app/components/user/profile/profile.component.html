@@ -198,6 +198,9 @@
             "
             class="absolute left-full top-0 w-40 ml-1 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
           >
+            <span *ngIf="profileForm.get('nation_id')?.errors?.['required']"
+              >Nation is required.</span
+            >
             <span *ngIf="profileForm.get('nation_id')?.errors?.['invalidNation']"
               >Please select a valid nation.</span
             >
@@ -228,6 +231,11 @@
       ></ng-icon>
       Save
     </button>
+  </div>
+  
+  <!-- Error Message -->
+  <div *ngIf="profileForm.hasError('error')" class="mt-4 text-sm text-red-600">
+    {{ profileForm.getError("error") }}
   </div>
 
 }

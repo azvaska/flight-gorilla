@@ -3,13 +3,13 @@
 </div>
 
 <div class="flex w-full justify-center">
+  @if(isComponentInitialized) {
   <div class="flex flex-col gap-6 max-w-5xl w-full">
     <div class="flex space-x-3 mb-2">
       <div class="flex flex-col gap-2 flex-1/2">
         <label hlmLabel class="block"> Departure airport </label>
         <div hlmCard class="p-3">
           <search-input
-            *ngIf="departureAirport || !isEditMode"
             [placeHolder]="'Choose an airport'"
             [popoverRelativePosition]="{ top: 20, left: -20 }"
             [popoverWidth]="'200px'"
@@ -24,7 +24,6 @@
         <label hlmLabel class="block"> Arrival airport </label>
         <div hlmCard class="p-3">
           <search-input
-            *ngIf="arrivalAirport || !isEditMode"
             [placeHolder]="'Choose an airport'"
             [popoverRelativePosition]="{ top: 20, left: -20 }"
             [popoverWidth]="'200px'"
@@ -102,4 +101,7 @@
       </button>
     </div>
   </div>
+  }
 </div>
+
+<hlm-toaster />

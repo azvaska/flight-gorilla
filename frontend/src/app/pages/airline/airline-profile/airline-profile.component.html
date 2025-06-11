@@ -237,6 +237,11 @@
           Save
         </button>
       </div>
+      
+      <!-- Error Message -->
+      <div *ngIf="profileForm.hasError('error')" class="mt-4 text-sm text-red-600">
+        {{ profileForm.getError("error") }}
+      </div>
     </div>
 
     <!-- Security Card -->
@@ -356,6 +361,11 @@
           ></ng-icon>
           Save
         </button>
+      </div>
+      
+      <!-- Error Message -->
+      <div *ngIf="securityForm.hasError('error')" class="mt-4 text-sm text-red-600">
+        {{ securityForm.getError("error") }}
       </div>
     </div>
   </div>
