@@ -579,6 +579,7 @@ class AirlineAircraftResource(Resource):
         if aircraft.airline_id != airline_id:
             return {'error': 'You do not have permission to delete this aircraft', 'code': 403}, 403
 
+
         db.session.delete(aircraft)
         db.session.commit()
 

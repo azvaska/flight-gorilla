@@ -207,9 +207,9 @@ def generate_manual_flight(route, airline_aircraft, day=1, hour=12, minute=0, du
         departure_time=departure_time,
         arrival_time=arrival_time,
         checkin_start_time=departure_time - datetime.timedelta(hours=2),
-        checkin_end_time=departure_time - datetime.timedelta(minutes=30),
+        checkin_end_time=departure_time - datetime.timedelta(minutes=60),
         boarding_start_time=departure_time - datetime.timedelta(minutes=30),
-        boarding_end_time=departure_time - datetime.timedelta(minutes=30),
+        boarding_end_time=departure_time - datetime.timedelta(minutes=15),
         price_economy_class=round(random.uniform(100.0, 500.0), 2),
         price_business_class=round(random.uniform(500.0, 1500.0), 2),
         price_first_class=round(random.uniform(1500.0, 3000.0), 2),
@@ -494,7 +494,7 @@ class RealisticFlightGenerator:
                 departure_time=departure_time,
                 arrival_time=arrival_time,
                 checkin_start_time=departure_time - datetime.timedelta(hours=checkin_hours),
-                checkin_end_time=departure_time - datetime.timedelta(minutes=30),
+                checkin_end_time=departure_time - datetime.timedelta(minutes=boarding_minutes + 10),
                 boarding_start_time=departure_time - datetime.timedelta(minutes=boarding_minutes),
                 boarding_end_time=departure_time - datetime.timedelta(minutes=15),
                 gate=f"{random.choice(['A', 'B', 'C', 'D'])}{random.randint(1, 30)}",
@@ -546,6 +546,8 @@ class RealisticFlightGenerator:
                     continue
                 
                 price_var = random.uniform(0.9, 1.1)
+                checkin_hours = 3
+                boarding_minutes = 45
                 
                 return_flight = Flight(
                     route_id=return_route.id,
@@ -553,7 +555,7 @@ class RealisticFlightGenerator:
                     departure_time=departure_time,
                     arrival_time=arrival_time,
                     checkin_start_time=departure_time - datetime.timedelta(hours=checkin_hours),
-                    checkin_end_time=departure_time - datetime.timedelta(minutes=30),
+                    checkin_end_time=departure_time - datetime.timedelta(minutes=boarding_minutes + 10),
                     boarding_start_time=departure_time - datetime.timedelta(minutes=boarding_minutes),
                     boarding_end_time=departure_time - datetime.timedelta(minutes=15),
                     gate=f"{random.choice(['A', 'B', 'C', 'D'])}{random.randint(1, 30)}",
@@ -565,6 +567,8 @@ class RealisticFlightGenerator:
                     fully_booked=False
                 )
                 db_session.add(return_flight)
+                db_session.flush()
+
                 return_flights_created += 1
         
         route_type = "🌍 Intercontinental" if is_intercontinental else ("🇪🇺 Popular" if is_popular else "🛫 Regional")
@@ -641,7 +645,7 @@ class RealisticFlightGenerator:
                 checkin_start_time=departure_time - datetime.timedelta(hours=2),
                 checkin_end_time=departure_time - datetime.timedelta(minutes=30),
                 boarding_start_time=departure_time - datetime.timedelta(minutes=30),
-                boarding_end_time=departure_time - datetime.timedelta(minutes=30),
+                boarding_end_time=departure_time - datetime.timedelta(minutes=15),
                 price_economy_class=round(random.uniform(100.0, 500.0), 2),
                 price_business_class=round(random.uniform(500.0, 1500.0), 2),
                 price_first_class=round(random.uniform(1500.0, 3000.0), 2),
