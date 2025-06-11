@@ -47,8 +47,8 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
     // Fetch data and then prepare charts
     this.fetchStats().then((response) => {
       this.dashboardData = response;
-      this.prepareChartData(); // Call prepareChartData AFTER dashboardData is set
       console.log('Dashboard Data:', this.dashboardData);
+      this.prepareChartData(); // Call prepareChartData AFTER dashboardData is set
     });
   }
 
@@ -172,7 +172,7 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
       labels: this.mostRequestedRoutesLabels,
       datasets: [
         {
-          data: this.dashboardData.mostRequestedRoutes.map(route => route.bookings),
+          data: this.dashboardData.mostRequestedRoutes.map(route => route.booking_ratio),
           backgroundColor: this.generateDistinctColors(this.dashboardData.mostRequestedRoutes.length),
           borderColor: this.generateDistinctColors(this.dashboardData.mostRequestedRoutes.length, 0.8),
           borderWidth: 1
@@ -196,6 +196,8 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
       ]
     };
 
+    console.log(this.dashboardData.leastUsedRoute);
+    console.log(this.dashboardData.leastUsedRoute.length);
     // Least Used Routes
     this.leastUsedRoutesLabels = this.dashboardData.leastUsedRoute.map(
       route => `${route.airportFrom}-${route.airportTo}`
@@ -205,8 +207,8 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
       datasets: [
         {
           data: this.dashboardData.leastUsedRoute.map(route => route.flights),
-          backgroundColor: this.generateDistinctColors(this.dashboardData.leastUsedRoute.length, 0.6, 0.4), // Different hue for distinction
-          borderColor: this.generateDistinctColors(this.dashboardData.leastUsedRoute.length, 0.8, 0.4),
+          backgroundColor: this.generateDistinctColors(this.dashboardData.leastUsedRoute.length, 0.6, 3), // Different hue for distinction
+          borderColor: this.generateDistinctColors(this.dashboardData.leastUsedRoute.length, 0.8, 3),
           borderWidth: 1
         }
       ]

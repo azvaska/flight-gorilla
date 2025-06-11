@@ -22,6 +22,7 @@ export interface IMostRequestedRouteData {
   airportTo: string;
   flight_number: string;
   bookings: number;
+  booking_ratio: number;
 }
 
 // Interface for Airports with Most Flights data
