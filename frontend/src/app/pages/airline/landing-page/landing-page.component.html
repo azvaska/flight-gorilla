@@ -1,83 +1,80 @@
-<!-- Main dashboard container, using a grid layout for flexible arrangement -->
-<div class="grid grid-cols-2 x gap-6 p-6 w-full min-h-screen bg-gray-50 font-inter">
-
-  <!-- Card for Flights Fulfillment (Line Chart) -->
-  <div hlmCard class="flex flex-col p-6 rounded-xl shadow-xl bg-white border border-gray-200 ">
-    <div class="text-xl font-bold text-gray-900 mb-2 text-center">Flights Fulfillment</div>
-    <div class="text-sm text-gray-600 mb-4 text-center">Percentage of booked seats per month.</div>
-    <div class="relative h-64 w-full"> <!-- Added relative and fixed height for chart -->
-      <canvas baseChart
-              [data]="flightsFulfillmentData"
-              [type]="flightsFulfillmentType"
-              [options]="chartOptions"
-              (chartHover)="chartHovered($event)">
-      </canvas>
+@if(dashboardData){
+  <!-- Main dashboard container, using a grid layout for flexible arrangement -->
+  <div class="grid grid-cols-2 x gap-6 p-6 pt-0 w-full min-h-screen bg-gray-50 font-inter">
+    <!-- Card for Periodic Revenue (Line Chart) -->
+    <div hlmCard class="flex flex-col p-6 rounded-xl bg-white border border-gray-200 ">
+      <div class="text-xl font-bold text-gray-900 mb-2 text-center">Periodic Revenue</div>
+      <div class="text-sm text-gray-600 mb-4 text-center">Monthly revenue generated in Euro (€).</div>
+      <div class="relative h-64 w-full">
+        <canvas baseChart
+                [data]="periodicRevenueData"
+                [type]="periodicRevenueType"
+                [options]="chartOptions">
+        </canvas>
+      </div>
     </div>
+
+    <!-- Card for Total Revenue (Box) -->
+    <div hlmCard class="flex flex-col items-center justify-center p-6 rounded-xl bg-white border border-gray-200 ">
+      <div class="text-xl font-bold text-gray-900 mb-2 text-center">Total Revenue</div>
+      <div class="text-sm text-gray-600 mb-10 text-center">Cumulative revenue across all months.</div>
+      <div class="text-5xl font-extrabold text-gray-900">
+        €{{ totalRevenue | number:'1.2-2' }} <!-- Format as currency -->
+      </div>
+    </div>
+
+    <!-- Card for Flights Fulfillment (Line Chart) -->
+    <div hlmCard class="flex flex-col p-6 rounded-xl bg-white border border-gray-200 ">
+      <div class="text-xl font-bold text-gray-900 mb-2 text-center">Flights Fulfillment</div>
+      <div class="text-sm text-gray-600 mb-4 text-center">Percentage of booked seats per month.</div>
+      <div class="relative h-64 w-full"> <!-- Added relative and fixed height for chart -->
+        <canvas baseChart
+                [data]="flightsFulfillmentData"
+                [type]="flightsFulfillmentType"
+                [options]="chartOptions">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Card for Most Requested Routes (Bar Chart) -->
+    <div hlmCard class="flex flex-col p-6 rounded-xl bg-white border border-gray-200 ">
+      <div class="text-xl font-bold text-gray-900 mb-2 text-center">Most Requested Routes</div>
+      <div class="text-sm text-gray-600 mb-4 text-center">Top 10 routes by number of bookings.</div>
+      <div class="relative h-64 w-full">
+        <canvas baseChart
+                [data]="mostRequestedRoutesData"
+                [type]="mostRequestedRoutesType"
+                [options]="chartOptions">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Card for Airports with Most Flights (Bar Chart) -->
+    <div hlmCard class="flex flex-col p-6 rounded-xl bg-white border border-gray-200 ">
+      <div class="text-xl font-bold text-gray-900 mb-2 text-center">Airports with Most Flights</div>
+      <div class="text-sm text-gray-600 mb-4 text-center">Top 10 airports by total flight volume.</div>
+      <div class="relative h-64 w-full">
+        <canvas baseChart
+                [data]="airportsWithMostFlightsData"
+                [type]="airportsWithMostFlightsType"
+                [options]="chartOptions">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Card for Least Used Routes (Bar Chart) -->
+    <div hlmCard class="flex flex-col p-6 rounded-xl bg-white border border-gray-200 ">
+      <div class="text-xl font-bold text-gray-900 mb-2 text-center">Least Used Routes</div>
+      <div class="text-sm text-gray-600 mb-4 text-center">Bottom 10 routes by flight activity.</div>
+      <div class="relative h-64 w-full">
+        <canvas baseChart
+                [data]="leastUsedRoutesData"
+                [type]="leastUsedRoutesType"
+                [options]="chartOptions">
+        </canvas>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Card for Periodic Revenue (Line Chart) -->
-  <div hlmCard class="flex flex-col p-6 rounded-xl shadow-xl bg-white border border-gray-200 ">
-    <div class="text-xl font-bold text-gray-900 mb-2 text-center">Periodic Revenue</div>
-    <div class="text-sm text-gray-600 mb-4 text-center">Monthly revenue generated in Euro (€).</div>
-    <div class="relative h-64 w-full">
-      <canvas baseChart
-              [data]="periodicRevenueData"
-              [type]="periodicRevenueType"
-              [options]="chartOptions"
-              (chartHover)="chartHovered($event)">
-      </canvas>
-    </div>
-  </div>
-
-  <!-- Card for Total Revenue (Box) -->
-  <div hlmCard class="flex flex-col items-center justify-center p-6 rounded-xl shadow-xl bg-white border border-gray-200 ">
-    <div class="text-xl font-bold text-gray-900 mb-2 text-center">Total Revenue</div>
-    <div class="text-sm text-gray-600 mb-4 text-center">Cumulative revenue across all months.</div>
-    <div class="text-5xl font-extrabold text-gray-900">
-      €{{ totalRevenue | number:'1.2-2' }} <!-- Format as currency -->
-    </div>
-  </div>
-
-  <!-- Card for Most Requested Routes (Bar Chart) -->
-  <div hlmCard class="flex flex-col p-6 rounded-xl shadow-xl bg-white border border-gray-200 ">
-    <div class="text-xl font-bold text-gray-900 mb-2 text-center">Most Requested Routes</div>
-    <div class="text-sm text-gray-600 mb-4 text-center">Top 10 routes by number of bookings.</div>
-    <div class="relative h-64 w-full">
-      <canvas baseChart
-              [data]="mostRequestedRoutesData"
-              [type]="mostRequestedRoutesType"
-              [options]="chartOptions"
-              (chartHover)="chartHovered($event)">
-      </canvas>
-    </div>
-  </div>
-
-  <!-- Card for Airports with Most Flights (Bar Chart) -->
-  <div hlmCard class="flex flex-col p-6 rounded-xl shadow-xl bg-white border border-gray-200 ">
-    <div class="text-xl font-bold text-gray-900 mb-2 text-center">Airports with Most Flights</div>
-    <div class="text-sm text-gray-600 mb-4 text-center">Top 10 airports by total flight volume.</div>
-    <div class="relative h-64 w-full">
-      <canvas baseChart
-              [data]="airportsWithMostFlightsData"
-              [type]="airportsWithMostFlightsType"
-              [options]="chartOptions"
-              (chartHover)="chartHovered($event)">
-      </canvas>
-    </div>
-  </div>
-
-  <!-- Card for Least Used Routes (Bar Chart) -->
-  <div hlmCard class="flex flex-col p-6 rounded-xl shadow-xl bg-white border border-gray-200 ">
-    <div class="text-xl font-bold text-gray-900 mb-2 text-center">Least Used Routes</div>
-    <div class="text-sm text-gray-600 mb-4 text-center">Bottom 10 routes by flight activity.</div>
-    <div class="relative h-64 w-full">
-      <canvas baseChart
-              [data]="leastUsedRoutesData"
-              [type]="leastUsedRoutesType"
-              [options]="chartOptions"
-              (chartHover)="chartHovered($event)">
-      </canvas>
-    </div>
-  </div>
-
-</div>
+}

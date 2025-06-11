@@ -1,47 +1,14 @@
 import { Component, OnInit } from '@angular/core'; // Import OnInit for lifecycle hook
 import { HlmCardDirective } from '@spartan-ng/ui-card-helm';
 import { ChartData, ChartEvent, ChartType, ChartOptions } from 'chart.js';
+import { AirlineFetchService } from '@/app/services/airline/airline-fetch.service';
 import { BaseChartDirective } from 'ng2-charts';
 import {DecimalPipe} from '@angular/common';
+import {IStats} from '@/types/airline/stats'; // Import IStats
+import { LoadingService } from '@/app/services/loading.service';
+import { firstValueFrom } from 'rxjs';
+import {hexToRgba} from '@/utils/colors';
 
-// --- Interfaces for API Data ---
-interface FlightFulfillmentData {
-  month: number;
-  totalSeats: number;
-  totalBooks: number;
-}
-
-interface RevenueData {
-  month: number;
-  total: number;
-}
-
-interface MostRequestedRouteData {
-  airportFrom: string;
-  airportTo: string;
-  flight_number: string;
-  bookings: number;
-}
-
-interface AirportsWithMostFlightsData {
-  airport: string;
-  flights: number;
-}
-
-interface LeastUsedRouteData {
-  airportFrom: string;
-  airportTo: string;
-  flight_number: string;
-  flights: number;
-}
-
-interface DashboardData {
-  flights_fullfilment: FlightFulfillmentData[];
-  revenue: RevenueData[];
-  mostRequestedRoutes: MostRequestedRouteData[];
-  airportsWithMostFlights: AirportsWithMostFlightsData[];
-  leastUsedRoute: LeastUsedRouteData[];
-}
 
 @Component({
   selector: 'app-landing-page',
@@ -57,78 +24,42 @@ interface DashboardData {
 })
 export class LandingPageComponent implements OnInit { // Implement OnInit
 
-  // Mock data structure to simulate API response
-  public dashboardData: DashboardData = {
-    flights_fullfilment: [
-      { month: 1, totalSeats: 2000, totalBooks: 1500 },
-      { month: 2, totalSeats: 2100, totalBooks: 1650 },
-      { month: 3, totalSeats: 2200, totalBooks: 1700 },
-      { month: 4, totalSeats: 2300, totalBooks: 1850 },
-      { month: 5, totalSeats: 2400, totalBooks: 1900 },
-      { month: 6, totalSeats: 2500, totalBooks: 2000 },
-      { month: 7, totalSeats: 2600, totalBooks: 2100 },
-      { month: 8, totalSeats: 2700, totalBooks: 2200 },
-      { month: 9, totalSeats: 2800, totalBooks: 2300 },
-      { month: 10, totalSeats: 2900, totalBooks: 2400 },
-      { month: 11, totalSeats: 3000, totalBooks: 2500 },
-      { month: 12, totalSeats: 3100, totalBooks: 2600 }
-    ],
-    revenue: [
-      { month: 1, total: 150000 },
-      { month: 2, total: 165000 },
-      { month: 3, total: 170000 },
-      { month: 4, total: 185000 },
-      { month: 5, total: 190000 },
-      { month: 6, total: 200000 },
-      { month: 7, total: 210000 },
-      { month: 8, total: 220000 },
-      { month: 9, total: 230000 },
-      { month: 10, total: 240000 },
-      { month: 11, total: 250000 },
-      { month: 12, total: 260000 }
-    ],
-    mostRequestedRoutes: [
-      { airportFrom: "JFK", airportTo: "LAX", flight_number: "AA101", bookings: 950 },
-      { airportFrom: "LAX", airportTo: "ORD", flight_number: "UA202", bookings: 880 },
-      { airportFrom: "ORD", airportTo: "DFW", flight_number: "DL303", bookings: 820 },
-      { airportFrom: "DFW", airportTo: "DEN", flight_number: "WN404", bookings: 790 },
-      { airportFrom: "DEN", airportTo: "SFO", flight_number: "AS505", bookings: 750 },
-      { airportFrom: "SFO", airportTo: "SEA", flight_number: "VX606", bookings: 700 },
-      { airportFrom: "SEA", airportTo: "ATL", flight_number: "DL707", bookings: 680 },
-      { airportFrom: "ATL", airportTo: "CLT", flight_number: "AA808", bookings: 650 },
-      { airportFrom: "CLT", airportTo: "LAS", flight_number: "WN909", bookings: 620 },
-      { airportFrom: "LAS", airportTo: "MIA", flight_number: "AA010", bookings: 590 },
-    ],
-    airportsWithMostFlights: [
-      { airport: "ATL", flights: 12000 },
-      { airport: "DFW", flights: 11500 },
-      { airport: "DEN", flights: 11000 },
-      { airport: "ORD", flights: 10500 },
-      { airport: "LAX", flights: 10000 },
-      { airport: "JFK", flights: 9500 },
-      { airport: "SFO", flights: 9000 },
-      { airport: "SEA", flights: 8500 },
-      { airport: "CLT", flights: 8000 },
-      { airport: "LAS", flights: 7500 },
-    ],
-    leastUsedRoute: [
-      { airportFrom: "MIA", airportTo: "BOS", flight_number: "AA100", flights: 120 },
-      { airportFrom: "PHX", airportTo: "MSP", flight_number: "DL200", flights: 150 },
-      { airportFrom: "EWR", airportTo: "IND", flight_number: "UA300", flights: 180 },
-      { airportFrom: "STL", airportTo: "MCI", flight_number: "WN400", flights: 200 },
-      { airportFrom: "CVG", airportTo: "BNA", flight_number: "AS500", flights: 230 },
-      { airportFrom: "CLE", airportTo: "PIT", flight_number: "VX600", flights: 250 },
-      { airportFrom: "BUF", airportTo: "SYR", flight_number: "DL700", flights: 280 },
-      { airportFrom: "RDU", airportTo: "GSO", flight_number: "AA800", flights: 300 },
-      { airportFrom: "OKC", airportTo: "TUL", flight_number: "WN900", flights: 320 },
-      { airportFrom: "MEM", airportTo: "LIT", flight_number: "AA000", flights: 350 },
-    ]
-  };
-
+  public dashboardData: IStats | undefined;
   public months: string[] = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
+
+  private colorPalette: string[] = [
+    '#343e3d', // Palette Color 1
+    '#607466', // Palette Color 2
+    '#aedcc0', // Palette Color 3 (Black)
+    '#7bd389', // Palette Color 4
+    '#38e4ae'  // Palette Color 5
+  ];
+
+  constructor(
+    private airlineFetchService: AirlineFetchService,
+    private loadingService: LoadingService
+  ) {} // Constructor modified to fetch data in ngOnInit instead
+
+  ngOnInit(): void {
+    // Fetch data and then prepare charts
+    this.fetchStats().then((response) => {
+      this.dashboardData = response;
+      this.prepareChartData(); // Call prepareChartData AFTER dashboardData is set
+      console.log('Dashboard Data:', this.dashboardData);
+    });
+  }
+
+  protected async fetchStats(){
+    this.loadingService.startLoadingTask();
+    const response = await firstValueFrom(
+      this.airlineFetchService.getAirlineStats()
+    );
+    this.loadingService.endLoadingTask();
+    return response;
+  }
 
   // Common chart options for hiding legend and responsiveness
   public chartOptions: ChartOptions = {
@@ -185,11 +116,13 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
   public leastUsedRoutesType: ChartType = 'bar';
 
 
-  ngOnInit(): void {
-    this.prepareChartData();
-  }
-
   private prepareChartData(): void {
+    // Ensure dashboardData is not undefined before accessing its properties
+    if (!this.dashboardData) {
+      console.error('Dashboard data is not available.');
+      return;
+    }
+
     // Flights Fulfillment
     this.flightsFulfillmentLabels = this.dashboardData.flights_fullfilment
       .sort((a, b) => a.month - b.month)
@@ -204,8 +137,8 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
           label: 'Fulfillment %',
           fill: true,
           tension: 0.4,
-          borderColor: 'rgba(75, 192, 192, 1)',
-          backgroundColor: 'rgba(75, 192, 192, 0.2)'
+          borderColor: this.colorPalette[1],
+          backgroundColor: hexToRgba(this.colorPalette[1], 0.2),
         }
       ]
     };
@@ -224,8 +157,8 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
           label: 'Revenue (€)',
           fill: true,
           tension: 0.4,
-          borderColor: 'rgba(153, 102, 255, 1)',
-          backgroundColor: 'rgba(153, 102, 255, 0.2)'
+          borderColor: this.colorPalette[0],
+          backgroundColor: hexToRgba(this.colorPalette[0], 0.2),
         }
       ]
     };
@@ -281,11 +214,13 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
   }
 
   // Helper to generate distinct colors for bar charts
-  private generateDistinctColors(count: number, alpha: number = 0.6, startHue: number = 0): string[] {
+  private generateDistinctColors(count: number, alpha: number = 0.6, startIndex: number = 0): string[] {
     const colors: string[] = [];
+    const paletteLength = this.colorPalette.length;
     for (let i = 0; i < count; i++) {
-      const hue = (startHue + (i * (360 / count))) % 360;
-      colors.push(`hsla(${hue}, 70%, 60%, ${alpha})`);
+      // Cycle through the palette, starting from startIndex
+      const hexColor = this.colorPalette[(startIndex + i) % paletteLength];
+      colors.push(hexToRgba(hexColor, alpha));
     }
     return colors;
   }
