@@ -11,4 +11,4 @@ class Aircraft(db.Model):
     columns: Mapped[int] = mapped_column(nullable=False)
     unavailable_seats: Mapped[List[str]] = mapped_column(ARRAY(db.String), nullable=False)
 
-    airline_aircrafts: Mapped[List[AirlineAircraft]] = relationship(AirlineAircraft, back_populates='aircraft', cascade='all, delete-orphan')
+    airline_aircrafts: Mapped[List[AirlineAircraft]] = relationship(AirlineAircraft, back_populates='aircraft')

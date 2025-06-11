@@ -45,28 +45,15 @@ register_model = api.model('Register', {
 })
 
 
-airline_user_model = api.model('AirlineUser', {
+
+
+ 
+airline_register_model = api.model('AirlineRegister', {
     'email': fields.String(required=True, description='Login Email'),
     'name': fields.String(required=True, description='First name'),
     'surname': fields.String(required=True, description='Last name'),
-    'address': fields.String(description='Address'),
-    'zip': fields.String(description='ZIP/postal code'),
-    'nation_id': fields.Integer(description='Nation ID'),
-})
-
-
-
-airline_register_model = api.model('AirlineRegister', {
-    'email': fields.String(required=True, description='Info Email Airline'),
-    'user_info': fields.Nested(airline_user_model, required=True, description='User information'),
-    'name': fields.String(required=True, description='Name of the airline'),
-    'website': fields.String(required=True, description='Website of the airline'),
-    'address': fields.String(description='Address'),
-    'zip': fields.String(description='ZIP/postal code'),
-    'nation_id': fields.Integer(description='Nation ID'),
-    'first_class_description': fields.String(required=True, description='First class description'),
-    'business_class_description': fields.String(required=True, description='Business class description'),
-    'economy_class_description': fields.String(required=True, description='Economy class description'),
+    'airline_name': fields.String(required=True, description='Airline name'),
+    
 })
 
 def generate_token(user):
@@ -113,10 +100,6 @@ class LoginResource(Resource):
             if not verified:
                 return {"error": "Invalid credentials"}, 401
             
-            if user.airline_id is not None:
-                airline = Airline.query.filter_by(id=user.airline_id).first_or_404()
-                if not airline.is_approved:
-                    return {"error": "Airline is not approved"}, 403
 
             if not user.active and user.airline_id is None:
                 return {"error": "User is not active"}, 403
@@ -209,10 +192,11 @@ class Register(Resource):
             return {'error': str(e)}, 500
 
 
-
-
+#DELETE THIS LATER ROBA CON DIP FUNZ RESTRICTED
+#AGGIUGNERE SEED BOOKING
 @api.route('/register_airline')
 class AirlineRegister(Resource):
+    @jwt_required()
     @api.expect(airline_register_model)
     @roles_required('admin')
     @api.response(201, 'Created')
@@ -221,41 +205,37 @@ class AirlineRegister(Resource):
     def post(self):
         """Register a new airline"""
         data = request.json
-        user_info = data['user_info']
-        #create schema airline using marshmellow
-        del data['user_info']
+
         db = current_app.extensions['security'].datastore.db.session
         try:
-            with db.begin():
-                airline = airline_schema.load(data=data, session=db,partial=True)
-                db.add(airline)
-                db.flush()
-                print(airline)
-                tmp_passwd = generate_secure_password()
-                print(f"Generated temporary password: {tmp_passwd}")
+            airline = Airline(
+                name=data['airline_name'],
+            )
+            db.add(airline)
+            db.flush()
+            print(airline)
+            tmp_passwd = generate_secure_password()
+            print(f"Generated temporary password: {tmp_passwd}")
 
-                security = current_app.extensions['security']
-                user = security.datastore.create_user(
-                    email=data['email'],
-                    password=hash_password(tmp_passwd),
-                    roles=["airline-admin"],
-                    name=user_info['name'],
-                    surname=user_info['surname'],
-                    address=user_info.get('address'),
-                    zip=user_info.get('zip'),
-                    airline_id=airline.id,
-                    nation_id=user_info.get('nation_id'),
-                    active=False
-                )
+            security = current_app.extensions['security']
+            user = security.datastore.create_user(
+                email=data['email'],
+                password=hash_password(tmp_passwd),
+                roles=["airline-admin"],
+                name=data['airline_name'],
+                surname=data['airline_name'],
+                airline_id=airline.id,
+                active=False
+            )
 
 
-                db.add(user)
-                db.commit()
+            db.add(user)
+            db.commit()
 
-                return {'message': 'Airline registered successfully','credentials':{
-                    'email': user.email,
-                    'password': tmp_passwd,
-                }}, 201
+            return {'message': 'Airline registered successfully','credentials':{
+                'email': user.email,
+                'password': tmp_passwd,
+            }}, 201
         except IntegrityError as e:
             db.rollback()
             # Check if it's specifically a unique constraint violation
@@ -266,6 +246,8 @@ class AirlineRegister(Resource):
                 
         except Exception as e:
             db.rollback()
+            import traceback
+            traceback.print_exc()
             current_app.logger.error(f"Error during airline registration: {str(e)}")
             return {'error': 'Error during airline registration'}, 500
         

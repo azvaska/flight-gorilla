@@ -675,7 +675,7 @@ def generate_comprehensive_flights(start_hours, max_routes_per_airline, include_
     generator.get_or_create_airports()
     
     # Get airlines and aircraft
-    airlines = Airline.query.filter_by(is_approved=True).all()
+    airlines = Airline.query.all()
     if not airlines:
         click.echo("No approved airlines found. Please create airlines first.")
         return

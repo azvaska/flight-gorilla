@@ -1,4 +1,5 @@
 # app/apis/user.py
+import datetime
 from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, marshal, reqparse
@@ -207,9 +208,33 @@ class UpdatePassword(Resource):
 
         if not user.verify_and_update_password(old_password):
             return {'error': 'Old password is incorrect'}, 403
+        
+        
 
         user.password = hash_password(new_password)
-        user.active = True  # Ensure user is active
+
+        user.confirmed_at = datetime.datetime.now(datetime.UTC)  # Ensure user is confirmed
+        
+        if user.airline_id:
+            from app.models import Airline
+            updated_airline = Airline.query.get(user.airline_id)
+            if not updated_airline:
+                return {'error': 'Associated airline not found'}, 404
+
+            required_fields = ['name', 'nation_id', 'address', 'email', 'website','zip',
+                               'address'
+                               'first_class_description', 'business_class_description',
+                               'economy_class_description']
+
+            # Check if all required fields are present and not None
+            all_not_none = all(
+                getattr(updated_airline, field) is not None
+                for field in required_fields
+            )
+
+            if all_not_none:
+                user.active = True
+            db.session.flush()
 
         db.session.commit()
 

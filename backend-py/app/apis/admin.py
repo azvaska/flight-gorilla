@@ -24,7 +24,7 @@ api = Namespace('admin', description='Admin related operations')
 
 
 
-@api.route('/<uuid:airline_id>')
+@api.route('/airline/<uuid:airline_id>')
 @api.param('airline_id', 'The airline identifier')
 class AirlineResource(Resource):
     @api.doc(security=None)
@@ -56,8 +56,6 @@ class AirlineResource(Resource):
         except ValidationError as err:
             return {"errors": err.messages, "code": 400}, 400
 
-        if data.get('is_approved') is not None:
-            airline.is_approved = data['is_approved']
         db.session.commit()
         return marshal(airline_schema.dump(airline),airline_model), 200
 
@@ -72,3 +70,4 @@ class AirlineResource(Resource):
         db.session.commit()
 
         return {'message': 'Ok'}, 200
+    

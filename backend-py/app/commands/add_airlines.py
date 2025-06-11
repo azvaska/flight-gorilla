@@ -29,7 +29,6 @@ def seed_airlines():
         nation_id=1,  # Assuming a valid nation ID exists in the database
         email="contact@skyhighairlines.com",
         website="https://www.skyhighairlines.com",
-        is_approved=True,
         first_class_description="Luxurious seating with gourmet meals and premium services.",
         business_class_description="Comfortable seating with excellent meals and services.",
         economy_class_description="Affordable seating with basic amenities for a comfortable journey."

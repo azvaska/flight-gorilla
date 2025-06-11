@@ -31,7 +31,6 @@ class AirlineSchema(ma.SQLAlchemyAutoSchema):
     nation_id = ma.Integer()
     extras = ma.Nested(ExtraSchema, many=True)
     aircraft = ma.Nested(AirlineAircraftSchema, many=True)
-    is_approved = ma.Boolean(dump_only=True)
 
     # Add validation to specific fields
     email = ma.Email(required=True,

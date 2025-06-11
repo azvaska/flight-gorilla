@@ -15,6 +15,7 @@ from app.models.airlines import Airline, AirlineAircraft
 from app.models.extra import Extra
 from app.apis.location import nation_model
 from app.models.flight import Route, Flight, FlightExtra
+from app.models.user import User
 from app.schemas.flight import FlightSchema, flight_schema,all_flights_schema, flight_extra_schema, flights_extra_schema
 from app.schemas.airline import AirlineSchema, airline_schema, airlines_schema,route_schema,routes_schema, extra_schema, extras_schema, airline_aircraft_schema, airline_aircrafts_schema
 from app.apis.airport import airport_model
@@ -66,7 +67,6 @@ airline_model = api.model('Airline', {
     'nation': fields.Nested(nation_model),
     'email': fields.String(required=True, description='Email address'),
     'website': fields.String(required=True, description='Website URL'),
-    'is_approved': fields.Boolean(default=False, description='Approval status'),
     'first_class_description': fields.String(required=True, description='First class description'),
     'business_class_description': fields.String(required=True, description='Business class description'),
     'economy_class_description': fields.String(required=True, description='Economy class description'),
@@ -262,14 +262,13 @@ class AirlineList(Resource):
             query = query.filter(Airline.name.ilike(f"%{args['name']}%"))
         if args['nation_id']:
             query = query.filter(Airline.nation_id == args['nation_id'])
-        query = query.filter(Airline.is_approved == True)
 
         return marshal(airlines_schema.dump(query.all()),airline_model), 200
 
 @api.route('/')
 class MyAirline(Resource):
     @jwt_required()
-    @roles_required('airline-admin')
+    @roles_required('airline-admin',True)
     @airline_id_from_user()
     @api.response(200, 'OK', airline_model)
     @api.response(404, 'Not Found')
@@ -301,7 +300,7 @@ class AirlineResource(Resource):
         return marshal(airline_schema.dump(airline),airline_model), 200
 
     @jwt_required()
-    @roles_required(['airline-admin'])
+    @roles_required(['airline-admin'],True)
     @api.expect(airline_put_model)
     @api.response(200, 'OK', airline_model)
     def put(self, airline_id):
@@ -311,8 +310,7 @@ class AirlineResource(Resource):
 
         # Check permissions
         user_id = get_jwt_identity()
-        datastore = current_app.extensions['security'].datastore
-        user = datastore.find_user(id=user_id)
+        user = User.query.get(user_id)
 
 
         # Check if the user is an airline admin and if they are trying to update their own airline
@@ -323,11 +321,30 @@ class AirlineResource(Resource):
         partial_schema = AirlineSchema(partial=True)
         try:
             # Validate the incoming data
-            _ = partial_schema.load(data,instance=airline)
+            updated_airline = partial_schema.load(data,instance=airline)
         except ValidationError as err:
             return {"errors": err.messages, "code": 400}, 400
+        
+        db.session.flush()
+        
+        #check if each field is not None
+        required_fields = ['name', 'nation_id', 'address', 'email', 'website','zip',
+                           'address',
+                           'first_class_description', 'business_class_description',
+                           'economy_class_description']
 
+        # Check if all required fields are present and not None
+        all_not_none = all(
+            getattr(updated_airline, field) is not None
+            for field in required_fields
+        )
+        if all_not_none:
+            user.active = True
+            user.name ='canna'
+        db.session.flush()
+        
         db.session.commit()
+        
         return marshal(airline_schema.dump(airline),airline_model), 200
 
 

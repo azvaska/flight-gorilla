@@ -52,7 +52,7 @@ class Route(db.Model):
 class Flight(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     route_id: Mapped[int] = mapped_column(db.Integer,db.ForeignKey(Route.id), nullable=False)
-    aircraft_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(AirlineAircraft.id), nullable=False)
+    aircraft_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(AirlineAircraft.id,ondelete='RESTRICT'), nullable=False)
 
     departure_time: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
     arrival_time: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
@@ -75,8 +75,8 @@ class Flight(db.Model):
     aircraft: Mapped[AirlineAircraft] = relationship(AirlineAircraft, back_populates='flights', foreign_keys=[aircraft_id])
     available_extras: Mapped[List['FlightExtra']] = relationship('FlightExtra', back_populates='flight', cascade='all, delete-orphan',lazy='noload' )
 
-    departure_bookings = relationship("BookingDepartureFlight", back_populates="flight",lazy='joined')
-    return_bookings = relationship("BookingReturnFlight", back_populates="flight",lazy='joined')
+    departure_bookings = relationship("BookingDepartureFlight", back_populates="flight",lazy='joined',cascade='all, delete-orphan',)
+    return_bookings = relationship("BookingReturnFlight", back_populates="flight",lazy='joined',cascade='all, delete-orphan',)
 
     __table_args__ = (
         # For flight search queries - most important
