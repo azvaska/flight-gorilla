@@ -114,6 +114,10 @@ export class AircraftListComponent {
           description:
             'This aircraft cannot be deleted because it is currently in use.',
         });
+      } else {
+        toast('Unknown error', {
+          description: 'An unexpected error occurred while deleting the aircraft.',
+        });
       }
     } finally {
       this.isDeleteAircraftLoading = false;

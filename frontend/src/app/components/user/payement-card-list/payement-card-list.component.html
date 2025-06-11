@@ -83,6 +83,11 @@
               Remove card
             </button>
           </div>
+          
+          <!-- Remove Card Error Message -->
+          <div *ngIf="removeCardError" class="mt-2 text-sm text-red-600">
+            {{ removeCardError }}
+          </div>
         </ng-container>
       </div>
     </div>
@@ -286,6 +291,11 @@
               ></ng-icon>
               Add card
             </button>
+          </div>
+          
+          <!-- Add Card Error Message -->
+          <div *ngIf="addCardError" class="col-span-2 mt-2 text-sm text-red-600">
+            {{ addCardError }}
           </div>
         </div>
       </form>

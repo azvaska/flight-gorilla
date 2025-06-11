@@ -228,13 +228,19 @@ export class AirlineProfileComponent {
       )
     ) as Partial<IAirline>;
 
-    const result = await firstValueFrom(
-      this.airlineFetchService.updateAirline(this.airline.id, changes)
-    );
-    this.airline = result;
-    this.isLoading = false;
-    this.toggleEditMode();
-    window.location.reload();
+    try {
+      const result = await firstValueFrom(
+        this.airlineFetchService.updateAirline(this.airline.id, changes)
+      );
+      this.airline = result;
+      this.isLoading = false;
+      this.toggleEditMode();
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Error updating airline profile:', error);
+      this.profileForm.setErrors({ error: 'Unknown error' });
+      this.isLoading = false;
+    }
   }
 
   protected toggleSecurityEditMode(): void {
@@ -281,11 +287,13 @@ export class AirlineProfileComponent {
       this.isSecurityLoading = false;
       this.toggleSecurityEditMode();
       window.location.reload();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating security settings:', error);
       // Handle password error if needed
       if (formValue.password && formValue.oldPassword) {
         this.securityForm.get('oldPassword')?.setErrors({ incorrect: true });
+      } else {
+        this.securityForm.setErrors({ error: 'Unknown error' });
       }
       this.isSecurityLoading = false;
     }

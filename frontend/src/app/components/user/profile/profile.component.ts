@@ -114,9 +114,8 @@ export class ProfileComponent {
         Validators.required,
         Validators.pattern(/^\d{5}$/),
       ]),
-      nation_id: new FormControl(this.user.nation.id),
+      nation_id: new FormControl(this.user.nation.id, [Validators.required]),
     });
-
 
     this.profileForm
       .get('password')
@@ -129,7 +128,6 @@ export class ProfileComponent {
         }
         oldPasswordControl?.updateValueAndValidity();
       });
-
   }
 
   protected onNationChange(nation: SearchInputValue<INation> | undefined): void {
@@ -144,6 +142,9 @@ export class ProfileComponent {
       // Se c'è del testo nella ricerca ma nessuna nazione selezionata, marca come errore
       if (this.searchValue.trim().length > 0) {
         nationControl?.setErrors({ invalidNation: true });
+      } else {
+        // Se non c'è testo e non c'è selezione, usa la validazione required standard
+        nationControl?.setErrors({ required: true });
       }
     }
     
@@ -162,8 +163,10 @@ export class ProfileComponent {
       nationControl?.markAsTouched();
       nationControl?.markAsDirty();
     } else if (searchValue.trim().length === 0 && !this.selectedNation?.data) {
-      // Se il campo è vuoto e non c'è selezione, rimuovi gli errori (campo opzionale)
-      nationControl?.setErrors(null);
+      // Se il campo è vuoto e non c'è selezione, usa la validazione required standard
+      nationControl?.setErrors({ required: true });
+      nationControl?.markAsTouched();
+      nationControl?.markAsDirty();
     }
   }
 
@@ -215,41 +218,50 @@ export class ProfileComponent {
     
     this.isLoading = true;
 
-    const newUser = await firstValueFrom(
-      this.userFetchService.updateUser(this.user.id, {
-        name: updatedUser.name!,
-        surname: updatedUser.surname!,
-        email: updatedUser.email!,
-        nation_id: updatedUser.nation_id!,
-        address: updatedUser.address!,
-        zip: updatedUser.zip!,
-      })
-    );
+    try {
+      const newUser = await firstValueFrom(
+        this.userFetchService.updateUser(this.user.id, {
+          name: updatedUser.name!,
+          surname: updatedUser.surname!,
+          email: updatedUser.email!,
+          nation_id: updatedUser.nation_id!,
+          address: updatedUser.address!,
+          zip: updatedUser.zip!,
+        })
+      );
 
-    if (updatedUser.password && updatedUser.oldPassword) {
-      console.log("changing password")
-      try{
+      if (updatedUser.password && updatedUser.oldPassword) {
+        console.log("changing password")
+        try{
 
-        await firstValueFrom(
-          this.userFetchService.updatePassword(
-            updatedUser.oldPassword,
-            updatedUser.password
-          )
-        );
-      } catch (error) {
-        if(error instanceof HttpErrorResponse) {
-          if(error.status === 403) {
-            this.profileForm.get('oldPassword')?.setErrors({ incorrect: true });
-            this.isLoading = false;
-            return;
+          await firstValueFrom(
+            this.userFetchService.updatePassword(
+              updatedUser.oldPassword,
+              updatedUser.password
+            )
+          );
+        } catch (error) {
+          if(error instanceof HttpErrorResponse) {
+            if(error.status === 403) {
+              this.profileForm.get('oldPassword')?.setErrors({ incorrect: true });
+              this.isLoading = false;
+              return;
+            }
           }
-        }
-      } 
+          // For other password-related errors, set a generic error
+          this.profileForm.setErrors({ error: 'Unknown error' });
+          this.isLoading = false;
+          return;
+        } 
+      }
+
+      this.isLoading = false;
+      this.userChange.emit(newUser);
+      this.toggleEditMode();
+    } catch (error: any) {
+      console.error('Error updating user profile:', error);
+      this.profileForm.setErrors({ error: 'Unknown error' });
+      this.isLoading = false;
     }
-
-
-    this.isLoading = false;
-    this.userChange.emit(newUser);
-    this.toggleEditMode();
   }
 }

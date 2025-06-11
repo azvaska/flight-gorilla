@@ -177,6 +177,11 @@
       >
         Save Extra
       </button>
+      
+      <!-- Error Message -->
+      <div *ngIf="modalError" class="mt-4 text-sm text-red-600 text-center">
+        {{ modalError }}
+      </div>
     </div>
   </div>
 </div>

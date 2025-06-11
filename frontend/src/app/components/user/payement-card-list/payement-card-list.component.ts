@@ -51,6 +51,8 @@ export class PayementCardListComponent implements OnInit {
 
   protected loadingAddCard = false;
   protected loadingRemoveCard: boolean[] = [];
+  protected addCardError: string | null = null;
+  protected removeCardError: string | null = null;
 
   // Reactive form for adding new card
   newCardForm = new FormGroup({
@@ -87,58 +89,75 @@ export class PayementCardListComponent implements OnInit {
   protected selectCard(id: number | 'new') {
     this.localSelectedCardId = id;
     this.selectedCardId.emit(id);
+    // Reset errors when selecting a different card
+    this.addCardError = null;
+    this.removeCardError = null;
   }
 
   protected async addCard() {
     if (this.newCardForm.invalid) return;
 
     this.loadingAddCard = true;
+    this.addCardError = null;
 
-    const rawCardNumber = (this.newCardForm.value.number as string).replace(
-      /\D/g,
-      ''
-    );
-    if (!luhnCheck(rawCardNumber)) {
-      this.newCardForm.controls['number'].setErrors({ invalidLuhn: true });
+    try {
+      const rawCardNumber = (this.newCardForm.value.number as string).replace(
+        /\D/g,
+        ''
+      );
+      if (!luhnCheck(rawCardNumber)) {
+        this.newCardForm.controls['number'].setErrors({ invalidLuhn: true });
+        this.loadingAddCard = false;
+        return;
+      }
+
+      const newCard = await firstValueFrom(this.userFetchService
+        .addPayementCard({
+          holder_name: this.newCardForm.value.holder as string,
+          card_name: this.newCardForm.value.name as string,
+          last_4_digits: rawCardNumber.slice(-4),
+          circuit: rawCardNumber.startsWith('4') ? 'visa' : 'mastercard',
+          expiration_date: this.newCardForm.value.expiry as string,
+          card_type: this.newCardForm.value.type!.toUpperCase() as 'DEBIT' | 'CREDIT' | 'PREPAID',
+        })
+      );
+
+      if (!newCard) {
+        this.addCardError = 'Unknown error';
+        this.loadingAddCard = false;
+        return;
+      }
+
+      this.selectCard(newCard.id);
+      this.cards.push(newCard);
+
+      // reset form + flags
+      this.newCardForm.reset({ type: 'credit' });
       this.loadingAddCard = false;
-      return;
+    } catch (error: any) {
+      console.error('Error adding payment card:', error);
+      this.addCardError = 'Unknown error';
+      this.loadingAddCard = false;
     }
-
-    const newCard = await firstValueFrom(this.userFetchService
-      .addPayementCard({
-        holder_name: this.newCardForm.value.holder as string,
-        card_name: this.newCardForm.value.name as string,
-        last_4_digits: rawCardNumber.slice(-4),
-        circuit: rawCardNumber.startsWith('4') ? 'visa' : 'mastercard',
-        expiration_date: this.newCardForm.value.expiry as string,
-        card_type: this.newCardForm.value.type!.toUpperCase() as 'DEBIT' | 'CREDIT' | 'PREPAID',
-      })
-    );
-
-    if (!newCard) {
-      //TODO: Dispaly error
-      return;
-    }
-
-    this.selectCard(newCard.id);
-
-    this.cards.push(newCard);
-
-    // reset form + flags
-    this.newCardForm.reset({ type: 'credit' });
-
-    this.loadingAddCard = false;
   }
 
   protected async removeCard(id: number) {
     this.loadingRemoveCard[id] = true;
-    await firstValueFrom(this.userFetchService.deletePayementCard(id) );
-    this.cards = this.cards.filter((c) => c.id !== id);
-    this.loadingRemoveCard[id] = false;
+    this.removeCardError = null;
 
-    if (this.localSelectedCardId === id) {
-      this.localSelectedCardId = this.cards.length ? this.cards[0].id : 'new';
-      this.selectedCardId.emit(this.localSelectedCardId);
+    try {
+      await firstValueFrom(this.userFetchService.deletePayementCard(id));
+      this.cards = this.cards.filter((c) => c.id !== id);
+      this.loadingRemoveCard[id] = false;
+
+      if (this.localSelectedCardId === id) {
+        this.localSelectedCardId = this.cards.length ? this.cards[0].id : 'new';
+        this.selectedCardId.emit(this.localSelectedCardId);
+      }
+    } catch (error: any) {
+      console.error('Error removing payment card:', error);
+      this.removeCardError = 'Unknown error';
+      this.loadingRemoveCard[id] = false;
     }
   }
 

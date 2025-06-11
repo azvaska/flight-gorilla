@@ -14,6 +14,8 @@ import { IAirport } from '@/types/airport';
 import { DateInputComponent } from '@/app/components/ui/date-input/date-input.component';
 import { AirlineFetchService } from '@/app/services/airline/airline-fetch.service';
 import { IRoute } from '@/types/airline/route';
+import { toast } from 'ngx-sonner';
+import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
 
 @Component({
   selector: 'app-route-add',
@@ -26,7 +28,8 @@ import { IRoute } from '@/types/airline/route';
     SearchInputComponent,
     HlmCardDirective,
     DateInputComponent,
-    NgIf
+    NgIf,
+    HlmToasterComponent,
   ],
   templateUrl: './route-add.component.html',
   host: {
@@ -147,8 +150,13 @@ export class RouteAddComponent {
       }
       
       this.router.navigate(['/routes']);
-    } catch (error) {
+    } catch (error: any) {
       console.error(this.isEditMode ? "Error updating route" : "Error adding route", error);
+      toast('Unknown error', {
+        description: `An unexpected error occurred while ${
+          this.isEditMode ? 'updating' : 'adding'
+        } the route.`,
+      });
     } finally {
       this.isLoading = false;
     }
