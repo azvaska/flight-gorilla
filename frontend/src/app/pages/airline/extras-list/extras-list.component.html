@@ -1,5 +1,6 @@
 <!-- extras-list.component.html -->
 <div class="flex flex-col justify-center items-center">
+  @if (extras.length > 0) {
   <div hlmCard class="w-full max-w-5xl p-[2px]">
     <div class="overflow-y-auto overflow-x-hidden max-h-200 custom-scrollbar">
       <hlm-table class="w-full">
@@ -87,6 +88,13 @@
       </hlm-table>
     </div>
   </div>
+  } @else {
+  <div
+    class="text-gray-500 text-center text-lg italic h-full flex items-center justify-center"
+  >
+    You have no extras in your services yet
+  </div>
+  }
   <div class="flex w-full max-w-5xl justify-end">
     <button
       hlmBtn
