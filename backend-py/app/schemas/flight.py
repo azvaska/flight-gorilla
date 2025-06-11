@@ -88,7 +88,10 @@ class AllFlightSchema(ma.SQLAlchemyAutoSchema):
             # Check if the route is associated with any flights
             flights_exist = db.session.query(
                 exists().where(
-                    or_(data['id'] == BookingReturnFlight.flight_id ,BookingDepartureFlight.flight_id == data['id'])
+                    or_(
+                        BookingDepartureFlight.flight_id == data['id'],
+                        BookingReturnFlight.flight_id == data['id']
+                    )
             )).scalar()
             data['is_editable'] = not flights_exist
         return data

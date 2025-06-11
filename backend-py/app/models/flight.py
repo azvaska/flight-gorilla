@@ -164,7 +164,7 @@ class Flight(db.Model):
     
 class FlightExtra(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    flight_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Flight.id))
+    flight_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Flight.id,ondelete='CASCADE'))
     extra_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Extra.id))
     price: Mapped[float] = mapped_column(db.Float, nullable=False)
     limit: Mapped[int] = mapped_column(db.Integer, nullable=False)

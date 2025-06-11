@@ -933,6 +933,8 @@ class MyAirlineFlightResource(Resource):
                 db.session.delete(flight)
                 db.session.commit()
             except IntegrityError:
+                import traceback
+                traceback.print_exc()
                 db.session.rollback()
                 return {'error': 'This flight has associated bookings and cannot be deleted'}, 409
 
