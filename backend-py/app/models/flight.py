@@ -90,6 +90,7 @@ class Flight(db.Model):
         db.CheckConstraint('departure_time < arrival_time', name='ck_flight_departure_before_arrival'),
         db.CheckConstraint('checkin_start_time < checkin_end_time', name='ck_flight_checkin_times'),
         db.CheckConstraint('checkin_end_time < departure_time', name='ck_flight_checkin_dep_times'),
+        
 
         db.CheckConstraint('boarding_start_time < boarding_end_time', name='ck_flight_boarding_times'),
         db.CheckConstraint('boarding_end_time < departure_time', name='ck_flight_boarding_dep_times'),
@@ -98,6 +99,7 @@ class Flight(db.Model):
         db.CheckConstraint('price_economy_class >= 0', name='ck_flight_price_economy_class_non_negative'),
         db.CheckConstraint('price_first_class >= 0', name='ck_flight_price_first_class_non_negative'),
         db.CheckConstraint('price_business_class >= 0', name='ck_flight_price_business_class_non_negative'),
+        db.CheckConstraint('duration > 0', name='ck_flight_duration_non_negative'),
         # Existing constraints...
     )
 

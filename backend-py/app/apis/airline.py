@@ -776,7 +776,8 @@ class MyAirlineFlightsList(Resource):
             new_flight.checkin_end_time = new_flight.departure_time - datetime.timedelta(hours=1)
             new_flight.boarding_start_time = new_flight.departure_time - datetime.timedelta(hours=1)
             new_flight.boarding_end_time = new_flight.departure_time
-
+            
+            
             db.session.add(new_flight)
             db.session.flush()  # Get the flight ID without committing
 
@@ -810,7 +811,10 @@ class MyAirlineFlightsList(Resource):
             db.session.commit()
 
             return marshal(flight_schema.dump(new_flight), flight_model_output), 201
-
+        except IntegrityError as err:
+            db.session.rollback()
+            return {"error": "Integrity error, possibly due to duplicate flight number or route"}, 409
+        
         except ValidationError as err:
             return {"error": err.messages}, 400
         except Exception as err:
@@ -902,7 +906,10 @@ class MyAirlineFlightResource(Resource):
 
             db.session.commit()
             return marshal(flight_schema.dump(flight), flight_model_output), 200
-
+        except IntegrityError as err:
+            db.session.rollback()
+            return {"error": "Integrity error, possibly due to duplicate flight number or route"}, 409
+        
         except ValidationError as err:
             return {"errors": err.messages}, 400
         except Exception as e:
@@ -939,6 +946,7 @@ class MyAirlineFlightResource(Resource):
                 return {'error': 'This flight has associated bookings and cannot be deleted'}, 409
 
             return {'message': 'Flight deleted successfully'}, 200
+        
         except Exception as e:
             return {'error': str(e)}, 500
 
