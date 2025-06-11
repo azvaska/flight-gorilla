@@ -104,7 +104,8 @@ route_model = api.model('Route', {
     'airline_id': fields.String(readonly=True, description='Airline ID'),
     'period_start': fields.DateTime(required=True, description='Start of the route period'),
     'period_end': fields.DateTime(required=True, description='End of the route period'),
-    'flight_number': fields.String(required=True, description='Flight number')
+    'flight_number': fields.String(required=True, description='Flight number'),
+    'is_editable': fields.Boolean(readonly=True, description='Is the route editable'),
 })
 
 route_input_model = api.model('RouteInput', {
@@ -592,19 +593,8 @@ class MyAirlineRouteList(Resource):
     @api.response(404, 'Not Found')
     def get(self, airline_id):
         """Get all routes for the current airline"""
-        routes = db.session.query(
-            Route,
-            ~exists().where(Flight.route_id == Route.id).label('is_editable')
-        ).filter(Route.airline_id == airline_id).all()
-
-        rius = []
-        for row in routes:
-            route = row[0]
-            k = route_schema.dump(route)
-            k['is_editable'] = row[1]
-            rius.append(k)
-
-        return marshal(rius, route_model), 200
+        routes = db.session.query(Route).filter(Route.airline_id == airline_id).all()
+        return marshal(routes_schema.dump(routes), route_model), 200
     
     @api.expect(route_input_model)
     @jwt_required()
