@@ -21,4 +21,5 @@ export interface IAirlineFlight {
   boarding_start_time: string;
   boarding_end_time: string;
   booked_seats: string[];
+  is_editable: boolean;
 }
