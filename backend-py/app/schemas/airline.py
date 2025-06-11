@@ -57,6 +57,19 @@ class RouteSchema(ma.SQLAlchemyAutoSchema):
     departure_airport = ma.Nested('app.schemas.airport.AirportSchema', dump_only=True)
     arrival_airport = ma.Nested('app.schemas.airport.AirportSchema', dump_only=True)
 
+    is_editable = ma.Boolean(dump_only=True)
+    
+    
+    @post_dump
+    def add_is_editable(self, data, **kwargs):
+        if 'id' in data:
+            # Check if the route is associated with any flights
+            flights_exist = db.session.query(
+                exists().where(Flight.route_id == data['id'])
+            ).scalar()
+            data['is_editable'] = not flights_exist
+        return data
+    
     
     class Meta:
         model = Route
