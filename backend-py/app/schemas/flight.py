@@ -1,6 +1,9 @@
 from attr import attributes
-from marshmallow import validates_schema, ValidationError
-from app.extensions import ma
+from marshmallow import validates_schema, ValidationError, post_dump
+from sqlalchemy import exists, or_
+
+from app.extensions import ma, db
+from app.models.booking import BookingReturnFlight, BookingDepartureFlight
 from app.models.flight import Flight, Route, FlightExtra
 from app.models.airport import Airport
 from app.models.airlines import Airline, AirlineAircraft
@@ -77,6 +80,19 @@ class AllFlightSchema(ma.SQLAlchemyAutoSchema):
     flight_number = ma.String(dump_only=True)
     aircraft = ma.Nested(AirlineAircraftSchemaMinified, dump_only=True)
     route_id = ma.Integer(dump_only=True)
+    is_editable = ma.Boolean(dump_only=True)
+
+    @post_dump
+    def add_is_editable(self, data, **kwargs):
+        if 'id' in data:
+            # Check if the route is associated with any flights
+            flights_exist = db.session.query(
+                exists().where(
+                    or_(data['id'] == BookingReturnFlight.flight_id ,BookingDepartureFlight.flight_id == data['id'])
+            )).scalar()
+            data['is_editable'] = not flights_exist
+        return data
+
     class Meta:
         model = Flight
         load_instance = False

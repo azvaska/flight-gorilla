@@ -178,11 +178,11 @@ class UserResource(Resource):
         if user.has_role('admin'):
             admin_count = User.query.join(User.roles).filter(User.roles.any(name='admin')).count()
             if admin_count <= 1:
-                return {'error': 'Cannot delete the last admin user', 'code': 400}, 400
+                return {'error': 'Cannot delete the last admin user', 'code': 409}, 409
 
         # Do not delete if an airline is associated to the user
         if user.airline_id:
-            return {'error': 'Cannot delete a user with an associated airline', 'code': 400}, 400
+            return {'error': 'Cannot delete a user with an associated airline', 'code': 409}, 409
 
         db.session.delete(user)
         db.session.commit()

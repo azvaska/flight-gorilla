@@ -225,6 +225,7 @@ flight_model_seats_output = api.model('AirlineFlightSeatsOutput', {
     'checkin_end_time': fields.DateTime(required=True, description='Checkin end time'),
     'boarding_start_time': fields.DateTime(required=True, description='Boarding start time'),
     'boarding_end_time': fields.DateTime(required=True, description='Boarding end time'),
+    'is_editable': fields.Boolean(description='Is editable'),
 })
 
 
@@ -684,7 +685,7 @@ class AirlineRouteResource(Resource):
 
             # Check if the route has associated flights
             if route.flights:
-                return {'error': 'Cannot delete route with associated flights'}, 400
+                return {'error': 'Cannot delete route with associated flights'}, 409
 
             try:
                 db.session.delete(route)
@@ -925,7 +926,7 @@ class MyAirlineFlightResource(Resource):
 
             # Check if the flight is in the past
             if flight.departure_time < datetime.datetime.now(datetime.UTC):
-                return {'error': 'Cannot delete flights that have already departed'}, 400
+                return {'error': 'Cannot delete flights that have already departed'}, 409
 
 
             try:
