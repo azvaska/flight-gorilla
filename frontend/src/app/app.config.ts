@@ -12,6 +12,8 @@ import {
 import { JwtModule } from '@auth0/angular-jwt';
 import { routes } from './app.routes';
 import { JwtInterceptor } from '@/app/auth/jwt.interceptor';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
+
 
 export function tokenGetter() {
   return localStorage.getItem('access_token');
@@ -32,6 +34,6 @@ export const appConfig: ApplicationConfig = {
           disallowedRoutes: [],
         },
       })
-    ),
+    ), provideCharts(withDefaultRegisterables()),
   ],
 };
