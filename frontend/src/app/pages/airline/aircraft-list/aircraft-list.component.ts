@@ -1,24 +1,21 @@
 import { Component } from '@angular/core';
-import {NgForOf, NgOptimizedImage} from '@angular/common';
-import {HlmButtonDirective} from '@spartan-ng/ui-button-helm';
-import {Router, RouterLink} from '@angular/router';
+import { NgForOf, NgOptimizedImage } from '@angular/common';
+import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+import { Router, RouterLink } from '@angular/router';
 import {
   HlmCaptionComponent,
   HlmTableComponent,
   HlmThComponent,
   HlmTrowComponent,
 } from '@spartan-ng/ui-table-helm';
-import {
-  HlmCardDirective,
-} from '@spartan-ng/ui-card-helm';
+import { HlmCardDirective } from '@spartan-ng/ui-card-helm';
 import { lucideEllipsis } from '@ng-icons/lucide';
 import { provideIcons, NgIcon } from '@ng-icons/core';
 import { PopoverComponent } from '@/app/components/ui/popover/popover.component';
 import { PopoverTriggerDirective } from '@/app/components/ui/popover/popover-trigger.directive';
 import { AirlineFetchService } from '@/app/services/airline/airline-fetch.service';
 import { LoadingService } from '@/app/services/loading.service';
-import { IAircraft, IAirlineAircraft
- } from '@/types/airline/aircraft';
+import { IAircraft, IAirlineAircraft } from '@/types/airline/aircraft';
 import { firstValueFrom, Observable } from 'rxjs';
 import {
   BrnAlertDialogContentDirective,
@@ -35,6 +32,8 @@ import {
   HlmAlertDialogTitleDirective,
 } from '@spartan-ng/ui-alertdialog-helm';
 import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
+import { toast } from 'ngx-sonner';
+import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
 
 @Component({
   selector: 'app-aircrafts-list',
@@ -62,6 +61,7 @@ import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
     BrnAlertDialogContentDirective,
     BrnAlertDialogTriggerDirective,
     HlmAlertDialogCancelButtonDirective,
+    HlmToasterComponent,
   ],
   host: {
     class: 'block w-full h-fit',
@@ -72,7 +72,7 @@ export class AircraftListComponent {
   protected isDeleteAircraftLoading = false;
 
   constructor(
-    private airlineFetchService: AirlineFetchService, 
+    private airlineFetchService: AirlineFetchService,
     private loadingService: LoadingService,
     private router: Router
   ) {
@@ -80,10 +80,12 @@ export class AircraftListComponent {
       this.aircrafts = aircrafts;
     });
   }
-  
+
   protected async fetchAircrafts() {
     this.loadingService.startLoadingTask();
-    const aircrafts = await firstValueFrom(this.airlineFetchService.getAircrafts());
+    const aircrafts = await firstValueFrom(
+      this.airlineFetchService.getAircrafts()
+    );
     this.loadingService.endLoadingTask();
     return aircrafts;
   }
@@ -100,14 +102,22 @@ export class AircraftListComponent {
     this.isDeleteAircraftLoading = true;
     try {
       await firstValueFrom(this.airlineFetchService.deleteAircraft(aircraftId));
-      this.aircrafts = this.aircrafts.filter((aircraft) => aircraft.id !== aircraftId);
-    } catch (error) {
-      console.error('error deleting aircraft');
+      this.aircrafts = this.aircrafts.filter(
+        (aircraft) => aircraft.id !== aircraftId
+      );
+    } catch (error: any) {
+      console.error('error deleting aircraft', error);
+
+      // Check if the error is a 409 Conflict
+      if (error?.status === 409) {
+        toast('Cannot delete this element', {
+          description:
+            'This aircraft cannot be deleted because it is currently in use.',
+        });
+      }
     } finally {
       this.isDeleteAircraftLoading = false;
-      modalCtx.close(); 
+      modalCtx.close();
     }
   }
 }
-
-

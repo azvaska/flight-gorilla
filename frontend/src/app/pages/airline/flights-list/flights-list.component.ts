@@ -41,6 +41,9 @@ import {
   HlmPaginationNextComponent,
   HlmPaginationPreviousComponent,
 } from '@spartan-ng/ui-pagination-helm';
+import { toast } from 'ngx-sonner';
+import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
+
 @Component({
   selector: 'app-flights-list',
   imports: [
@@ -73,6 +76,7 @@ import {
     HlmPaginationLinkDirective,
     HlmPaginationNextComponent,
     HlmPaginationPreviousComponent,
+    HlmToasterComponent,
   ],
   providers: [provideIcons({ lucideEllipsis })  ],
   templateUrl: './flights-list.component.html',
@@ -127,8 +131,16 @@ export class FlightsListComponent {
     try {
       await firstValueFrom(this.airlineFetchService.deleteFlight(flightId));
       this.flights = this.flights.filter((flight) => flight.id !== flightId);
-    } catch (error) {
-      console.error('error deleting flight');
+    } catch (error: any) {
+      console.error('error deleting flight', error);
+
+      // Check if the error is a 409 Conflict
+      if (error?.status === 409) {
+        toast('Cannot delete this element', {
+          description:
+            'This flight cannot be deleted because it is currently in use.',
+        });
+      }
     } finally {
       this.isDeleteFlightLoading = false;
       modalCtx.close();
