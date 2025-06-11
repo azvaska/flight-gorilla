@@ -62,7 +62,7 @@ class Booking(db.Model):
 class BookingFlightExtra(db.Model):
     booking_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Booking.id), nullable=False, primary_key=True)
     flight_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Flight.id), nullable=False, primary_key=True)
-    extra_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey("flight_extra.id"), nullable=False, primary_key=True)
+    extra_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey("flight_extra.id",ondelete='RESTRICT'), nullable=False, primary_key=True)
     quantity: Mapped[int] = mapped_column(db.Integer, nullable=False)
     extra_price: Mapped[float] = mapped_column(db.Float, nullable=False)
 
@@ -83,6 +83,7 @@ class BookingFlightExtra(db.Model):
     
     
 class BookingDepartureFlight(db.Model):
+    # id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     booking_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Booking.id), nullable=False, primary_key=True)
     flight_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Flight.id), nullable=False, primary_key=True)
     seat_number: Mapped[str] = mapped_column(db.String, nullable=False)

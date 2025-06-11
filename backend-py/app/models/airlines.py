@@ -28,7 +28,7 @@ class Airline(db.Model):
 
 class AirlineAircraft(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    aircraft_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('aircraft.id'), nullable=False)
+    aircraft_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('aircraft.id',ondelete='RESTRICT'), nullable=False)
     airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id,ondelete='RESTRICT'), nullable=False)
     seats: Mapped[List['AirlineAircraftSeat']] = relationship('AirlineAircraftSeat', back_populates='airline_aircraft',
                                                               cascade='all, delete-orphan')

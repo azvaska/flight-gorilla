@@ -17,8 +17,8 @@ from app.models.extra import Extra
 class Route(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     flight_number: Mapped[str] = mapped_column(db.String(255), nullable=False,unique=True)
-    departure_airport_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Airport.id), nullable=False)
-    arrival_airport_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Airport.id), nullable=False)
+    departure_airport_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Airport.id,ondelete='RESTRICT'), nullable=False)
+    arrival_airport_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Airport.id,ondelete='RESTRICT'), nullable=False)
     airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id), nullable=False)
     period_start: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
     period_end: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
@@ -51,7 +51,7 @@ class Route(db.Model):
 
 class Flight(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    route_id: Mapped[int] = mapped_column(db.Integer,db.ForeignKey(Route.id), nullable=False)
+    route_id: Mapped[int] = mapped_column(db.Integer,db.ForeignKey(Route.id,ondelete='RESTRICT'), nullable=False)
     aircraft_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(AirlineAircraft.id,ondelete='RESTRICT'), nullable=False)
 
     departure_time: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
@@ -86,6 +86,12 @@ class Flight(db.Model):
         db.Index('ix_flight_fully_booked', 'fully_booked'),
         # For price filtering
         db.Index('ix_flight_prices', 'price_economy_class', 'price_business_class', 'price_first_class'),
+
+        db.CheckConstraint('departure_time < arrival_time', name='ck_flight_departure_before_arrival'),
+        db.CheckConstraint('checkin_start_time < checkin_end_time', name='ck_flight_checkin_times'),
+        db.CheckConstraint('boarding_start_time < boarding_end_time', name='ck_flight_boarding_times'),
+        db.CheckConstraint('price_first_class >= 0', name='ck_flight_price_first_class_non_negative'),
+        db.CheckConstraint('price_business_class >= 0', name='ck_flight_price_business_class_non_negative'),
         # Existing constraints...
     )
 
