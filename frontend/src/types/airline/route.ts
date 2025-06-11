@@ -8,4 +8,5 @@ export interface IRoute {
   period_start: string;
   period_end: string;
   flight_number: string;
+  is_editable: boolean;
 }
