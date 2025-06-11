@@ -134,6 +134,7 @@ export class FlightsAddComponent implements OnInit {
   // Data from API
   routes: IRoute[] = [];
   availableExtras: IExtra[] = [];
+  unavailableExtras: IExtra[] = [];
   aircrafts: IAirlineAircraft[] = [];
 
   // Selected flight extras
@@ -238,6 +239,8 @@ export class FlightsAddComponent implements OnInit {
       ]);
       this.existingFlight = flight;
       this.flightExtras = flightExtras;
+      this.unavailableExtras = this.availableExtras.filter(extra => flightExtras.some(fe => fe.extra_id === extra.id));
+      this.availableExtras = this.availableExtras.filter(extra => !this.unavailableExtras.some(ue => ue.id === extra.id));
 
       // Set route
       const route = this.routes.find(r => r.id.toString() === this.existingFlight!.route_id.toString());
@@ -393,7 +396,7 @@ export class FlightsAddComponent implements OnInit {
     } else {
       const extra = this.flightExtras[type];
       // Find the corresponding available extra
-      const availableExtra = this.availableExtras.find(
+      const availableExtra = this.unavailableExtras.find(
         (ae) => ae.name === extra.name
       );
       this.currentExtra.set(availableExtra);
@@ -406,7 +409,7 @@ export class FlightsAddComponent implements OnInit {
     if (this.extrasDetail === 'new') {
       // Add new extra logic
       const selectedExtra = this.currentExtra();
-      if (!selectedExtra) return;
+      if (!selectedExtra || this.extraPrice <= 0) return;
 
       const newExtra: FlightExtra = {
         id: selectedExtra.id,
@@ -417,6 +420,8 @@ export class FlightsAddComponent implements OnInit {
         stackable: selectedExtra.stackable,
       };
       this.flightExtras.push(newExtra);
+      this.availableExtras = this.availableExtras.filter(extra => extra.id !== selectedExtra.id);
+      this.unavailableExtras.push(selectedExtra);
     } else if (typeof this.extrasDetail === 'number') {
       this.flightExtras[this.extrasDetail].price = this.extraPrice;
       this.flightExtras[this.extrasDetail].limit = this.extraLimit;
@@ -425,8 +430,9 @@ export class FlightsAddComponent implements OnInit {
   }
 
   removeExtra(index: number, modalCtx: any) {
-    this.flightExtras.splice(index, 1);
-
+    this.flightExtras.splice(index, 1)[0];
+    this.availableExtras.push(this.unavailableExtras[index]);
+    this.unavailableExtras.splice(index, 1);
     modalCtx.close();
   }
 

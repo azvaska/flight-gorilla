@@ -150,7 +150,7 @@ export class ExtrasListComponent {
 
     try {
       if (this.editingIndex === null) {
-        await firstValueFrom(
+        const extra = await firstValueFrom(
           this.airlineFetchService.addExtra({
             name: this.editableExtra.name.trim(),
             description: this.editableExtra.description.trim(),
@@ -158,7 +158,7 @@ export class ExtrasListComponent {
             stackable: extraCopy.stackable,
           })
         );
-        this.extras.push(extraCopy);
+        this.extras.push(extra);
       } else {
         await firstValueFrom(
           this.airlineFetchService.updateExtra(
