@@ -7,17 +7,31 @@ import {
   HttpErrorResponse,
 } from '@angular/common/http';
 import { AuthService } from './auth.service';
-import { catchError, switchMap, throwError, filter, take, Observable, BehaviorSubject, firstValueFrom } from 'rxjs';
+import {
+  catchError,
+  switchMap,
+  throwError,
+  filter,
+  take,
+  Observable,
+  BehaviorSubject,
+  firstValueFrom,
+} from 'rxjs';
 import { Router } from '@angular/router';
 
 @Injectable()
 export class JwtInterceptor implements HttpInterceptor {
   private refreshing = false;
-  private refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);
+  private refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(
+    null
+  );
 
   constructor(private auth: AuthService, private router: Router) {}
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  intercept(
+    req: HttpRequest<any>,
+    next: HttpHandler
+  ): Observable<HttpEvent<any>> {
     const token = this.auth.getAccessToken();
 
     const isRefreshEndpoint = req.url.endsWith('/refresh');
@@ -27,15 +41,18 @@ export class JwtInterceptor implements HttpInterceptor {
       req.url.endsWith('/logout') ||
       isRefreshEndpoint;
 
-    if (isRefreshEndpoint) {
-      const csrfToken = this.getCookie('csrf_refresh_token');
+    if (isAuthEndpoint) {
       req = req.clone({
         withCredentials: true,
-        headers: req.headers.set('X-CSRF-TOKEN', csrfToken || ''),
       });
-    }
 
-    if (token && !isAuthEndpoint) {
+      if (isRefreshEndpoint) {
+        const csrfToken = this.getCookie('csrf_refresh_token');
+        req = req.clone({
+          headers: req.headers.set('X-CSRF-TOKEN', csrfToken || ''),
+        });
+      }
+    } else if (token) {
       req = req.clone({
         setHeaders: { Authorization: `Bearer ${token}` },
       });
@@ -56,7 +73,10 @@ export class JwtInterceptor implements HttpInterceptor {
     );
   }
 
-  private handle401Error(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  private handle401Error(
+    request: HttpRequest<any>,
+    next: HttpHandler
+  ): Observable<HttpEvent<any>> {
     if (!this.refreshing) {
       this.refreshing = true;
       this.refreshTokenSubject.next(null);
@@ -66,7 +86,7 @@ export class JwtInterceptor implements HttpInterceptor {
           this.refreshing = false;
           const newToken = this.auth.getAccessToken()!;
           this.refreshTokenSubject.next(newToken);
-          
+
           return next.handle(this.addTokenHeader(request, newToken));
         }),
         catchError((refreshErr) => {
@@ -80,15 +100,18 @@ export class JwtInterceptor implements HttpInterceptor {
 
     // Se il refresh è già in corso, aspetta che finisca
     return this.refreshTokenSubject.pipe(
-      filter(token => token !== null),
+      filter((token) => token !== null),
       take(1),
       switchMap((token) => next.handle(this.addTokenHeader(request, token)))
     );
   }
 
-  private addTokenHeader(request: HttpRequest<any>, token: string): HttpRequest<any> {
+  private addTokenHeader(
+    request: HttpRequest<any>,
+    token: string
+  ): HttpRequest<any> {
     return request.clone({
-      setHeaders: { Authorization: `Bearer ${token}` }
+      setHeaders: { Authorization: `Bearer ${token}` },
     });
   }
 
