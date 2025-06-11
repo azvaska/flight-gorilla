@@ -371,9 +371,11 @@ class BookingResource(Resource):
                 
                 # Collect flight IDs before deletion to update capacity
         flight_ids = set()
-        for departure_flight in booking.departure_bookings:
+
+
+        for departure_flight in BookingDepartureFlight.query.filter_by(booking_id=booking.id):
             flight_ids.add(departure_flight.flight_id)
-        for return_flight in booking.return_bookings:
+        for return_flight in BookingReturnFlight.query.filter_by(booking_id=booking.id):
             flight_ids.add(return_flight.flight_id)
 
         db.session.delete(booking)

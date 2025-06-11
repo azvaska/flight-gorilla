@@ -336,8 +336,8 @@ class BookingGenerator:
 
 
 @click.command('seed-bookings')
-@click.option('--single-trips', default=250, help='Number of single-trip bookings (default: 50)')
-@click.option('--round-trips', default=200, help='Number of round-trip bookings (default: 30)')
+@click.option('--single-trips', default=50, help='Number of single-trip bookings (default: 50)')
+@click.option('--round-trips', default=50, help='Number of round-trip bookings (default: 30)')
 @click.option('--business-bookings', default=15, help='Number of business class bookings (default: 15)')
 @click.option('--clear-existing', is_flag=True, help='Clear existing bookings before generating new ones')
 @with_appcontext

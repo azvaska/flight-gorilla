@@ -56,6 +56,7 @@ services:
         flask seed-flights || echo 'Skipping seed-flights' &&
         flask seed-extras || echo 'Skipping seed-users' &&
         flask seed-users || echo 'Skipping seed-users' &&
+        flask seed-bookings || echo 'Skipping seed-roles' &&
       
         echo 'Database seeded.' &&
 

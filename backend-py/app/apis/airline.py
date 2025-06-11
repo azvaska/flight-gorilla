@@ -988,6 +988,12 @@ class AirlineStats(Resource):
             # 3. Most Requested Routes
             # ...existing code...
             # 3. Most Requested Routes - Ranked by booking to seat ratio
+
+            # total_seats_
+
+
+
+
             most_requested_routes = [
                 {
                     'airportFrom': 'JFK',
