@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, reqparse, marshal
 from flask_security import hash_password
 from marshmallow import ValidationError
-from sqlalchemy import asc, desc, extract, func, distinct
+from sqlalchemy import asc, desc, extract, func, distinct, tuple_
 from sqlalchemy.orm import joinedload
 from app.apis.aircraft import aircraft_model
 import datetime
@@ -943,17 +943,19 @@ class AirlineStats(Resource):
             fulfillment_query = db.session.query(
                 extract('month', Flight.departure_time).label('month'),
                 func.count(distinct(AirlineAircraftSeat.seat_number)).label('totalSeats'),
-                func.count(distinct(BookingDepartureFlight.flight_id)).label('totalBooks')
+                (func.count(distinct(tuple_(BookingDepartureFlight.booking_id,BookingDepartureFlight.flight_id))) +
+                func.count(distinct(tuple_(BookingReturnFlight.booking_id,BookingReturnFlight.flight_id)))).label('total_bookings')
             ).select_from(Flight) \
                 .join(Route, Flight.route_id == Route.id) \
                 .join(AirlineAircraft, Flight.aircraft_id == AirlineAircraft.id) \
                 .join(AirlineAircraftSeat, AirlineAircraft.id == AirlineAircraftSeat.airline_aircraft_id) \
-                .outerjoin(BookingDepartureFlight, Flight.id == BookingDepartureFlight.flight_id) \
+                .outerjoin(BookingDepartureFlight, Flight.id == BookingDepartureFlight.flight_id)\
+                .outerjoin(BookingReturnFlight, Flight.id == BookingReturnFlight.flight_id) \
                 .filter(
                 Route.airline_id == airline_id,
                 extract('year', Flight.departure_time) == current_year
             ).group_by(extract('month', Flight.departure_time)).all()
-
+            
             flights_fulfillment = [
                 {
                     'month': int(month),
@@ -962,7 +964,7 @@ class AirlineStats(Resource):
                 }
                 for month, total_seats, total_books in fulfillment_query
             ]
-
+            
             # 2. Revenue - Combined query for both departure and return flights
             revenue_query = db.session.query(
                 extract('month', Flight.departure_time).label('month'),
@@ -976,7 +978,7 @@ class AirlineStats(Resource):
                 Route.airline_id == airline_id,
                 extract('year', Flight.departure_time) == current_year
             ).group_by(extract('month', Flight.departure_time)).all()
-
+            
             revenue = [
                 {
                     'month': int(month),
@@ -989,104 +991,68 @@ class AirlineStats(Resource):
             # ...existing code...
             # 3. Most Requested Routes - Ranked by booking to seat ratio
 
-            # total_seats_
+            total_seats_route = db.session.query(
+                Route.id,
+                func.count(AirlineAircraftSeat.seat_number).label('total_seats')
+            ).join(Flight,Route.id == Flight.route_id).join(AirlineAircraft, Flight.aircraft_id == AirlineAircraft.id) \
+                .join(AirlineAircraftSeat, AirlineAircraft.id == AirlineAircraftSeat.airline_aircraft_id) \
+                .filter(Route.airline_id == airline_id) \
+                .group_by(Route.id).all()
 
+            bookings_per_route = db.session.query(
+                Route.id,
+                (func.count(distinct(tuple_(BookingDepartureFlight.booking_id,BookingDepartureFlight.flight_id))) +
+                func.count(distinct(tuple_(BookingReturnFlight.booking_id,BookingReturnFlight.flight_id)))).label('total_bookings')
+            ).join(Flight, Route.id == Flight.route_id) \
+                .outerjoin(BookingDepartureFlight, Flight.id == BookingDepartureFlight.flight_id) \
+                .outerjoin(BookingReturnFlight, Flight.id == BookingReturnFlight.flight_id) \
+                .filter(Route.airline_id == airline_id) \
+                .group_by(Route.id).all()
 
+            # Create a dictionary for quick lookup
+            bookings_dict = {row.id: row.total_bookings for row in bookings_per_route}
 
+            # Get route details with airports and flight numbers
+            route_details = db.session.query(
+                Route.id,
+                departure_airport.c.iata_code.label('departure_iata'),
+                arrival_airport.c.iata_code.label('arrival_iata')
+            ).join(departure_airport, Route.departure_airport_id == departure_airport.c.id) \
+                .join(arrival_airport, Route.arrival_airport_id == arrival_airport.c.id) \
+                .filter(Route.airline_id == airline_id).all()
 
-            most_requested_routes = [
-                {
-                    'airportFrom': 'JFK',
-                    'airportTo': 'LAX',
-                    'flight_number': 'FL001',
-                    'bookings': 285,
-                    'total_seats': 300,
-                    'booking_ratio': 0.95
-                },
-                {
-                    'airportFrom': 'ORD',
-                    'airportTo': 'MIA',
-                    'flight_number': 'FL012',
-                    'bookings': 240,
-                    'total_seats': 280,
-                    'booking_ratio': 0.857
-                },
-                {
-                    'airportFrom': 'DFW',
-                    'airportTo': 'SEA',
-                    'flight_number': 'FL023',
-                    'bookings': 195,
-                    'total_seats': 250,
-                    'booking_ratio': 0.78
-                },
-                {
-                    'airportFrom': 'ATL',
-                    'airportTo': 'DEN',
-                    'flight_number': 'FL034',
-                    'bookings': 180,
-                    'total_seats': 240,
-                    'booking_ratio': 0.75
-                },
-                {
-                    'airportFrom': 'LAS',
-                    'airportTo': 'PHX',
-                    'flight_number': 'FL045',
-                    'bookings': 165,
-                    'total_seats': 220,
-                    'booking_ratio': 0.75
-                },
-                {
-                    'airportFrom': 'BOS',
-                    'airportTo': 'SFO',
-                    'flight_number': 'FL056',
-                    'bookings': 140,
-                    'total_seats': 200,
-                    'booking_ratio': 0.70
-                },
-                {
-                    'airportFrom': 'MCO',
-                    'airportTo': 'MSP',
-                    'flight_number': 'FL067',
-                    'bookings': 125,
-                    'total_seats': 180,
-                    'booking_ratio': 0.694
-                },
-                {
-                    'airportFrom': 'CLT',
-                    'airportTo': 'PDX',
-                    'flight_number': 'FL078',
-                    'bookings': 110,
-                    'total_seats': 160,
-                    'booking_ratio': 0.6875
-                },
-                {
-                    'airportFrom': 'IAH',
-                    'airportTo': 'SLC',
-                    'flight_number': 'FL089',
-                    'bookings': 95,
-                    'total_seats': 140,
-                    'booking_ratio': 0.679
-                },
-                {
-                    'airportFrom': 'DTW',
-                    'airportTo': 'RDU',
-                    'flight_number': 'FL090',
-                    'bookings': 80,
-                    'total_seats': 120,
-                    'booking_ratio': 0.667
-                }
-            ]
+            route_details_dict = {
+                row.id: {
+                    'departure_iata': row.departure_iata,
+                    'arrival_iata': row.arrival_iata
+                } for row in route_details
+            }
 
-            most_requested_routes_data = [
-                {
-                    'airportFrom': row['airportFrom'],
-                    'airportTo': row['airportTo'],
-                    'flight_number': row['flight_number'],
-                    'bookings': int(row['bookings']),
-                    'total_seats': int(row['total_seats']),
-                }
-                for row in most_requested_routes
-            ]
+            # Calculate booking ratios and prepare the result
+            most_requested_routes_calculated = []
+            for route_row in total_seats_route:
+                total_seats = route_row.total_seats
+                route_id = route_row.id
+                total_bookings = bookings_dict.get(route_id, 0)
+                
+                # Calculate booking ratio (bookings / total_seats)
+                booking_ratio = total_bookings / total_seats if total_seats > 0 else 0
+                
+                # Get route details
+                if route_id in route_details_dict:
+                    route_info = route_details_dict[route_id]
+                    most_requested_routes_calculated.append({
+                        'airportFrom': route_info['departure_iata'],
+                        'airportTo': route_info['arrival_iata'],
+                        'bookings': int(total_bookings),
+                        'total_seats': int(total_seats),
+                        'booking_ratio': round(booking_ratio, 3)
+                    })
+
+            # Sort by booking ratio in descending order and take top 10
+            most_requested_routes_calculated.sort(key=lambda x: x['booking_ratio'], reverse=True)
+            most_requested_routes_data = most_requested_routes_calculated[:10]
+
 
             # 4. Airports with Most Flights
             airport_flights = db.session.query(
@@ -1111,7 +1077,6 @@ class AirlineStats(Resource):
             least_used_routes = db.session.query(
                 departure_airport.c.iata_code.label('airportFrom'),
                 arrival_airport.c.iata_code.label('airportTo'),
-                Route.flight_number,
                 func.count(Flight.id).label('flights')
             ).select_from(Route) \
                 .join(departure_airport, Route.departure_airport_id == departure_airport.c.id) \
@@ -1121,14 +1086,12 @@ class AirlineStats(Resource):
                 .group_by(
                 departure_airport.c.iata_code,
                 arrival_airport.c.iata_code,
-                Route.flight_number
             ).order_by(asc(func.count(Flight.id))).limit(10).all()
 
             least_used_routes_data = [
                 {
                     'airportFrom': row.airportFrom,
                     'airportTo': row.airportTo,
-                    'flight_number': row.flight_number,
                     'flights': int(row.flights)
                 }
                 for row in least_used_routes

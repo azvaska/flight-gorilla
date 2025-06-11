@@ -193,6 +193,12 @@ def create_realistic_booking(user: User, departure_flight: Flight, return_flight
         db_session.add(return_booking)
     for extra in extras_to_add:
         db_session.add(extra)
+    try:
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        click.echo(f"Error creating booking: {e}")
+        return None         
     
     return booking
 
