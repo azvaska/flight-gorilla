@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, marshal, reqparse
 from marshmallow import ValidationError
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
 from app.apis.flight import flight_model_output
@@ -378,8 +379,13 @@ class BookingResource(Resource):
         for return_flight in BookingReturnFlight.query.filter_by(booking_id=booking.id):
             flight_ids.add(return_flight.flight_id)
 
-        db.session.delete(booking)
-        db.session.commit()
+
+        try:
+            db.session.delete(booking)
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            return {"error": "Booking cannot be deleted due to existing dependencies"}, 409
 
         # Update flight capacities
         for flight_id in flight_ids:

@@ -5,6 +5,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, marshal, reqparse
 from flask_security import hash_password
 from marshmallow import ValidationError
+from sqlalchemy.exc import IntegrityError
+
 from app.core.auth import roles_required
 from app.models.user import User, PayementCard, CardType
 from app.schemas.user import UserSchema, user_schema, users_schema, debit_card_schema, debit_cards_schema
@@ -271,7 +273,11 @@ class UserCardResource(Resource):
         user_id = get_jwt_identity()
         card = PayementCard.query.filter_by(id=card_id, user_id=user_id).first_or_404()
 
-        db.session.delete(card)
-        db.session.commit()
+        try:
+            db.session.delete(card)
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            return {'error': 'Card cannot be deleted due to existing dependencies'}, 409
 
         return {'message': 'Card deleted successfully'}, 200

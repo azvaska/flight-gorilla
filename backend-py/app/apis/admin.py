@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, reqparse, marshal
 from flask_security import hash_password
 from marshmallow import ValidationError
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from app.apis.aircraft import aircraft_model
 import datetime
@@ -127,12 +128,14 @@ class AirlineResource(Resource):
         # Delete all users associated with the airline  
         users = User.query.filter(User.airline_id == airline_id).all()
         for user in users:
-            db.session.delete(user)
-            db.session.commit()
-
-        db.session.delete(airline)
-        db.session.commit()
-
+            try:
+                db.session.delete(user)
+                db.session.commit()
+                db.session.delete(airline)
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                return {'error': 'The airline has still some dependency'}, 409
         return {'message': 'Ok'}, 200
     
 

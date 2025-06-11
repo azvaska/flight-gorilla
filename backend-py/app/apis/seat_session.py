@@ -72,7 +72,7 @@ class SeatSessionList(Resource):
         session_end = now + datetime.timedelta(minutes=15)  # 15 minute session 13 for the user to book
         already_session = SeatSession.query.filter(SeatSession.session_end_time > now,SeatSession.user_id == user_id).first()
         if already_session is not None:
-            db.session.delete(already_session);
+            db.session.delete(already_session)
             db.session.commit()
             #return {'error': 'You already have an active session'}, 409
 

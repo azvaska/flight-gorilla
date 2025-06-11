@@ -5,6 +5,7 @@ from flask_restx import Namespace, Resource, fields, reqparse, marshal
 from flask_security import hash_password
 from marshmallow import ValidationError
 from sqlalchemy import asc, desc, exists, extract, func, distinct, tuple_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from app.apis.aircraft import aircraft_model
 import datetime
@@ -469,9 +470,12 @@ class ExtraResource(Resource):
         # Check permissions
         if extra.airline_id != airline_id:
             return {'error': 'You do not have permission to delete this extra', 'code': 403}, 403
-        db.session.delete(extra)
-        db.session.commit()
-
+        try:
+            db.session.delete(extra)
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            return {'error': 'This extra is associated with flights and cannot be deleted'}, 409
         return {'message': 'Extra deleted successfully'}, 200
 
 @api.route('/aircrafts')
@@ -579,10 +583,12 @@ class AirlineAircraftResource(Resource):
         if aircraft.airline_id != airline_id:
             return {'error': 'You do not have permission to delete this aircraft', 'code': 403}, 403
 
-
-        db.session.delete(aircraft)
-        db.session.commit()
-
+        try:
+            db.session.delete(aircraft)
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            return {'error': 'This aircraft is associated with flights and cannot be deleted'}, 409
         return {'message': 'Aircraft deleted successfully'}, 200
 
 @api.route('/routes')
@@ -680,9 +686,12 @@ class AirlineRouteResource(Resource):
             if route.flights:
                 return {'error': 'Cannot delete route with associated flights'}, 400
 
-            db.session.delete(route)
-            db.session.commit()
-
+            try:
+                db.session.delete(route)
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                return {'error': 'This route is associated with flights and cannot be deleted'}, 409
             return {'message': 'Route deleted successfully'}, 200
         except Exception as e:
             return {'error': str(e)}, 500
@@ -918,8 +927,13 @@ class MyAirlineFlightResource(Resource):
             if flight.departure_time < datetime.datetime.now(datetime.UTC):
                 return {'error': 'Cannot delete flights that have already departed'}, 400
 
-            db.session.delete(flight)
-            db.session.commit()
+
+            try:
+                db.session.delete(flight)
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                return {'error': 'This flight has associated bookings and cannot be deleted'}, 409
 
             return {'message': 'Flight deleted successfully'}, 200
         except Exception as e:
