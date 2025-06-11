@@ -31,10 +31,27 @@ def seed_users():
             password=hash_password("a"),
             roles=["user"],
             name='tesst',
-            surname="test"
+            surname="test",
+            zip="12345",
+            address="123 Test St",
+            nation_id=1  # Assuming a default nation ID exists
         )
         db_session.commit()
         click.echo("Created default user 'a@a.c'.")
+    if not user_datastore.find_user(email="test@test.it"):
+        user_datastore.create_user(
+            email="test@test.it",
+            password=hash_password("test"),
+            roles=["user"],
+            name='Test',
+            surname="Test",
+            zip="12345",
+            address="123 Test St",
+            nation_id=1  # Assuming a default nation ID exists
+        )
+        db_session.commit()
+        click.echo("Created default user 'test@test.it'.")
+    
     if not user_datastore.find_user(email="admin@a.c"):
        user_datastore.create_user(
             email="admin@a.c",
@@ -55,6 +72,9 @@ def seed_users():
             roles=["airline-admin"],
             name='Sky',
             surname="test",
+            zip="12345",
+            address="123 Sky St",
+            nation_id=1,  # Assuming a default nation ID exists
             airline_id=airline.id
         )
         db_session.commit()

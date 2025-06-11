@@ -99,7 +99,7 @@ class Flight(db.Model):
         db.CheckConstraint('price_economy_class >= 0', name='ck_flight_price_economy_class_non_negative'),
         db.CheckConstraint('price_first_class >= 0', name='ck_flight_price_first_class_non_negative'),
         db.CheckConstraint('price_business_class >= 0', name='ck_flight_price_business_class_non_negative'),
-        db.CheckConstraint('duration > 0', name='ck_flight_duration_non_negative'),
+        # db.CheckConstraint('duration > 0', name='ck_flight_duration_non_negative'),
         # Existing constraints...
     )
 

@@ -1,10 +1,18 @@
 import datetime
-from app.extensions import db
-from app.models import SeatSession
+import json
+
+from app.core.stats import calculate_airline_stats
+from app.extensions import db, redis_client
+from app.models import SeatSession, Airline
 
 
 def register_task(scheduler, app):
-    @scheduler.task('interval', id='free_sessions', minutes=1, misfire_grace_time=30)
+    def update_airline_stats_cache():
+        airlines = Airline.query.all()
+        for airline in airlines:
+            stats = calculate_airline_stats(airline.id)
+            redis_client.set(f'airline_stats:{airline.id}', json.dumps(stats))
+
     def free_sessions():
         with app.app_context():
             to_delete =  SeatSession.query.filter(SeatSession.session_end_time < datetime.datetime.now(tz=datetime.UTC)).all()
@@ -14,3 +22,20 @@ def register_task(scheduler, app):
                 db.session.delete(seat)
                 db.session.commit()
         # print("Free sessions task executed successfully.")
+
+    scheduler.schedule(
+        scheduled_time=datetime.datetime.now(tz=datetime.UTC),
+        func=update_airline_stats_cache,
+        interval=3600,  # every hour
+        repeat=None
+    )
+    scheduler.schedule(
+        scheduled_time=datetime.datetime.now(tz=datetime.UTC),
+        func=free_sessions,
+        interval=60,  # every hour
+        repeat=None
+    )
+
+
+
+

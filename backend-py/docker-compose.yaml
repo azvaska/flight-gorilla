@@ -17,12 +17,19 @@ services:
       retries: 5
 
   # Redis service for caching
-  redis:
+  redis_sv:
     image: redis:alpine
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: a@a.c
+      PGADMIN_DEFAULT_PASSWORD: a
+    ports:
+        - "5050:80"
 
   # Flask web application
   web:
@@ -32,7 +39,7 @@ services:
     env_file:
       - .env
     environment:
-      - REDIS_URL=redis://redis:6379/0
+      - REDIS_URL=redis://redis_sv:6379/0
     volumes:
       - .:/app
     ports:
@@ -40,7 +47,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      redis:
+      redis_sv:
         condition: service_started
     command: >
       sh -c "
