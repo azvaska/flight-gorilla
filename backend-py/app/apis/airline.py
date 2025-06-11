@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, reqparse, marshal
 from flask_security import hash_password
 from marshmallow import ValidationError
-from sqlalchemy import asc, desc, extract, func, distinct, tuple_
+from sqlalchemy import asc, desc, exists, extract, func, distinct, tuple_
 from sqlalchemy.orm import joinedload
 from app.apis.aircraft import aircraft_model
 import datetime
@@ -592,8 +592,19 @@ class MyAirlineRouteList(Resource):
     @api.response(404, 'Not Found')
     def get(self, airline_id):
         """Get all routes for the current airline"""
-        route = Route.query.filter_by(airline_id=airline_id).all()
-        return marshal(routes_schema.dump(route), route_model), 200
+        routes = db.session.query(
+            Route,
+            ~exists().where(Flight.route_id == Route.id).label('is_editable')
+        ).filter(Route.airline_id == airline_id).all()
+
+        rius = []
+        for row in routes:
+            route = row[0]
+            k = route_schema.dump(route)
+            k['is_editable'] = row[1]
+            rius.append(k)
+
+        return marshal(rius, route_model), 200
     
     @api.expect(route_input_model)
     @jwt_required()
@@ -858,6 +869,7 @@ class MyAirlineFlightResource(Resource):
             # Handle extras if provided
             if extras_data is not None:
                 # Remove existing extras
+                #TODO EXTRA CHANGE PRICE TO GAY
                 FlightExtra.query.filter_by(flight_id=flight_id).delete()
                 
                 # Add new extras

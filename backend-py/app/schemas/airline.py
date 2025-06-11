@@ -1,10 +1,11 @@
-from marshmallow import validates, ValidationError, validate
+from marshmallow import post_dump, validates, ValidationError, validate
+from sqlalchemy import exists
 from app.extensions import ma, db
 from app.models.airlines import Airline, AirlineAircraft, AirlineAircraftSeat
 from app.models.common import ClassType
 from app.models.extra import Extra
 from app.models import Nation
-from app.models.flight import Route
+from app.models.flight import Flight, Route
 
 class ExtraSchema(ma.SQLAlchemyAutoSchema):
     airline_id = ma.UUID(dump_only=True)
@@ -35,8 +36,8 @@ class AirlineSchema(ma.SQLAlchemyAutoSchema):
     # Add validation to specific fields
     email = ma.Email(required=True,
                             error_messages={"required": "Email is required", "invalid": "Invalid email format"})
-    website = ma.URL(schemes=['http', 'https'], require_tld=True,
-                            error_messages={"invalid": "Invalid URL format. Must include http:// or https://"})
+    website = ma.String(required=True,
+                            error_messages={"invalid": "Invalid URL format"})
     name = ma.String(required=True,validate=validate.Length(min=2, max=150),
                             error_messages={"required": "Name is required", "invalid": "Invalid name format"})
     class Meta:
@@ -55,6 +56,8 @@ class RouteSchema(ma.SQLAlchemyAutoSchema):
     airline_id = ma.UUID(dump_only=True)
     departure_airport = ma.Nested('app.schemas.airport.AirportSchema', dump_only=True)
     arrival_airport = ma.Nested('app.schemas.airport.AirportSchema', dump_only=True)
+
+    
     class Meta:
         model = Route
         load_instance = True
