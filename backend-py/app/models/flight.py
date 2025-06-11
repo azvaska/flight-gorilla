@@ -42,7 +42,7 @@ class Route(db.Model):
         #check that departure and arrival airports are not the same
         db.CheckConstraint('departure_airport_id != arrival_airport_id', name='ck_route_different_airports'),
         #check that period_start is in the future
-        db.CheckConstraint('period_start > now()', name='ck_route_period_start_future'),
+        db.CheckConstraint('period_start >= now()', name='ck_route_period_start_future'),
         #check flight_number is not empty
         db.CheckConstraint('flight_number != \'\'', name='ck_route_flight_number_not_empty'),
     )
