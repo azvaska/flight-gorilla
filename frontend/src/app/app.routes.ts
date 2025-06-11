@@ -28,108 +28,144 @@ import { RouteAddComponent } from './pages/airline/route-add/route-add.component
 import { FlightsListComponent } from '@/app/pages/airline/flights-list/flights-list.component';
 import { FlightsAddComponent } from '@/app/pages/airline/flights-add/flights-add.component';
 import { ExtrasListComponent } from '@/app/pages/airline/extras-list/extras-list.component';
-import { RoleGuard } from './guards/role-access.guard';
 import { AirlineProfileComponent } from '@/app/pages/airline/airline-profile/airline-profile.component';
 import { BookingDetailsComponent } from './pages/user/bookings/booking-details/booking-details.component';
 import { BookingCancelledComponent } from './pages/user/bookings/booking-cancelled/booking-cancelled.component';
 import { SidebarComponent as AirlineSidebarComponent } from './components/airline/sidebar/sidebar.component';
 import { RouteDetailsComponent } from './pages/airline/route-details/route-details.component';
+import { AdminSidebarComponent } from './components/admin/sidebar/sidebar.component';
+import { UsersListComponent } from './pages/admin/users-list/users-list.component';
+import { AirlinesListComponent } from './pages/admin/airlines-list/airlines-list.component';
+import { AirlineAddComponent as AdminAirlineAddComponent } from './pages/admin/airline-add/airline-add.component';
+import { RoleGuard, MultipleMatchingRoleGuard } from './guards/role-access.guard';
 
 export const routes: Routes = [
   {
     path: '',
     component: UserLandingPage,
-    canMatch: [RoleGuard],
-    pathMatch: 'full',
+    canMatch: [MultipleMatchingRoleGuard],
     data: { roles: ['guest', 'user'] },
   },
   {
     path: '',
     component: AirlineSidebarComponent,
+    canMatch: [MultipleMatchingRoleGuard],
+    data: { roles: ['airline-admin'] },
     children: [
       {
         path: '',
-        canMatch: [RoleGuard],
-        pathMatch: 'full',
-        data: { roles: ['airline-admin'], pageTitle: 'Home' },
+        data: { pageTitle: 'Home' },
         component: AirlineLandingPage,
       },
       {
         path: 'airline',
-        canMatch: [RoleGuard],
-        data: { roles: ['airline-admin'], pageTitle: 'Airline Profile' },
+        data: { pageTitle: 'Airline Profile' },
         component: AirlineProfileComponent,
       },
       {
         path: 'aircraft',
-        canMatch: [RoleGuard],
-        data: { roles: ['airline-admin'], pageTitle: 'Aircraft Management' },
+        data: { pageTitle: 'Aircraft Management' },
         component: AircraftListComponent,
       },
       {
         path: 'routes',
-        canMatch: [RoleGuard],
-        data: { roles: ['airline-admin'], pageTitle: 'Route Management' },
+        data: { pageTitle: 'Route Management' },
         component: RouteListComponent,
       },
       {
         path: 'flights',
-        canMatch: [RoleGuard],
-        data: { roles: ['airline-admin'], pageTitle: 'Flight Management' },
+        data: { pageTitle: 'Flight Management' },
         component: FlightsListComponent,
       },
       {
         path: 'extras',
-        canMatch: [RoleGuard],
-        data: { roles: ['airline-admin'], pageTitle: 'Extra Management' },
+        data: { pageTitle: 'Extra Management' },
         component: ExtrasListComponent,
       },
     ],
   },
   {
     path: 'aircraft/add',
-    pathMatch: 'full',
+    canMatch: [RoleGuard],
+    data: { roles: ['airline-admin'] },
     component: AircraftAddComponent,
   },
   {
     path: 'aircraft/edit/:aircraftId',
-    pathMatch: 'full',
+    canMatch: [RoleGuard],
+    data: { roles: ['airline-admin'] },
     component: AircraftAddComponent,
   },
   {
     path: 'aircraft/:aircraftId',
-    pathMatch: 'full',
+    canMatch: [RoleGuard],
+    data: { roles: ['airline-admin'] },
     component: AircraftDetailsComponent,
   },
   {
     path: 'routes/add',
-    pathMatch: 'full',
+    canMatch: [RoleGuard],
+    data: { roles: ['airline-admin'] },
     component: RouteAddComponent,
   },
   {
     path: 'routes/edit/:routeId',
-    pathMatch: 'full',
+    canMatch: [RoleGuard],
+    data: { roles: ['airline-admin'] },
     component: RouteAddComponent,
   },
   {
     path: 'routes/:routeId',
-    pathMatch: 'full',
+    canMatch: [RoleGuard],
+    data: { roles: ['airline-admin'] },
     component: RouteDetailsComponent,
   },
   {
     path: 'flights/add',
-    pathMatch: 'full',
+    canMatch: [RoleGuard],
+    data: { roles: ['airline-admin'] },
     component: FlightsAddComponent,
   },
   {
     path: 'flights/edit/:flightId',
-    pathMatch: 'full',
+    canMatch: [RoleGuard],
+    data: { roles: ['airline-admin'] },
     component: FlightsAddComponent,
   },
   {
     path: 'flights/:flightId',
-    pathMatch: 'full',
+    canMatch: [RoleGuard],
+    data: { roles: ['airline-admin'] },
     component: FlightDetailsComponent,
+  },
+  {
+    path: '',
+    component: AdminSidebarComponent,
+    canMatch: [MultipleMatchingRoleGuard],
+    data: { roles: ['admin'] },
+    children: [
+      {
+        path: '',
+        redirectTo: 'users',
+        pathMatch: 'full',
+      },
+      {
+        path: 'users',
+        component: UsersListComponent,
+        data: { pageTitle: 'User Management' },
+      },
+      {
+        path: 'airlines',
+        component: AirlinesListComponent,
+        data: { pageTitle: 'Airline Management' },
+      },
+    ],
+  },
+  {
+    path: 'airlines/add',
+    component: AdminAirlineAddComponent,
+    canMatch: [RoleGuard],
+    data: { roles: ['admin'] },
   },
   {
     path: 'auth',
@@ -155,6 +191,10 @@ export const routes: Routes = [
     data: { roles: ['guest', 'user'] },
     runGuardsAndResolvers: 'always',
     children: [
+      // {
+      //   path: '',
+      //   component: SearchComponent,
+      // },
       {
         path: 'nation',
         component: SearchCountryComponent,
@@ -223,7 +263,6 @@ export const routes: Routes = [
       {
         path: 'bookings',
         component: BookingsComponent,
-        pathMatch: 'full',
       },
       {
         path: 'bookings/cancelled',

@@ -1,0 +1,88 @@
+<div class="flex flex-col justify-center items-center">
+  @if (airlines.length > 0) {
+  <div hlmCard class="w-full max-w-5xl p-[2px]">
+    <div class="overflow-y-auto overflow-x-hidden max-h-200 custom-scrollbar">
+      <hlm-table class="w-full">
+        <hlm-trow class="sticky top-0 bg-white z-10">
+          <hlm-th class="w-1/4">Airline Name</hlm-th>
+          <hlm-th class="w-1/4">Admin Name</hlm-th>
+          <hlm-th class="w-1/4">Email</hlm-th>
+        </hlm-trow>
+        <ng-container *ngFor="let airline of airlines">
+          <hlm-trow>
+            <hlm-th class="w-1/4">{{ airline.airlineName }}</hlm-th>
+            <hlm-th class="w-1/4">{{ airline.adminName }} {{ airline.adminSurname }}</hlm-th>
+            <hlm-th class="w-1/4">{{ airline.email }}</hlm-th>
+            <hlm-th class="w-1/4 flex justify-end gap-2">
+              <app-popover
+                #popover="appPopover"
+                [popoverRelativePosition]="{
+                  top: 0,
+                  right: 0
+                }"
+              >
+                <button type="button" variant="ghost" hlmBtn popover-trigger>
+                  <ng-icon name="lucideEllipsis" class="h-5 w-5" />
+                </button>
+                <div popover-content class="p-1 flex flex-col gap-1">
+                  <ul>
+                    <hlm-alert-dialog>
+                      <button
+                        class="py-2 px-4 w-full text-left rounded-sm hover:bg-gray-100 cursor-pointer"
+                        brnAlertDialogTrigger
+                      >
+                        Delete
+                      </button>
+                      <hlm-alert-dialog-content
+                        *brnAlertDialogContent="let ctx"
+                      >
+                        <hlm-alert-dialog-header>
+                          <h3 hlmAlertDialogTitle>
+                            Are you sure you want to delete this airline?
+                          </h3>
+                          <p hlmAlertDialogDescription>
+                            This action cannot be undone. This will permanently
+                            delete the airline and its admin account.
+                          </p>
+                        </hlm-alert-dialog-header>
+                        <hlm-alert-dialog-footer>
+                          <button hlmAlertDialogCancel (click)="ctx.close()">
+                            Cancel
+                          </button>
+                          <button
+                            hlmAlertDialogAction
+                            (click)="deleteAirline(airline.id, ctx)"
+                          >
+                            @if(isDeleteAirlineLoading) {
+                            <hlm-spinner size="sm" />
+                            } @else { Delete airline }
+                          </button>
+                        </hlm-alert-dialog-footer>
+                      </hlm-alert-dialog-content>
+                    </hlm-alert-dialog>
+                  </ul>
+                </div>
+              </app-popover>
+            </hlm-th>
+          </hlm-trow>
+        </ng-container>
+      </hlm-table>
+    </div>
+  </div>
+  } @else {
+  <div
+    class="text-gray-500 text-center text-lg italic h-full flex items-center justify-center"
+  >
+    No airlines registered yet
+  </div>
+  }
+  <div class="flex w-full max-w-5xl justify-end">
+    <button
+      hlmBtn
+      class="bg-black text-white px-10 mt-4"
+      [routerLink]="'/airlines/add'"
+    >
+      + Register Airline
+    </button>
+  </div>
+</div> 

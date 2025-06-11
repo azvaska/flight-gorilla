@@ -24,7 +24,7 @@ export class SearchRedirectGuard implements CanActivate {
   ): boolean | UrlTree {
     // if already on a child route, allow
     // return true;
-    if (route.firstChild) return true;
+    if (route.firstChild && route.firstChild.routeConfig?.path !== '') return true;
 
     // parse & clean params, decide default child
     try {
@@ -106,6 +106,9 @@ export class SearchParamsGuard implements CanActivateChild {
   constructor(private router: Router) {}
 
   canActivateChild(childRoute: ActivatedRouteSnapshot): boolean | UrlTree {
+
+    if (childRoute.routeConfig?.path === '') return true;
+
     try {
       const type = childRoute.routeConfig?.path;
       const params = parseSpecificFlightSearchParams(

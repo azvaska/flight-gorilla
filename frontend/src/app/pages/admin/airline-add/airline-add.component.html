@@ -1,0 +1,111 @@
+<div class="flex w-full justify-center mb-16 text-3xl font-bold">
+  Register New Airline
+</div>
+
+<div class="flex justify-center w-full">
+  <div class="flex flex-col max-w-md space-y-6">
+    <form [formGroup]="airlineForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      
+      <!-- Admin Name -->
+      <div class="space-y-2">
+        <label hlmLabel for="adminName">Admin Name</label>
+        <input
+          hlmInput
+          id="adminName"
+          type="text"
+          formControlName="adminName"
+          placeholder="Enter admin name"
+          class="w-full"
+        />
+        @if (airlineForm.get('adminName')?.invalid && airlineForm.get('adminName')?.touched) {
+        <div class="text-red-500 text-sm">Admin name is required</div>
+        }
+      </div>
+
+      <!-- Admin Surname -->
+      <div class="space-y-2">
+        <label hlmLabel for="adminSurname">Admin Surname</label>
+        <input
+          hlmInput
+          id="adminSurname"
+          type="text"
+          formControlName="adminSurname"
+          placeholder="Enter admin surname"
+          class="w-full"
+        />
+        @if (airlineForm.get('adminSurname')?.invalid && airlineForm.get('adminSurname')?.touched) {
+        <div class="text-red-500 text-sm">Admin surname is required</div>
+        }
+      </div>
+
+      <!-- Airline Name -->
+      <div class="space-y-2">
+        <label hlmLabel for="airlineName">Airline Name</label>
+        <input
+          hlmInput
+          id="airlineName"
+          type="text"
+          formControlName="airlineName"
+          placeholder="Enter airline name"
+          class="w-full"
+        />
+        @if (airlineForm.get('airlineName')?.invalid && airlineForm.get('airlineName')?.touched) {
+        <div class="text-red-500 text-sm">Airline name is required</div>
+        }
+      </div>
+
+      <!-- Email -->
+      <div class="space-y-2">
+        <label hlmLabel for="email">Email</label>
+        <input
+          hlmInput
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="Enter admin email"
+          class="w-full"
+        />
+        @if (airlineForm.get('email')?.invalid && airlineForm.get('email')?.touched) {
+        <div class="text-red-500 text-sm">
+          @if (airlineForm.get('email')?.errors?.['required']) {
+            Email is required
+          } @else if (airlineForm.get('email')?.errors?.['email']) {
+            Please enter a valid email address
+          }
+        </div>
+        }
+      </div>
+
+      <!-- Submit Button -->
+      <div class="flex justify-center pt-4">
+        <button
+          hlmBtn
+          type="submit"
+          class="bg-black text-white px-10"
+          [disabled]="airlineForm.invalid || isLoading"
+        >
+          @if(isLoading) {
+          <hlm-spinner size="sm" class="mr-2" />
+          Registering...
+          } @else {
+          Register Airline
+          }
+        </button>
+      </div>
+
+      <!-- Back Button -->
+      <div class="flex justify-center">
+        <button
+          hlmBtn
+          type="button"
+          variant="outline"
+          [routerLink]="'/airlines'"
+          class="px-10"
+        >
+          Back to Airlines
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div> 
