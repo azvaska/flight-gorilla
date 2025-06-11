@@ -192,6 +192,16 @@ class Register(Resource):
             return {'error': str(e)}, 500
 
 
+credentials_model = api.model('Credentials', {
+    'email': fields.String(required=True, description='Email'),
+    'password': fields.String(required=True, description='Password'),
+})
+
+register_airline_model_output = api.model('RegisterAirlineModelOutput', {
+    'message': fields.String(required=True, description='Message'),
+    'credentials': fields.Nested(credentials_model, required=True, description='Login credentials')
+})
+
 #DELETE THIS LATER ROBA CON DIP FUNZ RESTRICTED
 #AGGIUGNERE SEED BOOKING
 @api.route('/register_airline')
@@ -199,7 +209,7 @@ class AirlineRegister(Resource):
     @jwt_required()
     @api.expect(airline_register_model)
     @roles_required('admin')
-    @api.response(201, 'Created')
+    @api.response(201, 'Created', register_airline_model_output)
     @api.response(400, 'Bad Request')
     @api.response(500, 'Internal Server Error')
     def post(self):

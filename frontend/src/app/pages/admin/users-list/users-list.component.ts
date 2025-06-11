@@ -10,15 +10,8 @@ import { HlmAlertDialogModule } from '@spartan-ng/ui-alertdialog-helm';
 import { BrnAlertDialogContentDirective, BrnAlertDialogTriggerDirective } from '@spartan-ng/brain/alert-dialog';
 import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
 import { PopoverTriggerDirective } from '@/app/components/ui/popover/popover-trigger.directive';
-
-// Mock user interface - replace with actual interface
-interface IUser {
-  id: string;
-  name: string;
-  surname: string;
-  email: string;
-  type: string;
-}
+import { AdminFetchService } from '@/app/services/admin/admin-fetch.service';
+import { IUser } from '@/types/user/user';
 
 @Component({
   selector: 'app-users-list',
@@ -44,48 +37,45 @@ interface IUser {
 export class UsersListComponent implements OnInit {
   protected users: IUser[] = [];
   protected isDeleteUserLoading = false;
+  protected isLoadingUsers = false;
 
-  constructor() {}
+  constructor(private adminFetchService: AdminFetchService) {}
 
   ngOnInit(): void {
     this.loadUsers();
   }
 
   private loadUsers(): void {
-    // Mock data - replace with actual service call
-    this.users = [
-      {
-        id: '1',
-        name: 'Mario',
-        surname: 'Rossi',
-        email: 'mario.rossi@email.com',
-        type: 'user'
+    this.isLoadingUsers = true;
+    
+    this.adminFetchService.getUsers().subscribe({
+      next: (users) => {
+        this.users = users;
+        this.isLoadingUsers = false;
       },
-      {
-        id: '2',
-        name: 'Giulia',
-        surname: 'Bianchi',
-        email: 'giulia.bianchi@email.com',
-        type: 'user'
-      },
-      {
-        id: '3',
-        name: 'Luca',
-        surname: 'Verdi',
-        email: 'luca.verdi@email.com',
-        type: 'airline-admin'
+      error: (error) => {
+        console.error('Errore nel caricamento degli utenti:', error);
+        this.isLoadingUsers = false;
+        // Qui potresti aggiungere una notifica di errore per l'utente
       }
-    ];
+    });
   }
 
   protected deleteUser(userId: string, ctx: any): void {
     this.isDeleteUserLoading = true;
     
-    // Mock delete - replace with actual service call
-    setTimeout(() => {
+    this.adminFetchService.deleteUser(userId).subscribe({
+      next: () => {
+        // Rimuovi l'utente dalla lista locale dopo la cancellazione riuscita
       this.users = this.users.filter(user => user.id !== userId);
       this.isDeleteUserLoading = false;
       ctx.close();
-    }, 1000);
+      },
+      error: (error) => {
+        console.error('Errore nella cancellazione dell\'utente:', error);
+        this.isDeleteUserLoading = false;
+        // Qui potresti aggiungere una notifica di errore per l'utente
+      }
+    });
   }
 } 

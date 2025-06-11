@@ -79,31 +79,6 @@ user_list_parser.add_argument('name', type=str, help='Filter by name (case-insen
 user_list_parser.add_argument('active', type=bool, help='Filter by active status', location='args')
 user_list_parser.add_argument('role', type=str, help='Filter by role', location='args')
 
-@api.route('/')
-class UserList(Resource):
-    @jwt_required()
-    @roles_required(['admin'])
-    @api.expect(user_list_parser)
-    @api.response(200, 'OK', user_output_model)
-    @api.response(403, 'Forbidden')
-    @api.response(500, 'Internal Server Error')
-    def get(self):
-        """List all users with optional filtering (admin only)"""
-        args = user_list_parser.parse_args()
-
-        query = User.query
-
-        if args['email']:
-            query = query.filter(User.email.ilike(f"%{args['email']}%"))
-        if args['name']:
-            query = query.filter(User.name.ilike(f"%{args['name']}%"))
-        if args['active'] is not None:
-            query = query.filter(User.active == args['active'])
-        if args['role']:
-            query = query.join(User.roles).filter(User.roles.any(name=args['role']))
-
-        return marshal(users_schema.dump(query.all()),user_output_model), 200
-
 @api.route('/<uuid:user_id>')
 @api.param('user_id', 'The user identifier')
 class UserResource(Resource):
@@ -168,22 +143,6 @@ class UserResource(Resource):
 
         except ValidationError as err:
             return {"errors": err.messages, "code": 400}, 400
-
-    @jwt_required()
-    @roles_required(['admin'])
-    def delete(self, user_id):
-        """Delete a user given its identifier (admin only)"""
-        user = User.query.get_or_404(user_id)
-        # Prevent deleting the last admin
-        if user.has_role('admin'):
-            admin_count = User.query.join(User.roles).filter(User.roles.any(name='admin')).count()
-            if admin_count <= 1:
-                return {'error': 'Cannot delete the last admin user', 'code': 400}, 400
-
-        db.session.delete(user)
-        db.session.commit()
-
-        return {'message': 'User deleted successfully'}, 200
 
 @api.route('/update_password')
 @api.response(500, 'Internal Server Error')

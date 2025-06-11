@@ -11,15 +11,8 @@ import { HlmAlertDialogModule } from '@spartan-ng/ui-alertdialog-helm';
 import { BrnAlertDialogContentDirective, BrnAlertDialogTriggerDirective } from '@spartan-ng/brain/alert-dialog';
 import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
 import { PopoverTriggerDirective } from '@/app/components/ui/popover/popover-trigger.directive';
-
-// Mock airline interface - replace with actual interface
-interface IAirline {
-  id: string;
-  airlineName: string;
-  adminName: string;
-  adminSurname: string;
-  email: string;
-}
+import { AdminFetchService } from '@/app/services/admin/admin-fetch.service';
+import { IAdminAirline } from '@/types/admin/airline';
 
 @Component({
   selector: 'app-airlines-list',
@@ -44,50 +37,47 @@ interface IAirline {
   },
 })
 export class AirlinesListComponent implements OnInit {
-  protected airlines: IAirline[] = [];
+  protected airlines: IAdminAirline[] = [];
   protected isDeleteAirlineLoading = false;
+  protected isLoadingAirlines = false;
 
-  constructor() {}
+  constructor(private adminFetchService: AdminFetchService) {}
 
   ngOnInit(): void {
     this.loadAirlines();
   }
 
   private loadAirlines(): void {
-    // Mock data - replace with actual service call
-    this.airlines = [
-      {
-        id: '1',
-        airlineName: 'Alitalia',
-        adminName: 'Marco',
-        adminSurname: 'Ferrari',
-        email: 'marco.ferrari@alitalia.com'
+    this.isLoadingAirlines = true;
+    
+    this.adminFetchService.getAirlines().subscribe({
+      next: (airlines) => {
+        this.airlines = airlines;
+        this.isLoadingAirlines = false;
       },
-      {
-        id: '2',
-        airlineName: 'Ryanair',
-        adminName: 'Sarah',
-        adminSurname: 'Johnson',
-        email: 'sarah.johnson@ryanair.com'
-      },
-      {
-        id: '3',
-        airlineName: 'Lufthansa',
-        adminName: 'Hans',
-        adminSurname: 'Mueller',
-        email: 'hans.mueller@lufthansa.com'
+      error: (error) => {
+        console.error('Errore nel caricamento delle compagnie aeree:', error);
+        this.isLoadingAirlines = false;
+        // Qui potresti aggiungere una notifica di errore per l'utente
       }
-    ];
+    });
   }
 
   protected deleteAirline(airlineId: string, ctx: any): void {
     this.isDeleteAirlineLoading = true;
     
-    // Mock delete - replace with actual service call
-    setTimeout(() => {
+    this.adminFetchService.deleteAirline(airlineId).subscribe({
+      next: () => {
+        // Rimuovi la compagnia aerea dalla lista locale dopo la cancellazione riuscita
       this.airlines = this.airlines.filter(airline => airline.id !== airlineId);
       this.isDeleteAirlineLoading = false;
       ctx.close();
-    }, 1000);
+      },
+      error: (error) => {
+        console.error('Errore nella cancellazione della compagnia aerea:', error);
+        this.isDeleteAirlineLoading = false;
+        // Qui potresti aggiungere una notifica di errore per l'utente
+      }
+    });
   }
 } 

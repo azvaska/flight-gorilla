@@ -6,6 +6,7 @@ import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
 import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
 import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
+import { AdminFetchService } from '@/app/services/admin/admin-fetch.service';
 
 @Component({
   selector: 'app-airline-add',
@@ -26,10 +27,15 @@ import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
 export class AirlineAddComponent implements OnInit {
   protected airlineForm!: FormGroup;
   protected isLoading = false;
+  protected registrationComplete = false;
+  protected generatedPassword = '';
+  protected adminEmail = '';
+  protected passwordCopied = false;
 
   constructor(
     private formBuilder: FormBuilder,
-    private router: Router
+    private router: Router,
+    private adminFetchService: AdminFetchService
   ) {}
 
   ngOnInit(): void {
@@ -50,19 +56,48 @@ export class AirlineAddComponent implements OnInit {
       this.isLoading = true;
       
       const formData = this.airlineForm.value;
-      console.log('Registering airline:', formData);
       
-      // Mock API call - replace with actual service call
-      setTimeout(() => {
-        this.isLoading = false;
-        // Navigate back to airlines list after successful registration
-        this.router.navigate(['/airlines']);
-      }, 2000);
+      const registrationData = {
+        email: formData.email,
+        name: formData.adminName,
+        surname: formData.adminSurname,
+        airline_name: formData.airlineName
+      };
+
+      this.adminFetchService.registerAirline(registrationData).subscribe({
+        next: (response) => {
+          this.isLoading = false;
+          this.registrationComplete = true;
+          this.generatedPassword = response.credentials.password;
+          this.adminEmail = response.credentials.email;
+        },
+        error: (error) => {
+          console.error('Errore nella registrazione della compagnia aerea:', error);
+          this.isLoading = false;
+          // Qui potresti aggiungere una notifica di errore per l'utente
+        }
+      });
     } else {
       // Mark all fields as touched to show validation errors
       Object.keys(this.airlineForm.controls).forEach(key => {
         this.airlineForm.get(key)?.markAsTouched();
       });
     }
+  }
+
+  protected copyPassword(): void {
+    navigator.clipboard.writeText(this.generatedPassword).then(() => {
+      this.passwordCopied = true;
+      // Reset the copied state after 2 seconds
+      setTimeout(() => {
+        this.passwordCopied = false;
+      }, 2000);
+    }).catch(err => {
+      console.error('Errore nella copia della password:', err);
+    });
+  }
+
+  protected goBack(): void {
+    this.router.navigate(['/airlines']);
   }
 } 

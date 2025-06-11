@@ -1,5 +1,9 @@
 <div class="flex flex-col justify-center items-center">
-  @if (airlines.length > 0) {
+  @if (isLoadingAirlines) {
+  <div class="flex flex-col items-center justify-center h-64">
+    <hlm-spinner size="lg" />
+  </div>
+  } @else if (airlines.length > 0) {
   <div hlmCard class="w-full max-w-5xl p-[2px]">
     <div class="overflow-y-auto overflow-x-hidden max-h-200 custom-scrollbar">
       <hlm-table class="w-full">
@@ -10,9 +14,9 @@
         </hlm-trow>
         <ng-container *ngFor="let airline of airlines">
           <hlm-trow>
-            <hlm-th class="w-1/4">{{ airline.airlineName }}</hlm-th>
-            <hlm-th class="w-1/4">{{ airline.adminName }} {{ airline.adminSurname }}</hlm-th>
-            <hlm-th class="w-1/4">{{ airline.email }}</hlm-th>
+            <hlm-th class="w-1/4">{{ airline.name }}</hlm-th>
+            <hlm-th class="w-1/4">{{ airline.user.name }} {{ airline.user.surname }}</hlm-th>
+            <hlm-th class="w-1/4">{{ airline.user.email }}</hlm-th>
             <hlm-th class="w-1/4 flex justify-end gap-2">
               <app-popover
                 #popover="appPopover"

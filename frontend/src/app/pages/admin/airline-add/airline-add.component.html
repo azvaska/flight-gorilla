@@ -1,3 +1,5 @@
+@if (!registrationComplete) {
+<!-- Registration Form -->
 <div class="flex w-full justify-center mb-16 text-3xl font-bold">
   Register New Airline
 </div>
@@ -108,4 +110,80 @@
 
     </form>
   </div>
-</div> 
+</div>
+
+} @else {
+<!-- Success Page with Generated Password -->
+<div class="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
+  
+  <!-- Title -->
+  <div class="text-center">
+    <h1 class="text-3xl font-bold text-black mb-2">
+      Airline Registered Successfully!
+    </h1>
+    <p class="text-gray-600">
+      The airline has been registered. Here are the admin credentials:
+    </p>
+  </div>
+
+  <!-- Credentials Card -->
+  <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 max-w-md w-full">
+    <div class="space-y-4">
+      
+      <!-- Email -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Email:</label>
+        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm">
+          {{ adminEmail }}
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Password:</label>
+        <div class="flex items-center space-x-2">
+          <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm flex-1 font-mono">
+            {{ generatedPassword }}
+          </div>
+          <button
+            hlmBtn
+            type="button"
+            variant="outline"
+            size="sm"
+            (click)="copyPassword()"
+            class="px-3"
+          >
+            @if (passwordCopied) {
+              ✓ Copied
+            } @else {
+              Copy
+            }
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Warning Message -->
+  <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 max-w-md w-full">
+    <div class="text-sm text-gray-700">
+      <strong>Important:</strong> Please save these credentials securely. 
+      The password will not be shown again.
+    </div>
+  </div>
+
+  <!-- Go Back Button -->
+  <div class="flex justify-center pt-4">
+    <button
+      hlmBtn
+      type="button"
+      class="bg-black text-white px-10"
+      (click)="goBack()"
+    >
+      Go Back to Airlines List
+    </button>
+  </div>
+
+</div>
+} 

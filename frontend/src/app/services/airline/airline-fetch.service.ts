@@ -229,10 +229,6 @@ export class AirlineFetchService {
     );
   }
 
-  public deleteAirline(airlineId: string): Observable<void> {
-    return this.http.delete<void>(`${environment.apiUrl}/airline/${airlineId}`);
-  }
-
   public updateAirline(
     airlineId: string,
     airline: Partial<IAirline>
