@@ -9,16 +9,16 @@
       <hlm-table class="w-full">
         <hlm-trow class="sticky top-0 bg-white z-10">
           <hlm-th class="w-1/5">Name</hlm-th>
-          <hlm-th class="w-1/5">Surname</hlm-th>
           <hlm-th class="w-1/5">Email</hlm-th>
           <hlm-th class="w-1/5">Type</hlm-th>
+          <hlm-th class="w-1/5">Active</hlm-th>
         </hlm-trow>
         <ng-container *ngFor="let user of users">
           <hlm-trow>
-            <hlm-th class="w-1/5">{{ user.name }}</hlm-th>
-            <hlm-th class="w-1/5">{{ user.surname }}</hlm-th>
+            <hlm-th class="w-1/5">{{ user.name }} {{ user.surname }}</hlm-th>
             <hlm-th class="w-1/5">{{ user.email }}</hlm-th>
             <hlm-th class="w-1/5">{{ user.type }}</hlm-th>
+            <hlm-th class="w-1/5">{{ user.active ? 'Yes' : 'No' }}</hlm-th>
             <hlm-th class="w-1/5 flex justify-end gap-2">
               <app-popover
                 #popover="appPopover"

@@ -17,7 +17,7 @@
           type="text"
           formControlName="adminName"
           placeholder="Enter admin name"
-          class="w-full"
+          class="w-full bg-white"
         />
         @if (airlineForm.get('adminName')?.invalid && airlineForm.get('adminName')?.touched) {
         <div class="text-red-500 text-sm">Admin name is required</div>
@@ -33,7 +33,7 @@
           type="text"
           formControlName="adminSurname"
           placeholder="Enter admin surname"
-          class="w-full"
+          class="w-full bg-white"
         />
         @if (airlineForm.get('adminSurname')?.invalid && airlineForm.get('adminSurname')?.touched) {
         <div class="text-red-500 text-sm">Admin surname is required</div>
@@ -49,7 +49,7 @@
           type="text"
           formControlName="airlineName"
           placeholder="Enter airline name"
-          class="w-full"
+          class="w-full bg-white"
         />
         @if (airlineForm.get('airlineName')?.invalid && airlineForm.get('airlineName')?.touched) {
         <div class="text-red-500 text-sm">Airline name is required</div>
@@ -65,7 +65,7 @@
           type="email"
           formControlName="email"
           placeholder="Enter admin email"
-          class="w-full"
+          class="w-full bg-white"
         />
         @if (airlineForm.get('email')?.invalid && airlineForm.get('email')?.touched) {
         <div class="text-red-500 text-sm">

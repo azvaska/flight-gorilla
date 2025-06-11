@@ -58,7 +58,6 @@ export class AirlinesListComponent implements OnInit {
       error: (error) => {
         console.error('Errore nel caricamento delle compagnie aeree:', error);
         this.isLoadingAirlines = false;
-        // Qui potresti aggiungere una notifica di errore per l'utente
       }
     });
   }
@@ -68,7 +67,6 @@ export class AirlinesListComponent implements OnInit {
     
     this.adminFetchService.deleteAirline(airlineId).subscribe({
       next: () => {
-        // Rimuovi la compagnia aerea dalla lista locale dopo la cancellazione riuscita
       this.airlines = this.airlines.filter(airline => airline.id !== airlineId);
       this.isDeleteAirlineLoading = false;
       ctx.close();
@@ -76,7 +74,6 @@ export class AirlinesListComponent implements OnInit {
       error: (error) => {
         console.error('Errore nella cancellazione della compagnia aerea:', error);
         this.isDeleteAirlineLoading = false;
-        // Qui potresti aggiungere una notifica di errore per l'utente
       }
     });
   }

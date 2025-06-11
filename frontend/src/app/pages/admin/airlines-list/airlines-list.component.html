@@ -8,16 +8,18 @@
     <div class="overflow-y-auto overflow-x-hidden max-h-200 custom-scrollbar">
       <hlm-table class="w-full">
         <hlm-trow class="sticky top-0 bg-white z-10">
-          <hlm-th class="w-1/4">Airline Name</hlm-th>
-          <hlm-th class="w-1/4">Admin Name</hlm-th>
-          <hlm-th class="w-1/4">Email</hlm-th>
+          <hlm-th class="w-1/5">Airline Name</hlm-th>
+          <hlm-th class="w-1/5">Admin Name</hlm-th>
+          <hlm-th class="w-1/5">Email</hlm-th>
+          <hlm-th class="w-1/5">Active</hlm-th>
         </hlm-trow>
         <ng-container *ngFor="let airline of airlines">
           <hlm-trow>
-            <hlm-th class="w-1/4">{{ airline.name }}</hlm-th>
-            <hlm-th class="w-1/4">{{ airline.user.name }} {{ airline.user.surname }}</hlm-th>
-            <hlm-th class="w-1/4">{{ airline.user.email }}</hlm-th>
-            <hlm-th class="w-1/4 flex justify-end gap-2">
+            <hlm-th class="w-1/5">{{ airline.name }}</hlm-th>
+            <hlm-th class="w-1/5">{{ airline.user.name }} {{ airline.user.surname }}</hlm-th>
+            <hlm-th class="w-1/5">{{ airline.user.email }}</hlm-th>
+            <hlm-th class="w-1/5">{{ airline.user.active ? 'Yes' : 'No' }}</hlm-th>
+            <hlm-th class="w-1/5 flex justify-end gap-2">
               <app-popover
                 #popover="appPopover"
                 [popoverRelativePosition]="{
