@@ -49,6 +49,7 @@ class Config:
     JWT_COOKIE_SAMESITE = 'Lax'  # CSRF protection
     JWT_REFRESH_COOKIE_PATH = '/auth/refresh'
     JWT_COOKIE_CSRF_PROTECT = True  # Enable CSRF protection
+    REDIS_URL = os.environ.get('REDIS_URL', 'redis://:6379/0')
 
     MAIL_SERVER = 'smtp.example.com'
     MAIL_PORT = 587

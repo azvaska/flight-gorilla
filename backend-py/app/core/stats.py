@@ -3,7 +3,6 @@ import datetime
 from flask import current_app
 from sqlalchemy import func, distinct, extract, desc, asc, tuple_
 
-from app.extensions import db
 from app.models import Flight, AirlineAircraft, Airport
 from app.models.airlines import AirlineAircraftSeat
 from app.models.booking import BookingReturnFlight, BookingDepartureFlight
@@ -13,6 +12,8 @@ from app.models.flight import Route
 def calculate_airline_stats(airline_id):
     """Get statistics for the current airline"""
     current_year = datetime.datetime.now().year
+    db = current_app.extensions['sqlalchemy']
+
 
     # Create aliases for airports to avoid conflicts
     departure_airport = Airport.__table__.alias('departure_airport')
@@ -44,6 +45,11 @@ def calculate_airline_stats(airline_id):
         }
         for month, total_seats, total_books in fulfillment_query
     ]
+    #add missing months with zero values
+    all_months = {i: {'month': i, 'totalSeats': 0, 'totalBooks': 0} for i in range(1, 13)}
+    for month_data in flights_fulfillment:
+        all_months[month_data['month']] = month_data
+    flights_fulfillment = list(all_months.values())
 
     # 2. Revenue - Combined query for both departure and return flights
     revenue_query = db.session.query(
@@ -66,6 +72,11 @@ def calculate_airline_stats(airline_id):
         }
         for month, departure_rev, return_rev in revenue_query
     ]
+    # add missing months with zero values
+    all_months_revenue = {i: {'month': i, 'total': 0} for i in range(1, 13)}
+    for month_data in revenue:
+        all_months_revenue[month_data['month']] = month_data
+    revenue = list(all_months_revenue.values())
 
     # 3. Most Requested Routes
     # ...existing code...

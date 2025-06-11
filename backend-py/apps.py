@@ -1,3 +1,4 @@
+import datetime
 
 from flask_cors import CORS
 
@@ -6,11 +7,9 @@ import os
 from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_security import SQLAlchemySessionUserDatastore, Security
-from sqlalchemy import text, event
+from sqlalchemy import text
 
 from app.commands import init_app as init_commands
-from app.models import Airline
-from app.tasks.task import register_task
 from config import Config
 from flask_login import LoginManager
 from app.apis import api
@@ -22,8 +21,9 @@ app_flask.config.from_object(Config)
 login = LoginManager(app_flask)
 import logging
 
-# logging.basicConfig()
+logging.basicConfig()
 # logging.getLogger('apscheduler').setLevel(logging.DEBUG)
+# logging.getLogger('sqlalchemy').setLevel(logging.INFO)
 
 from app.extensions import db, ma, db_session, scheduler
 
@@ -39,16 +39,27 @@ jwt = JWTManager(app_flask)
 
 
 with app_flask.app_context():
-    import app.models
-    register_task(scheduler, app_flask)
+
     api.init_app(app_flask)
     # app_flask.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
     ma.init_app(app_flask)
     api.handle_errors = False  # Disable Flask-RESTful
-    scheduler.init_app(app_flask)
-    scheduler.start()
     user_datastore = SQLAlchemySessionUserDatastore(db_session, User, Role)
     security = Security(app_flask, user_datastore,register_blueprint=False)
+
+    scheduler.schedule(
+        scheduled_time=datetime.datetime.now(datetime.UTC),
+        func="task.update_airline_stats_cache",
+        interval=3600,  # every hour
+        repeat=None
+    )
+    scheduler.schedule(
+        scheduled_time=datetime.datetime.now(datetime.UTC),
+        func="task.free_sessions",
+        interval=60,  # every minute
+        repeat=None
+    )
+
     # Create the database tables
     try:
         with db.engine.begin() as conn:
