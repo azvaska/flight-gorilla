@@ -7,6 +7,7 @@ import { IAirlineAircraft } from '@/types/airline/aircraft';
 import { IExtra } from '@/types/airline/extra';
 import { IRoute } from '@/types/airline/route';
 import { IAirlineFlight } from '@/types/airline/flight';
+import {IStats} from '@/types/airline/stats';
 
 @Injectable({ providedIn: 'root' })
 export class AirlineFetchService {
@@ -240,5 +241,9 @@ export class AirlineFetchService {
       `${environment.apiUrl}/airline/${airlineId}`,
       airline
     );
+  }
+
+  public getAirlineStats(): Observable<IStats> {
+    return this.http.get<IStats>(`${environment.apiUrl}/airline/stats`);
   }
 }
