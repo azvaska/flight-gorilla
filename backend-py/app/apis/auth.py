@@ -222,8 +222,8 @@ class AirlineRegister(Resource):
                 email=data['email'],
                 password=hash_password(tmp_passwd),
                 roles=["airline-admin"],
-                name=data['airline_name'],
-                surname=data['airline_name'],
+                name=data['name'],
+                surname=data['surname'],
                 airline_id=airline.id,
                 active=False
             )

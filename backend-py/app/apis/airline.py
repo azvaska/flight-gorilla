@@ -273,7 +273,6 @@ class MyAirline(Resource):
     @api.response(200, 'OK', airline_model)
     @api.response(404, 'Not Found')
     @api.response(403, 'Unauthorized')
-    @roles_required(['airline-admin'])
     def get(self,airline_id):
         """Fetch the airline associated with the current user"""
 
@@ -338,9 +337,8 @@ class AirlineResource(Resource):
             getattr(updated_airline, field) is not None
             for field in required_fields
         )
-        if all_not_none:
+        if all_not_none and user.confirmed_at is not None:
             user.active = True
-            user.name ='canna'
         db.session.flush()
         
         db.session.commit()
@@ -682,7 +680,10 @@ class MyAirlineFlightsList(Resource):
         total_flights = flights_query.count()
         
         if total_flights == 0:
-            return {'error': 'No flights found for the current airline'}, 404
+            return {
+                'items': [],
+                'total_pages': 0
+            }, 200
         
         # Calculate pagination
         total_pages = (total_flights + limit - 1) // limit

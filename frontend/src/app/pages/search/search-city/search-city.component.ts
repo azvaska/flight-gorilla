@@ -19,7 +19,7 @@ export class SearchCityComponent {
     private router: Router,
     private searchFetchService: SearchFetchService
   ) {
-    this.searchFetchService.getCitiesByNation(this.searchParamsGuard.params.to_id as string).subscribe((cities) => {
+    this.searchFetchService.getCitiesByNation(Number(this.searchParamsGuard.params.to_id)).subscribe((cities) => {
       this.cities = cities;
     });
   }

@@ -21,7 +21,7 @@ import { INation } from '@/types/search/location';
 export class CountryCardComponent {
   @Input() nation!: INation;
   @Input() startingPrice: string = '23';
-  @Input() handleCountrySelection: (countryId: string) => void = () => {};
+  @Input() handleCountrySelection: (countryId: number) => void = () => {};
 
   constructor(private router: Router) {}
 

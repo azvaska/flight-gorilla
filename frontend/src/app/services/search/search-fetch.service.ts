@@ -60,9 +60,9 @@ export class SearchFetchService {
       );
   }
 
-  public getCitiesByNation(nationId: string): Observable<ICity[]> {
+  public getCitiesByNation(nationId: number): Observable<ICity[]> {
     const queryParams = new URLSearchParams({
-      nation_id: nationId,
+      nation_id: nationId.toString(),
     });
     return this.http.get<ICity[]>(
       `${environment.apiUrl}/location/city?${queryParams.toString()}`

@@ -34,6 +34,11 @@ export class RoleGuard implements CanMatch {
       return false;
     }
 
+    if(user.type === 'airline-admin' && user.active === false && segments.join('/') !== 'airline'){
+      this.router.navigate(['/airline']);
+      return false;
+    }
+
 
     // If the user is logged in, we let it through if the page allows the user's role otherwise we redirect to not found
     if (user && allowedRoles.includes(user.type)) {

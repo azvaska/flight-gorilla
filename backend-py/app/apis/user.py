@@ -222,7 +222,7 @@ class UpdatePassword(Resource):
                 return {'error': 'Associated airline not found'}, 404
 
             required_fields = ['name', 'nation_id', 'address', 'email', 'website','zip',
-                               'address'
+                               'address',
                                'first_class_description', 'business_class_description',
                                'economy_class_description']
 

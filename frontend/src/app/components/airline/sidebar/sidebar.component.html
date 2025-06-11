@@ -2,7 +2,8 @@
   {{ pageTitle }}
 </div>
 
-<div class="flex justify-between w-full gap-8 ">
+<div class="flex justify-between w-full gap-8">
+  @if(user!.active){
   <div hlmCard class="w-1/4 h-fit flex flex-col text-zinc-700 rounded-lg">
     @for (route of routes; let i = $index; track route.path) { @if(i <
     routes.length - 1) {
@@ -33,6 +34,7 @@
     </a>
     } }
   </div>
+  }
   <div class="flex-1">
     <router-outlet></router-outlet>
   </div>

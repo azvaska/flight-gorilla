@@ -1,134 +1,363 @@
-<div class="flex justify-center">
+<div
+  class="flex justify-center text-muted-foreground -mt-8"
+  *ngIf="!user.active"
+>
+  <span class="max-w-lg text-center">
+    You need to insert your airline information and change your password to
+    access the services
+  </span>
+</div>
+
+<div class="flex justify-center" [ngClass]="{ 'mt-10': !user.active }">
   @if(airline){
-    <div class="space-y-8 w-full max-w-3xl mb-40">
-      <div class="p-6 bg-white rounded-lg shadow w-full max-w-4xl">
-        <div class="space-y-4 text-gray-800" [formGroup]="profileForm">
-          <!-- Name -->
-          <div class="flex">
-            <span class="w-52 font-medium text-gray-700 flex items-center">Name:</span>
-            <app-switcher [isActive]="isEditMode">
-              <span inactive>{{ airline.name }}</span>
-              <div active class="relative">
-                <input hlmInput id="name" formControlName="name" type="text" class="w-64 h-8" />
-              </div>
-            </app-switcher>
-          </div>
+  <div class="space-y-8 w-full max-w-3xl mb-40">
+    <div class="p-6 bg-white rounded-lg shadow w-full max-w-4xl">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">Profile Settings</h3>
 
-          <!-- Nation -->
-          <div class="flex">
-            <span class="w-52 font-medium text-gray-700 flex items-center">Nation:</span>
-            <app-switcher [isActive]="isEditMode">
-              <span inactive>{{ selectedNation?.value || 'Not selected' }}</span>
-              <div active class="relative bg-white border border-gray-300 rounded-md w-64 ">
-                <search-input
-                  [inputValue]="selectedNation"
-                  (inputValueChange)="onNationChange($event)"
-                  (searchValueChange)="onSearchValueChange($event)"
-                  [popoverRelativePosition]="{ top: 20, left: -20 }"
-                  [searchList]="nations"
-                  placeHolder="Select a nation..."
-                  noResultsText="No nations found"
-                  class="text-sm font-normal py-2 h-fit px-4">
-                </search-input>
-                <div *ngIf="profileForm.get('nation_id')?.invalid && profileForm.get('nation_id')?.touched" class="absolute left-full top-0 w-40 ml-1 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow">
-                  <span *ngIf="profileForm.get('nation_id')?.errors?.['required']">Nation is required.</span>
-                  <span *ngIf="profileForm.get('nation_id')?.errors?.['invalidNation']">Please select a valid nation.</span>
-                </div>
-              </div>
-            </app-switcher>
-          </div>
-
-          <!-- Address -->
-          <div class="flex">
-            <span class="w-52 font-medium text-gray-700 flex items-center">Address:</span>
-            <app-switcher [isActive]="isEditMode">
-              <span inactive>{{ airline.address }}</span>
-              <div active class="relative">
-                <input hlmInput id="address" formControlName="address" type="text" class="w-64 h-8" />
-              </div>
-            </app-switcher>
-          </div>
-
-          <!-- Zip Code -->
-          <div class="flex">
-            <span class="w-52 font-medium text-gray-700 flex items-center">Zip Code:</span>
-            <app-switcher [isActive]="isEditMode">
-              <span inactive>{{ airline.zip }}</span>
-              <div active class="relative">
-                <input hlmInput id="zip" formControlName="zip" type="text" class="w-64 h-8" />
-              </div>
-            </app-switcher>
-          </div>
-
-          <!-- Email -->
-          <div class="flex">
-            <span class="w-52 font-medium text-gray-700 flex items-center">Email:</span>
-            <app-switcher [isActive]="isEditMode">
-              <span inactive>{{ airline.email }}</span>
-              <div active class="relative">
-                <input hlmInput id="email" formControlName="email" type="text" class="w-64 h-8" />
-                <div *ngIf="profileForm.get('email')?.invalid" class="absolute left-full top-0 w-40 ml-1 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow">
-                  Invalid email address.
-                </div>
-              </div>
-            </app-switcher>
-          </div>
-
-          <!-- Website -->
-          <div class="flex">
-            <span class="w-52 font-medium text-gray-700 flex items-center">Website:</span>
-            <app-switcher [isActive]="isEditMode">
-              <span inactive>{{ airline.website }}</span>
-              <div active class="relative">
-                <input hlmInput id="website" formControlName="website" type="text" class="w-64 h-8" />
-              </div>
-            </app-switcher>
-          </div>
-
-          <!-- Class Descriptions -->
-          <div class="flex">
-            <span class="w-52 font-medium text-gray-700 flex items-start">First Class Desc.:</span>
-            <app-switcher [isActive]="isEditMode">
-              <span inactive>{{ airline.first_class_description }}</span>
-              <div active class="relative">
-                <textarea hlmInput id="first_class_description" formControlName="first_class_description" rows="3" class="w-64"></textarea>
-              </div>
-            </app-switcher>
-          </div>
-
-          <div class="flex">
-            <span class="w-52 font-medium text-gray-700 flex items-start">Business Class Desc.:</span>
-            <app-switcher [isActive]="isEditMode">
-              <span inactive>{{ airline.business_class_description }}</span>
-              <div active class="relative">
-                <textarea hlmInput id="business_class_description" formControlName="business_class_description" rows="3" class="w-64"></textarea>
-              </div>
-            </app-switcher>
-          </div>
-
-          <div class="flex">
-            <span class="w-52 font-medium text-gray-700 flex items-start">Economy Class Desc.:</span>
-            <app-switcher [isActive]="isEditMode">
-              <span inactive>{{ airline.economy_class_description }}</span>
-              <div active class="relative">
-                <textarea hlmInput id="economy_class_description" formControlName="economy_class_description" rows="3" class="w-64"></textarea>
-              </div>
-            </app-switcher>
-          </div>
+      <div class="space-y-4 text-gray-800" [formGroup]="profileForm">
+        <!-- Name -->
+        <div class="flex">
+          <span class="w-52 font-medium text-gray-700 flex items-center"
+            >Name:</span
+          >
+          <app-switcher [isActive]="isEditMode">
+            <span inactive>{{ airline.name }}</span>
+            <div active class="relative">
+              <input
+                hlmInput
+                id="name"
+                formControlName="name"
+                type="text"
+                class="w-64 h-8"
+              />
+            </div>
+          </app-switcher>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="flex justify-end mt-6 space-x-3">
-          <button hlmBtn variant="outline" (click)="toggleEditMode()">
-            {{ isEditMode ? 'Back' : 'Edit' }}
-          </button>
-          <button hlmBtn *ngIf="isEditMode" [disabled]="!profileForm.valid || isLoading || profileForm.pristine" (click)="onFormSubmit()">
-            <ng-icon *ngIf="isLoading" hlm name="lucideLoaderCircle" size="sm" class="mr-2 animate-spin"></ng-icon>
-            Save
-          </button>
+        <!-- Nation -->
+        <div class="flex">
+          <span class="w-52 font-medium text-gray-700 flex items-center"
+            >Nation:</span
+          >
+          <app-switcher [isActive]="isEditMode">
+            <span inactive>{{ selectedNation?.value || "Not selected" }}</span>
+            <div
+              active
+              class="relative bg-white border border-gray-300 rounded-md w-64"
+            >
+              <search-input
+                [inputValue]="selectedNation"
+                (inputValueChange)="onNationChange($event)"
+                (searchValueChange)="onSearchValueChange($event)"
+                [popoverRelativePosition]="{ top: 20, left: -20 }"
+                [searchList]="nations"
+                placeHolder="Select a nation..."
+                noResultsText="No nations found"
+                class="text-sm font-normal py-2 h-fit px-4"
+              >
+              </search-input>
+              <div
+                *ngIf="
+                  profileForm.get('nation_id')?.invalid &&
+                  profileForm.get('nation_id')?.touched
+                "
+                class="absolute left-full top-0 w-40 ml-1 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+              >
+                <span *ngIf="profileForm.get('nation_id')?.errors?.['required']"
+                  >Nation is required.</span
+                >
+                <span
+                  *ngIf="profileForm.get('nation_id')?.errors?.['invalidNation']"
+                  >Please select a valid nation.</span
+                >
+              </div>
+            </div>
+          </app-switcher>
+        </div>
+
+        <!-- Address -->
+        <div class="flex">
+          <span class="w-52 font-medium text-gray-700 flex items-center"
+            >Address:</span
+          >
+          <app-switcher [isActive]="isEditMode">
+            <span inactive>{{ airline.address }}</span>
+            <div active class="relative">
+              <input
+                hlmInput
+                id="address"
+                formControlName="address"
+                type="text"
+                class="w-64 h-8"
+              />
+            </div>
+          </app-switcher>
+        </div>
+
+        <!-- Zip Code -->
+        <div class="flex">
+          <span class="w-52 font-medium text-gray-700 flex items-center"
+            >Zip Code:</span
+          >
+          <app-switcher [isActive]="isEditMode">
+            <span inactive>{{ airline.zip }}</span>
+            <div active class="relative">
+              <input
+                hlmInput
+                id="zip"
+                formControlName="zip"
+                type="text"
+                class="w-64 h-8"
+              />
+            </div>
+          </app-switcher>
+        </div>
+
+        <!-- Email -->
+        <div class="flex">
+          <span class="w-52 font-medium text-gray-700 flex items-center"
+            >Email:</span
+          >
+          <app-switcher [isActive]="isEditMode">
+            <span inactive>{{ airline.email }}</span>
+            <div active class="relative">
+              <input
+                hlmInput
+                id="email"
+                formControlName="email"
+                type="text"
+                class="w-64 h-8"
+              />
+              <div
+                *ngIf="
+                  profileForm.get('email')?.invalid &&
+                  profileForm.get('email')?.touched
+                "
+                class="absolute left-full top-0 w-40 ml-1 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+              >
+                Invalid email address.
+              </div>
+            </div>
+          </app-switcher>
+        </div>
+
+        <!-- Website -->
+        <div class="flex">
+          <span class="w-52 font-medium text-gray-700 flex items-center"
+            >Website:</span
+          >
+          <app-switcher [isActive]="isEditMode">
+            <span inactive>{{ airline.website }}</span>
+            <div active class="relative">
+              <input
+                hlmInput
+                id="website"
+                formControlName="website"
+                type="text"
+                class="w-64 h-8"
+              />
+            </div>
+          </app-switcher>
+        </div>
+
+        <!-- Class Descriptions -->
+        <div class="flex">
+          <span class="w-52 font-medium text-gray-700 flex items-start"
+            >First Class Desc.:</span
+          >
+          <app-switcher [isActive]="isEditMode">
+            <span inactive>{{ airline.first_class_description }}</span>
+            <div active class="relative">
+              <textarea
+                hlmInput
+                id="first_class_description"
+                formControlName="first_class_description"
+                rows="3"
+                class="w-64"
+              ></textarea>
+            </div>
+          </app-switcher>
+        </div>
+
+        <div class="flex">
+          <span class="w-52 font-medium text-gray-700 flex items-start"
+            >Business Class Desc.:</span
+          >
+          <app-switcher [isActive]="isEditMode">
+            <span inactive>{{ airline.business_class_description }}</span>
+            <div active class="relative">
+              <textarea
+                hlmInput
+                id="business_class_description"
+                formControlName="business_class_description"
+                rows="3"
+                class="w-64"
+              ></textarea>
+            </div>
+          </app-switcher>
+        </div>
+
+        <div class="flex">
+          <span class="w-52 font-medium text-gray-700 flex items-start"
+            >Economy Class Desc.:</span
+          >
+          <app-switcher [isActive]="isEditMode">
+            <span inactive>{{ airline.economy_class_description }}</span>
+            <div active class="relative">
+              <textarea
+                hlmInput
+                id="economy_class_description"
+                formControlName="economy_class_description"
+                rows="3"
+                class="w-64"
+              ></textarea>
+            </div>
+          </app-switcher>
         </div>
       </div>
-    </div>
-  }
 
+      <!-- Action Buttons -->
+      <div class="flex justify-end mt-6 space-x-3">
+        <button hlmBtn variant="outline" (click)="toggleEditMode()">
+          {{ isEditMode ? "Back" : "Edit" }}
+        </button>
+        <button
+          hlmBtn
+          *ngIf="isEditMode"
+          [disabled]="!profileForm.valid || isLoading || profileForm.pristine"
+          (click)="onFormSubmit()"
+        >
+          <ng-icon
+            *ngIf="isLoading"
+            hlm
+            name="lucideLoaderCircle"
+            size="sm"
+            class="mr-2 animate-spin"
+          ></ng-icon>
+          Save
+        </button>
+      </div>
+    </div>
+
+    <!-- Security Card -->
+    <div class="p-6 bg-white rounded-lg shadow w-full max-w-4xl">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        Security Settings
+      </h3>
+      <div class="space-y-4 text-gray-800" [formGroup]="securityForm">
+        <!-- User Email -->
+        <div class="flex">
+          <span class="w-52 font-medium text-gray-700 flex items-center"
+            >User Email:</span
+          >
+          <app-switcher [isActive]="isSecurityEditMode">
+            <span inactive>{{ user.email }}</span>
+            <div active class="relative">
+              <input
+                hlmInput
+                id="security-email"
+                formControlName="email"
+                type="text"
+                class="w-64 h-8"
+              />
+              <div
+                *ngIf="
+                  securityForm.get('email')?.invalid &&
+                  securityForm.get('email')?.touched
+                "
+                class="absolute left-full top-0 w-40 ml-1 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+              >
+                Invalid email address.
+              </div>
+            </div>
+          </app-switcher>
+        </div>
+
+        <!-- Password -->
+        <div class="flex">
+          <span class="w-52 font-medium text-gray-700 flex items-center"
+            >Password:</span
+          >
+          <app-switcher [isActive]="isSecurityEditMode">
+            <span inactive>••••••••</span>
+            <div active class="flex space-x-4">
+              <!-- old password -->
+              <div class="relative">
+                <input
+                  hlmInput
+                  id="oldPassword"
+                  formControlName="oldPassword"
+                  type="password"
+                  class="w-48 h-8"
+                  placeholder="Enter old password"
+                />
+                <div
+                  *ngIf="
+                    securityForm.get('oldPassword')?.invalid &&
+                    securityForm.get('oldPassword')?.touched
+                  "
+                  class="absolute left-full top-0 w-40 ml-1 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+                >
+                  <span
+                    *ngIf="securityForm.get('oldPassword')?.errors?.['required']"
+                    >Old password is required.</span
+                  >
+                  <span
+                    *ngIf="securityForm.get('oldPassword')?.errors?.['incorrect']"
+                    >Incorrect password.</span
+                  >
+                </div>
+              </div>
+              <!-- new password -->
+              <div class="relative">
+                <input
+                  hlmInput
+                  id="newPassword"
+                  formControlName="password"
+                  type="password"
+                  class="w-48 h-8"
+                  placeholder="Enter new password"
+                />
+                <div
+                  *ngIf="
+                    securityForm.get('password')?.invalid &&
+                    securityForm.get('password')?.touched
+                  "
+                  class="absolute left-full -top-5 w-40 ml-1 bg-white border border-red-300 text-red-700 text-xs rounded px-2 py-1 shadow"
+                >
+                  Password must be at least 8 characters and include an
+                  uppercase letter and a number.
+                </div>
+              </div>
+            </div>
+          </app-switcher>
+        </div>
+      </div>
+
+      <!-- Security Action Buttons -->
+      <div class="flex justify-end mt-6 space-x-3">
+        <button hlmBtn variant="outline" (click)="toggleSecurityEditMode()">
+          {{ isSecurityEditMode ? "Back" : "Edit" }}
+        </button>
+        <button
+          hlmBtn
+          *ngIf="isSecurityEditMode"
+          [disabled]="
+            !securityForm.valid || isSecurityLoading || securityForm.pristine
+          "
+          (click)="onSecurityFormSubmit()"
+        >
+          <ng-icon
+            *ngIf="isSecurityLoading"
+            hlm
+            name="lucideLoaderCircle"
+            size="sm"
+            class="mr-2 animate-spin"
+          ></ng-icon>
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+  }
 </div>

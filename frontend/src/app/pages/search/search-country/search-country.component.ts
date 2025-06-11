@@ -24,7 +24,7 @@ export class SearchCountryComponent {
     });
   }
 
-  handleCountrySelection(countryId: string) {
+  handleCountrySelection(countryId: number) {
     this.router.navigate(['/search'], {
       queryParams: {
         from_type: this.searchParamsGuard.params.from_type,

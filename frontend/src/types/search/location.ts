@@ -12,7 +12,7 @@ export type ILocation =
 
 
 export interface INation {
-  id: string;
+  id: number;
   name: string;
   code: string;
   alpha2: string;

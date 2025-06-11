@@ -1,7 +1,7 @@
 export interface IAirline {
   id: string;
   name: string;
-  nation_id: string;
+  nation_id: number;
   address: string;
   zip: string;
   email: string;

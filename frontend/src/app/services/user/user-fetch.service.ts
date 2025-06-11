@@ -1,19 +1,23 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { IUser } from '@/types/user/user';
 import { environment } from '@/app/environments/environment';
 import { IPayementCard } from '@/types/user/payement-card';
+import { AuthService } from '@/app/auth/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class UserFetchService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   public getUser(): Observable<IUser> {
-    return this.http.get<IUser>(`${environment.apiUrl}/user/me`);
+    return this.http.get<IUser>(`${environment.apiUrl}/user/me`).pipe(
+      tap(user => this.authService.updateUser(user))
+    );
   }
 
-  public updateUser(userId: string, user: {
+  public updateUser(userId: string, user: Partial<{
     name: string;
     surname: string;
     email: string;
@@ -21,7 +25,7 @@ export class UserFetchService {
     address: string;
     zip: string;
     
-  }): Observable<IUser> {
+  }>): Observable<IUser> {
     return this.http.put<IUser>(`${environment.apiUrl}/user/${userId}`, user);
   }
 

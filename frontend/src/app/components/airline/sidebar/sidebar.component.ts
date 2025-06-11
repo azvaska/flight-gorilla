@@ -1,3 +1,4 @@
+import { AuthService, AuthUser } from '@/app/auth/auth.service';
 import { Component } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { HlmCardDirective } from '@spartan-ng/ui-card-helm';
@@ -16,7 +17,9 @@ export class SidebarComponent {
 
   protected pageTitle = '';
 
-  constructor(private router: Router, private route: ActivatedRoute) {
+  protected user: AuthUser | null = null;
+
+  constructor(private router: Router, private route: ActivatedRoute, private authService: AuthService) {
     this.router.events
     .pipe(filter((event) => event instanceof NavigationEnd))
     .subscribe(() => {
@@ -24,6 +27,10 @@ export class SidebarComponent {
       this.pageTitle = child?.data?.['pageTitle'] || '';
     });
 
+    
+    this.authService.user$.subscribe((user) => {
+      this.user = user;
+    });
   }
 
   protected readonly routes = [
