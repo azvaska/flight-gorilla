@@ -122,6 +122,26 @@ def generate_unique_booking_number(session):
         if not exists:
             return candidate
         
+def check_and_update_flight_capacity(sql_session, flight_id):
+    """Check if a flight is fully booked and update the flag"""
+    flight = sql_session.query(Flight).filter(Flight.id == flight_id).first()
+    if not flight:
+        return
+    
+    # Get total seats available on the aircraft
+    total_seats = (
+        len(flight.aircraft.first_class_seats) +
+        len(flight.aircraft.business_class_seats) +
+        len(flight.aircraft.economy_class_seats)
+    )
+    
+    # Get total booked seats for this flight
+    booked_seats_count = len(flight.booked_seats_confirmed)
+    
+    # Update fully_booked flag
+    flight.fully_booked = booked_seats_count >= total_seats
+    sql_session.commit()
+
 @api.route("/")
 @api.response(500, "Internal Server Error")
 class BookingList(Resource):
@@ -241,6 +261,11 @@ class BookingList(Resource):
                             price=flight_price,
                         )
                         sql_session.add(booking_flight)
+                        sql_session.flush()
+                        check_and_update_flight_capacity(sql_session, flight_id)
+                        
+                        
+                        
 
             for flight_id in return_flights:
                 for seat in all_seats:
@@ -260,6 +285,8 @@ class BookingList(Resource):
                             price=flight_price,
                         )
                         sql_session.add(booking_flight)
+                        sql_session.flush()
+                        check_and_update_flight_capacity(sql_session, flight_id)
 
             for extra in extras:
                 extra_id = extra["id"]
@@ -340,8 +367,21 @@ class BookingResource(Resource):
                     "error": "You do not have permission to delete this booking",
                     "code": 403,
                 }, 403
+                
+                
+                # Collect flight IDs before deletion to update capacity
+        flight_ids = set()
+        for departure_flight in booking.departure_bookings:
+            flight_ids.add(departure_flight.flight_id)
+        for return_flight in booking.return_bookings:
+            flight_ids.add(return_flight.flight_id)
 
         db.session.delete(booking)
         db.session.commit()
 
+        # Update flight capacities
+        for flight_id in flight_ids:
+            check_and_update_flight_capacity(db.session, flight_id)
+        
+        db.session.commit()
         return {"message": "Booking deleted successfully"}, 200

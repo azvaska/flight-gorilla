@@ -39,40 +39,33 @@ class AirlineAircraft(db.Model):
     flights: Mapped[List['Flight']] = relationship('Flight', back_populates='aircraft', cascade='all, delete-orphan') #TODO ha senso che cancelli anche i voli?
     
     def _get_seats_by_class(self, class_type: ClassType) -> List[str]:
-        """Efficient method to get seats by class type with caching"""
-        cache_key = f'_cached_{class_type.value}_seats'
-        
-        if hasattr(self, cache_key):
-            return getattr(self, cache_key)
-        
+        """Get seats by class type"""
         seats = db.session.query(AirlineAircraftSeat.seat_number).filter_by(
             airline_aircraft_id=self.id,
             class_type=class_type
         ).all()
         
-        result = [seat[0] for seat in seats]
-        setattr(self, cache_key, result)
-        return result
-    
+        return [seat[0] for seat in seats]
+
     @property
     def first_class_seats(self) -> List[str]:
         return self._get_seats_by_class(ClassType.FIRST_CLASS)
-    
+
     @property
     def business_class_seats(self) -> List[str]:
         return self._get_seats_by_class(ClassType.BUSINESS_CLASS)
-    
+
     @property
     def economy_class_seats(self) -> List[str]:
         return self._get_seats_by_class(ClassType.ECONOMY_CLASS)
-    
+
     def _get_all_existing_seats(self) -> set:
         """Get all existing seats in a single query"""
         seats = db.session.query(AirlineAircraftSeat.seat_number).filter_by(
             airline_aircraft_id=self.id
         ).all()
         return {seat[0] for seat in seats}
-    
+
     def add_seats(self, value: List[str], class_type: ClassType):
         if not isinstance(value, list):
             raise ValueError("seats must be a list")
@@ -110,20 +103,8 @@ class AirlineAircraft(db.Model):
         ]
         
         db.session.add_all(new_seats)
-        
-        # Clear caches
-        self._clear_seat_caches()
-        
-        # Single commit at the end
         db.session.commit()
-    
-    def _clear_seat_caches(self):
-        """Clear all cached seat data"""
-        for class_type in ClassType:
-            cache_key = f'_cached_{class_type.value}_seats'
-            if hasattr(self, cache_key):
-                delattr(self, cache_key)
-    
+
     @first_class_seats.setter
     def first_class_seats(self, value: List[str]):
         self.add_seats(value, ClassType.FIRST_CLASS)

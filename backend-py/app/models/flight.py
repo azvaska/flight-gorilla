@@ -124,7 +124,17 @@ class Flight(db.Model):
                                      Seat.flight_id == self.id).all())
         session_seats = [seat.seat_number for seat in session_seats_obj]
         return booked_seats + session_seats
-    
+    @property
+    def booked_seats_confirmed(self):
+        """Get all booked seats that are confirmed (not in session)"""
+        booked_seats = []
+        for booking in self.departure_bookings:
+            booked_seats.append(booking.seat_number)
+        for booking in self.return_bookings:
+            booked_seats.append(booking.seat_number)
+
+        return booked_seats
+
     @property
     def seats_info(self):
         return {
