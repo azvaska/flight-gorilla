@@ -5,6 +5,7 @@ from .add_users import init_app as init_users
 from .add_flight import init_app as init_flight
 from .add_nations import init_app as init_nations
 from .add_extras import init_app as init_extras
+from .add_bookings import init_app as init_bookings
 
 def init_app(app):
     """Register all seed commands with the Flask app."""
@@ -15,3 +16,4 @@ def init_app(app):
     init_flight(app)
     init_nations(app)
     init_extras(app)
+    init_bookings(app)

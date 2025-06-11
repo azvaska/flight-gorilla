@@ -385,7 +385,7 @@ class RealisticFlightGenerator:
     
     def generate_route_and_flights(self, dep_iata: str, arr_iata: str, airline: Airline, 
                                  aircraft: AirlineAircraft, is_popular: bool = False, 
-                                 is_intercontinental: bool = False):
+                                 is_intercontinental: bool = False, create_return_route: bool = True):
         """Generate a route and multiple flights for it"""
         
         # Check if airports exist
@@ -396,7 +396,6 @@ class RealisticFlightGenerator:
         arr_airport = self.existing_airports[arr_iata]
         
         # Calculate route characteristics
-
         dep_data = dep_airport
         arr_data = arr_airport
         distance = self.calculate_distance(
@@ -509,9 +508,73 @@ class RealisticFlightGenerator:
             db_session.add(flight)
             flights_created += 1
         
+        # Create return route automatically if requested
+        return_flights_created = 0
+        if create_return_route:
+            return_flight_number = self.generate_unique_flight_number(airline.name)
+            
+            return_route = Route(
+                departure_airport_id=arr_airport.id,
+                arrival_airport_id=dep_airport.id,
+                airline_id=airline.id,
+                flight_number=return_flight_number,
+                period_start=period_start,
+                period_end=period_end
+            )
+            db_session.add(return_route)
+            db_session.flush()
+            
+            # Generate return flights with similar frequency
+            for i in range(total_flights):
+                if total_flights == 1:
+                    day_offset = random.randint(0, min(7, period_days))
+                else:
+                    day_offset = int((i / total_flights) * period_days)
+                    day_offset += random.randint(-3, 3)
+                    day_offset = max(0, min(day_offset, period_days - 1))
+                
+                flight_date = period_start + datetime.timedelta(days=day_offset)
+                min_departure_time = max(
+                    self.base_start_time + datetime.timedelta(hours=2),
+                    flight_date
+                )
+                
+                departure_time = self.get_realistic_departure_time(min_departure_time, is_intercontinental)
+                arrival_time = departure_time + datetime.timedelta(minutes=flight_duration)
+                
+                if departure_time < period_start or arrival_time > period_end:
+                    continue
+                
+                price_var = random.uniform(0.9, 1.1)
+                
+                return_flight = Flight(
+                    route_id=return_route.id,
+                    aircraft_id=aircraft.id,
+                    departure_time=departure_time,
+                    arrival_time=arrival_time,
+                    checkin_start_time=departure_time - datetime.timedelta(hours=checkin_hours),
+                    checkin_end_time=departure_time - datetime.timedelta(minutes=30),
+                    boarding_start_time=departure_time - datetime.timedelta(minutes=boarding_minutes),
+                    boarding_end_time=departure_time - datetime.timedelta(minutes=15),
+                    gate=f"{random.choice(['A', 'B', 'C', 'D'])}{random.randint(1, 30)}",
+                    terminal=f"{random.randint(1, 4)}",
+                    price_economy_class=round(economy_price * price_var, 2),
+                    price_business_class=round(business_price * price_var, 2),
+                    price_first_class=round(first_price * price_var, 2),
+                    price_insurance=round(insurance_price * price_var, 2),
+                    fully_booked=False
+                )
+                db_session.add(return_flight)
+                return_flights_created += 1
+        
         route_type = "🌍 Intercontinental" if is_intercontinental else ("🇪🇺 Popular" if is_popular else "🛫 Regional")
-        click.echo(f"Created {flights_created} flights for {route_type} route {flight_number}: {dep_iata} → {arr_iata} "
-                  f"({distance:.0f}km, {flight_duration//60}h{flight_duration%60}m)")
+        if create_return_route:
+            click.echo(f"Created {flights_created + return_flights_created} flights ({flights_created} outbound, {return_flights_created} return) for {route_type} route {flight_number}/{return_flight_number}: {dep_iata} ⇄ {arr_iata} "
+                      f"({distance:.0f}km, {flight_duration//60}h{flight_duration%60}m)")
+        else:
+            click.echo(f"Created {flights_created} flights for {route_type} route {flight_number}: {dep_iata} → {arr_iata} "
+                      f"({distance:.0f}km, {flight_duration//60}h{flight_duration%60}m)")
+
 
     def create_original_test_flights(self):
         """Create the original test flights from the seed file"""
@@ -639,16 +702,16 @@ class RealisticFlightGenerator:
         
         return original_flights_created
 
-
 @click.command('seed-flights')
 @click.option('--start-hours', default=2, help='Hours in the future to start generating routes (default: 2)')
-@click.option('--max-routes-per-airline', default=5, help='Maximum routes per airline (default: 80)')
+@click.option('--max-routes-per-airline', default=30, help='Maximum routes per airline (default: 80)')
 @click.option('--include-original', is_flag=True, default=True, help='Include original test flights (default: True)')
 @click.option('--include-intercontinental', is_flag=True, default=True, help='Include intercontinental flights (default: True)')
 @click.option('--italian-focus', is_flag=True, default=True, help='Focus on Italian airports and routes (default: True)')
+@click.option('--roundtrip-probability', default=0.9, help='Probability of creating return routes (default: 0.9)')
 @with_appcontext
 def generate_comprehensive_flights(start_hours, max_routes_per_airline, include_original, 
-                                 include_intercontinental, italian_focus):
+                                 include_intercontinental, italian_focus, roundtrip_probability):
     """Generate comprehensive flight data including Italian airports and intercontinental routes"""
      
     generator = RealisticFlightGenerator()
@@ -657,6 +720,7 @@ def generate_comprehensive_flights(start_hours, max_routes_per_airline, include_
     
     click.echo(f"🚀 Starting comprehensive flight generation...")
     click.echo(f"Routes will start from: {generator.base_start_time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    click.echo(f"Round-trip probability: {roundtrip_probability * 100:.0f}%")
     if italian_focus:
         click.echo("🇮🇹 Italian focus enabled - extra Italian routes will be created")
     if include_intercontinental:
@@ -704,7 +768,7 @@ def generate_comprehensive_flights(start_hours, max_routes_per_airline, include_
         # Generate popular European routes first (if airports exist)
         click.echo("Creating popular European routes...")
         popular_routes_for_airline = 0
-        max_popular_routes = max_routes_per_airline // 2  # Half for popular routes
+        max_popular_routes = max_routes_per_airline // 3  # Third for popular routes (accounting for return routes)
         
         for dep_iata, arr_iata in POPULAR_EUROPEAN_ROUTES:
             if (dep_iata in generator.existing_airports and 
@@ -712,24 +776,21 @@ def generate_comprehensive_flights(start_hours, max_routes_per_airline, include_
                 popular_routes_for_airline < max_popular_routes):
                 
                 aircraft = random.choice(aircraft_list)
-                generator.generate_route_and_flights(dep_iata, arr_iata, airline, aircraft, is_popular=True)
-                popular_routes_for_airline += 1
-                
-                # Also create return route (50% chance)
-                if popular_routes_for_airline < max_popular_routes and random.choice([True, False]):
-                    aircraft = random.choice(aircraft_list)
-                    generator.generate_route_and_flights(arr_iata, dep_iata, airline, aircraft, is_popular=True)
-                    popular_routes_for_airline += 1
+                # Create return route based on probability
+                create_return = random.random() < roundtrip_probability
+                generator.generate_route_and_flights(dep_iata, arr_iata, airline, aircraft, 
+                                                   is_popular=True, create_return_route=create_return)
+                popular_routes_for_airline += 2 if create_return else 1
         
         routes_for_airline += popular_routes_for_airline
         popular_routes_created += popular_routes_for_airline
-        click.echo(f"Created {popular_routes_for_airline} popular European routes")
+        click.echo(f"Created {popular_routes_for_airline} popular European route pairs")
         
         # Generate intercontinental routes
         intercontinental_routes_for_airline = 0
         if include_intercontinental:
             click.echo("Creating intercontinental routes...")
-            max_intercontinental = max_routes_per_airline // 4  # Quarter for intercontinental
+            max_intercontinental = max_routes_per_airline // 6  # Sixth for intercontinental (accounting for return routes)
             
             for dep_iata, arr_iata in INTERCONTINENTAL_ROUTES:
                 if (dep_iata in generator.existing_airports and 
@@ -738,35 +799,33 @@ def generate_comprehensive_flights(start_hours, max_routes_per_airline, include_
                     routes_for_airline < max_routes_per_airline):
                     
                     aircraft = random.choice(aircraft_list)
+                    # Higher probability for intercontinental return routes
+                    create_return = random.random() < min(roundtrip_probability + 0.1, 1.0)
                     generator.generate_route_and_flights(dep_iata, arr_iata, airline, aircraft, 
-                                                       is_popular=True, is_intercontinental=True)
-                    intercontinental_routes_for_airline += 1
-                    routes_for_airline += 1
-                    
-                    # Also create return route (30% chance for intercontinental)
-                    if (intercontinental_routes_for_airline < max_intercontinental and 
-                        routes_for_airline < max_routes_per_airline and 
-                        random.random() < 0.3):
-                        aircraft = random.choice(aircraft_list)
-                        generator.generate_route_and_flights(arr_iata, dep_iata, airline, aircraft, 
-                                                           is_popular=True, is_intercontinental=True)
-                        intercontinental_routes_for_airline += 1
-                        routes_for_airline += 1
+                                                       is_popular=True, is_intercontinental=True,
+                                                       create_return_route=create_return)
+                    route_count = 2 if create_return else 1
+                    intercontinental_routes_for_airline += route_count
+                    routes_for_airline += route_count
             
             intercontinental_routes_created += intercontinental_routes_for_airline
-            click.echo(f"Created {intercontinental_routes_for_airline} intercontinental routes")
+            click.echo(f"Created {intercontinental_routes_for_airline} intercontinental route pairs")
         
         # Generate additional routes
         click.echo("Creating additional routes...")
         additional_routes = min(15, max_routes_per_airline - routes_for_airline)
+        additional_pairs = 0
         
-        for _ in range(additional_routes):
+        for _ in range(additional_routes // 2):  # Divide by 2 since we're creating pairs
             if len(available_airports) >= 2:
                 dep_iata, arr_iata = random.sample(available_airports, 2)
                 aircraft = random.choice(aircraft_list)
-                generator.generate_route_and_flights(dep_iata, arr_iata, airline, aircraft)
-                routes_for_airline += 1
+                create_return = random.random() < roundtrip_probability
+                generator.generate_route_and_flights(dep_iata, arr_iata, airline, aircraft,
+                                                   create_return_route=create_return)
+                additional_pairs += 2 if create_return else 1
         
+        routes_for_airline += additional_pairs
         total_routes_created += routes_for_airline
         click.echo(f"Created {routes_for_airline} total routes for {airline.name}")
     

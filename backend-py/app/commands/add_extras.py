@@ -26,7 +26,7 @@ def seed_extras():
         click.echo('No flight found in the database.')
         return
     click.echo(f'Adding Extras to the database for airline: {airline.name}')
-    extras = db_session.query(Extra).all()
+    extras = db_session.query(Extra).first()
     if extras:
         click.echo('Extras already exist in the database.')
         return
