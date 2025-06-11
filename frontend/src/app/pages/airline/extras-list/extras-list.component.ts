@@ -35,6 +35,8 @@ import {
   HlmAlertDialogTitleDirective,
 } from '@spartan-ng/ui-alertdialog-helm';
 import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
+import { toast } from 'ngx-sonner';
+import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
 
 @Component({
   selector: 'app-extras-list',
@@ -69,6 +71,7 @@ import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
     BrnAlertDialogContentDirective,
     BrnAlertDialogTriggerDirective,
     HlmAlertDialogCancelButtonDirective,
+    HlmToasterComponent,
   ],
 })
 export class ExtrasListComponent {
@@ -186,12 +189,19 @@ export class ExtrasListComponent {
     try {
       await firstValueFrom(this.airlineFetchService.deleteExtra(extraId));
       this.extras = this.extras.filter((extra) => extra.id !== extraId);
-    } catch (error) {
-      console.error('error deleting extra');
+    } catch (error: any) {
+      console.error('error deleting extra', error);
+
+      // Check if the error is a 409 Conflict
+      if (error?.status === 409) {
+        toast('Cannot delete this element', {
+          description:
+            'This extra cannot be deleted because it is currently in use.',
+        });
+      }
     } finally {
       this.isDeleteExtraLoading = false;
       modalCtx.close();
     }
   }
-
 }
