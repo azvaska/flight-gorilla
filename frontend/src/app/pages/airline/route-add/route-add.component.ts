@@ -50,6 +50,7 @@ export class RouteAddComponent {
   protected isEditMode = false;
   protected routeId: number | null = null;
   protected existingRoute: IRoute | null = null;
+  protected isComponentInitialized = false;
   
 
   constructor(
@@ -67,44 +68,59 @@ export class RouteAddComponent {
   }
 
   private async initializeComponent() {
-    // Fetch airports
-    const airports = await this.fetchAirports();
-    this.airportsList = airports.map((airport) => ({
-      value: airport.name,
-      data: airport,
-    }));
-
-    // If in edit mode, load existing route data
-    if (this.isEditMode && this.routeId) {
-      await this.loadExistingRoute();
+    try {
+      if (this.isEditMode && this.routeId) {
+        // In edit mode, load both airports and existing route data
+        const [airports, existingRoute] = await Promise.all([
+          this.fetchAirports(),
+          this.loadExistingRouteData()
+        ]);
+        
+        this.airportsList = airports.map((airport) => ({
+          value: airport.name,
+          data: airport,
+        }));
+        
+        this.existingRoute = existingRoute;
+        
+        // Set form values
+        this.flightNumber = this.existingRoute.flight_number;
+        this.periodStart = new Date(this.existingRoute.period_start);
+        this.periodEnd = new Date(this.existingRoute.period_end);
+        
+        // Set airports after data is loaded
+        this.departureAirport = {
+          value: this.existingRoute.departure_airport.name,
+          data: this.existingRoute.departure_airport
+        };
+        
+        this.arrivalAirport = {
+          value: this.existingRoute.arrival_airport.name,
+          data: this.existingRoute.arrival_airport
+        };
+      } else {
+        // In add mode, only load airports
+        const airports = await this.fetchAirports();
+        this.airportsList = airports.map((airport) => ({
+          value: airport.name,
+          data: airport,
+        }));
+      }
+      
+      // Mark component as initialized
+      this.isComponentInitialized = true;
+    } catch (error) {
+      console.error('Error initializing component:', error);
     }
   }
 
-  private async loadExistingRoute() {
+  private async loadExistingRouteData(): Promise<IRoute> {
+    this.loadingService.startLoadingTask();
     try {
-      this.loadingService.startLoadingTask();
-      this.existingRoute = await firstValueFrom(
+      const route = await firstValueFrom(
         this.airlineFetchService.getRoute(this.routeId!)
       );
-      
-      // Set form values
-      this.flightNumber = this.existingRoute.flight_number;
-      this.periodStart = new Date(this.existingRoute.period_start);
-      this.periodEnd = new Date(this.existingRoute.period_end);
-      
-      // Set airports
-      this.departureAirport = {
-        value: this.existingRoute.departure_airport.name,
-        data: this.existingRoute.departure_airport
-      };
-      
-      this.arrivalAirport = {
-        value: this.existingRoute.arrival_airport.name,
-        data: this.existingRoute.arrival_airport
-      };
-      
-    } catch (error) {
-      console.error('Error loading existing route:', error);
+      return route;
     } finally {
       this.loadingService.endLoadingTask();
     }
