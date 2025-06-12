@@ -1,10 +1,10 @@
 import { PrismaClient } from '../../generated/prisma';
 import { randomUUID } from 'crypto';
-import * as crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
-function hashPassword(password: string): string {
-  // Simple hash for demo purposes - in production use bcrypt or similar
-  return crypto.createHash('sha256').update(password).digest('hex');
+async function hashPassword(password: string): Promise<string> {
+  // Use bycript
+  return await bcrypt.hash(password, 12);
 }
 
 export async function seedUsers(prisma: PrismaClient) {
@@ -52,7 +52,7 @@ export async function seedUsers(prisma: PrismaClient) {
         data: {
           id: randomUUID(),
           email: 'a@a.c',
-          password: hashPassword('a'),
+          password: await hashPassword('a'),
           name: 'tesst',
           surname: 'test',
           zip: '12345',
@@ -83,7 +83,7 @@ export async function seedUsers(prisma: PrismaClient) {
         data: {
           id: randomUUID(),
           email: 'test@test.it',
-          password: hashPassword('test'),
+          password: await hashPassword('test'),
           name: 'Test',
           surname: 'Test',
           zip: '12345',
@@ -114,7 +114,7 @@ export async function seedUsers(prisma: PrismaClient) {
         data: {
           id: randomUUID(),
           email: 'admin@a.c',
-          password: hashPassword('a'),
+          password: await hashPassword('a'),
           name: 'admin',
           surname: 'test',
           active: true,
@@ -147,7 +147,7 @@ export async function seedUsers(prisma: PrismaClient) {
           data: {
             id: randomUUID(),
             email: 'a',
-            password: hashPassword('a'),
+            password: await hashPassword('a'),
             name: 'Sky',
             surname: 'test',
             zip: '12345',

@@ -6,6 +6,13 @@ extendZodWithOpenApi(z);
 
 export const registry = new OpenAPIRegistry();
 
+// Register security schemes
+registry.registerComponent('securitySchemes', 'bearerAuth', {
+  type: 'http',
+  scheme: 'bearer',
+  bearerFormat: 'JWT',
+});
+
 // Common error responses
 export const ErrorResponseSchema = z.object({
   error: z.string().describe('Error message'),
