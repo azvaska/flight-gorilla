@@ -26,6 +26,8 @@ class SearchFlight:
 
         # Keep track of processed flight paths to avoid duplicates
         processed_paths = set()
+        # Track frontier states to avoid exploring the same layover combination
+        processed_frontiers = set()
 
         # We'll use a BFS-like expansion over k transfers
         # frontier_k holds tuples (airport_id, arrival_time, path_so_far) for exactly k transfers
@@ -81,7 +83,9 @@ class SearchFlight:
                         # For non-destination flights, create a unique identifier for the path so far
                         # This includes the current flight and the layover airport
                         path_key = (tuple(f.id for f in new_path), dest_airport)
-                        next_frontier.append((dest_airport, flight.arrival_time, new_path))
+                        if path_key not in processed_frontiers:
+                            processed_frontiers.add(path_key)
+                            next_frontier.append((dest_airport, flight.arrival_time, new_path))
 
             # Move to the next level of transfers
             frontier = next_frontier
@@ -330,7 +334,7 @@ def lowest_price_multiple_dates(departure_date_range,departure_airports,arrival_
 
 def generate_journey(departure_airport, arrival_airport, departure_date, max_transfers=3,
                      min_transfer_time=120, args=None):
-    resutt = []
+    result = []
     departure_results = SearchFlight().raptor_search(
         departure_airport.id,
         arrival_airport.id,
@@ -342,6 +346,6 @@ def generate_journey(departure_airport, arrival_airport, departure_date, max_tra
 
     # Sort results by total duration
     for k_step in departure_results:
-        resutt.extend(departure_results[k_step])
+        result.extend(departure_results[k_step])
 
-    return resutt
+    return result
