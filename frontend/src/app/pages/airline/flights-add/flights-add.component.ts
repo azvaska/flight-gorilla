@@ -478,7 +478,6 @@ export class FlightsAddComponent implements OnInit {
         this.flightDate!
       );
       const arrivalDateTime = this.calculateArrivalTime();
-
       const flightData = {
         route_id: route.id,
         aircraft_id: aircraft.id,
@@ -495,7 +494,7 @@ export class FlightsAddComponent implements OnInit {
         boarding_start_time: this.boardingStartTime ? this.timeStringToDateTime(this.boardingStartTime, this.flightDate!) : undefined,
         boarding_end_time: this.boardingEndTime ? this.timeStringToDateTime(this.boardingEndTime, this.flightDate!) : undefined,
         extras: this.flightExtras.map((extra) => ({
-          extra_id: this.isEditMode ? extra.extra_id! : extra.id,
+          extra_id: this.isEditMode ? extra.extra_id ?? extra.id : extra.id,
           price: extra.price,
           limit: extra.limit,
         })),
