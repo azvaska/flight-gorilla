@@ -4,18 +4,18 @@
     <div class="overflow-y-auto overflow-x-hidden max-h-200 custom-scrollbar">
       <hlm-table class="w-full">
         <hlm-trow class="sticky top-0 bg-white z-10">
-          <hlm-th class="w-1/4">Aircraft Model</hlm-th>
           <hlm-th class="w-1/4">Tail Number</hlm-th>
+          <hlm-th class="w-1/4">Aircraft Model</hlm-th>
           <hlm-th class="w-1/4">Seats</hlm-th>
         </hlm-trow>
         <ng-container *ngFor="let ac of aircrafts">
           <hlm-trow>
+            <hlm-th class="w-1/4">{{ ac.tail_number }}</hlm-th>
             <hlm-th
               class="w-1/4 cursor-pointer hover:underline"
               [routerLink]="'/aircraft/' + ac.id"
               >{{ ac.aircraft.name }}</hlm-th
             >
-            <hlm-th class="w-1/4">{{ ac.tail_number }}</hlm-th>
             <hlm-th class="w-1/4">
               {{
                 ac.first_class_seats.length +

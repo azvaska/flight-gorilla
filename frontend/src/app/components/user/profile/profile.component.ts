@@ -258,6 +258,7 @@ export class ProfileComponent {
       this.isLoading = false;
       this.userChange.emit(newUser);
       this.toggleEditMode();
+      window.location.reload();
     } catch (error: any) {
       console.error('Error updating user profile:', error);
       this.profileForm.setErrors({ error: 'Unknown error' });

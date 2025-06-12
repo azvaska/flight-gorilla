@@ -4,7 +4,7 @@
     <div class="overflow-y-auto overflow-x-hidden max-h-200 custom-scrollbar">
       <hlm-table class="w-full">
         <hlm-trow class="sticky top-0 bg-white z-10">
-          <hlm-th class="w-1/6">Aircraft ID</hlm-th>
+          <hlm-th class="w-1/6">Flight number</hlm-th>
           <hlm-th class="w-1/6">Departure Airport</hlm-th>
           <hlm-th class="w-1/6">Arrival Airport</hlm-th>
           <hlm-th class="w-1/6">Departure Time</hlm-th>
@@ -15,7 +15,7 @@
             <hlm-th
               class="w-1/6 cursor-pointer hover:underline"
               [routerLink]="'/flights/' + fl.id"
-              >{{ fl.aircraft.aircraft.name }}</hlm-th
+              >{{ fl.flight_number }}</hlm-th
             >
             <hlm-th class="w-1/6">{{ fl.departure_airport.iata_code }}</hlm-th>
             <hlm-th class="w-1/6">{{ fl.arrival_airport.iata_code }}</hlm-th>
