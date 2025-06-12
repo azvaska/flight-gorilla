@@ -270,7 +270,7 @@ flightRouter.get('/extra/:flight_id',
       });
 
       if (!flightExtras || flightExtras.length === 0) {
-        res.status(404).json({ error: 'Flight extras not found for the flight' });
+        res.json([]);
         return;
       }
 
