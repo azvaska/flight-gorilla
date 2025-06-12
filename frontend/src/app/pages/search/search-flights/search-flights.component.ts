@@ -52,7 +52,7 @@ export class SearchFlightsComponent {
   protected selectedReturnJourney: IJourney | null = null;
 
   protected sortBy: string = 'price-asc';
-  protected maxPrice: number = 1000;
+  protected maxPrice: number = 1500;
   protected minDepartureTime: string = '00:00';
   protected maxDepartureTime: string = '23:00';
 

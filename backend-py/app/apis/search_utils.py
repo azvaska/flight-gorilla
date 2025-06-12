@@ -234,6 +234,21 @@ class SearchFlight:
 
         return flight_query
 
+def check_duplicate_flight(journey, args):
+    user_has_booking = False
+    for flight in journey['segments']:
+        booking_dep = BookingDepartureFlight.query.join(Booking).filter(
+            BookingDepartureFlight.flight_id == flight['id'],
+            Booking.user_id == args['user_id']
+        ).first()
+        booking_ret = BookingReturnFlight.query.join(Booking).filter(
+            BookingReturnFlight.flight_id == flight['id'],
+            Booking.user_id == args['user_id']
+        ).first()
+        if booking_dep or booking_ret:
+            user_has_booking = True
+            break
+    return user_has_booking
 
 def filter_journeys(unfiltered_journeys, args):
     """Filter journeys based on provided arguments"""
@@ -246,19 +261,7 @@ def filter_journeys(unfiltered_journeys, args):
         
         # Remove journeys where user already has a booking for any segment
         if args['user_id']:
-            user_has_booking = False
-            for flight in journey['segments']:
-                booking_dep = BookingDepartureFlight.query.join(Booking).filter(
-                    BookingDepartureFlight.flight_id == flight['id'],
-                    Booking.user_id == args['user_id']
-                ).first()
-                booking_ret = BookingReturnFlight.query.join(Booking).filter(
-                    BookingReturnFlight.flight_id == flight['id'],
-                    Booking.user_id == args['user_id']
-                ).first()
-                if booking_dep or booking_ret:
-                    user_has_booking = True
-                    break
+            user_has_booking = check_duplicate_flight(journey, args)
             if user_has_booking:
                 continue
         # Filter by stops
@@ -342,8 +345,11 @@ def lowest_price_multiple_dates(departure_date_range,departure_airports,arrival_
         best_price = journey_departure[0] if journey_departure else None
         if best_price:
             filtered = filter_journeys(journey_departure, args)
-            if filtered:
-                best_price = filtered[0]
+            if not filtered:
+                departure_journeys.append(None)
+                continue
+            best_price = filtered[0]
+
             departure_journeys.append(best_price['price_economy'])
         else:
             departure_journeys.append(None)

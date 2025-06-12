@@ -9,10 +9,11 @@ import uuid
 from sqlalchemy.orm import joinedload
 
 from app.apis.search_utils import generate_journey, filter_journeys, sort_journeys, get_airports, \
-    lowest_price_multiple_dates
+    lowest_price_multiple_dates, check_duplicate_flight
 from app.extensions import db
 from app.models import Flight
 from app.models.airport import Airport
+from app.models.booking import BookingDepartureFlight, Booking, BookingReturnFlight
 from app.models.flight import Route
 
 api = Namespace('search', description='Flight search operations')
@@ -222,8 +223,7 @@ class FlexibleFlightSearch(Resource):
         args['user_id'] = None
         try:
             verify_jwt_in_request(optional=True)
-            current_user = get_jwt_identity()
-            args['user_id'] = current_user.get('id', None)
+            args['user_id'] = get_jwt_identity()
         except Exception:
             current_user = None
         # Parse and validate date
@@ -248,12 +248,12 @@ class FlexibleFlightSearch(Resource):
             departure_journeys = [None] * today_d.day
 
         # for each day in the range of dates, generate journeys
-        departure_journeys.extend(lowest_price_multiple_dates(
+        possible_journeys = lowest_price_multiple_dates(
             departure_date_range,
             departure_airports,
             arrival_airports,
             args
-        ))
-
+        )
+        departure_journeys.extend(possible_journeys)
 
         return departure_journeys, 200
