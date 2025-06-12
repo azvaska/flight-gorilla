@@ -4,6 +4,7 @@ import uuid
 from app.models import Aircraft, Nation, City
 from app.models.airlines import Airline, AirlineAircraft
 from app.models.airport import Airport
+from app.models.booking import BookingDepartureFlight, BookingReturnFlight, Booking
 from app.models.flight import Flight, Route
 
 
@@ -242,6 +243,26 @@ def filter_journeys(unfiltered_journeys, args):
         if journey is None:
             filtered_journeys.append(None)
             continue
+        
+        # Remove journeys where user already has a booking for any segment
+        if args['user_id']:
+            user_has_booking = False
+            for flight in journey['segments']:
+                booking_dep = BookingDepartureFlight.query.join(Booking).filter(
+                    BookingDepartureFlight.flight_id == flight['id'],
+                    Booking.user_id == args['user_id']
+                ).first()
+                booking_ret = BookingReturnFlight.query.join(Booking).filter(
+                    BookingReturnFlight.flight_id == flight['id'],
+                    Booking.user_id == args['user_id']
+                ).first()
+                if booking_dep or booking_ret:
+                    user_has_booking = True
+                    break
+            if user_has_booking:
+                continue
+        # Filter by stops
+        
         # Filter by departure time range
         if args['departure_time_min']:
             min_time = datetime.datetime.strptime(args['departure_time_min'], '%H:%M').time()

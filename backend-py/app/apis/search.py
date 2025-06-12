@@ -1,5 +1,7 @@
 
 from collections import defaultdict, deque
+
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from flask_restx import Namespace, Resource, fields, reqparse, marshal
 import datetime
 import uuid
@@ -127,6 +129,14 @@ class FlightSearch(Resource):
         """Search for flights based on departure/arrival airports and date using RAPTOR algorithm"""
         args = flight_search_parser.parse_args()
 
+        args['user_id'] = None
+        try:
+            verify_jwt_in_request(optional=True)
+            args['user_id'] = get_jwt_identity()
+        except Exception:
+            current_user = None
+
+
         # Parse and validate date
         try:
             departure_date = datetime.datetime.strptime(args['departure_date'], '%d-%m-%Y').date()
@@ -162,10 +172,7 @@ class FlightSearch(Resource):
         departure_journeys = filter_journeys(unfiltered_departure_journeys, args)
 
 
-
         departure_journeys = sort_journeys(departure_journeys, args)
-
-
 
         print(departure_journeys)
 
@@ -212,7 +219,13 @@ class FlexibleFlightSearch(Resource):
     def get(self):
         """Get minimum prices for each day in a month for a given departure and arrival airport"""
         args = flexible_date_search_parser.parse_args()
-
+        args['user_id'] = None
+        try:
+            verify_jwt_in_request(optional=True)
+            current_user = get_jwt_identity()
+            args['user_id'] = current_user.get('id', None)
+        except Exception:
+            current_user = None
         # Parse and validate date
         departure_journeys =[]
         try:
