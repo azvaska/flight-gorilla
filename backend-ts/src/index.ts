@@ -12,6 +12,7 @@ import {authRouter} from "./apis/auth";
 import {userRouter} from "./apis/user";
 import {flightRouter} from "./apis/flight";
 import {locationRouter} from "./apis/location";
+import {aircraftRouter} from "./apis/aircraft";
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +39,7 @@ app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/flight", flightRouter);
 app.use("/location", locationRouter);
+app.use("/aircraft", aircraftRouter);
 
 // OpenAPI Documentation - served at root
 const generator = new OpenApiGeneratorV3(registry.definitions);
