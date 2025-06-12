@@ -28,7 +28,6 @@ import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
     SearchInputComponent,
     HlmCardDirective,
     DateInputComponent,
-    NgIf,
     HlmToasterComponent,
   ],
   templateUrl: './route-add.component.html',
