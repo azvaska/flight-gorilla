@@ -97,4 +97,29 @@ registry.register('FlightsFulfillment', flightsFulfillmentSchema);
 registry.register('Revenue', revenueSchema);
 registry.register('MostRequestedRoute', mostRequestedRouteSchema);
 registry.register('AirportFlights', airportFlightsSchema);
-registry.register('LeastUsedRoute', leastUsedRouteSchema); 
+registry.register('LeastUsedRoute', leastUsedRouteSchema);
+
+// Import and register admin schemas
+import {
+  AdminUserSchema,
+  AirlineWithUsersSchema,
+  AdminAirlineUpdateSchema,
+  AdminUserListQuerySchema,
+  AdminAirlineParamsSchema,
+  AdminUserParamsSchema,
+  AdminAirlineListResponseSchema,
+  AdminUserListResponseSchema,
+  AdminMessageResponseSchema,
+  AdminErrorResponseSchema
+} from '../schemas/admin';
+
+registry.register('AdminUser', AdminUserSchema);
+registry.register('AirlineWithUsers', AirlineWithUsersSchema);
+registry.register('AdminAirlineUpdate', AdminAirlineUpdateSchema);
+registry.register('AdminUserListQuery', AdminUserListQuerySchema);
+registry.register('AdminAirlineParams', AdminAirlineParamsSchema);
+registry.register('AdminUserParams', AdminUserParamsSchema);
+registry.register('AdminAirlineListResponse', AdminAirlineListResponseSchema);
+registry.register('AdminUserListResponse', AdminUserListResponseSchema);
+registry.register('AdminMessageResponse', AdminMessageResponseSchema);
+registry.register('AdminErrorResponse', AdminErrorResponseSchema); 

@@ -23,19 +23,7 @@ import {
   flightPageQuerySchema,
   flightsPaginationSchema,
   airlineStatsSchema,
-  ExtraInput,
-  ExtraOutput,
-  AirlineAircraftInput,
-  AirlineAircraftUpdate,
-  AirlineUpdate,
-  RouteInput,
-  RouteUpdate,
-  FlightInput,
-  FlightUpdate,
-  AirlineListQuery,
-  FlightPageQuery
 } from '../schemas/airline';
-import { generateSecurePassword } from '../utils/password';
 
 const router = Router();
 const prisma = new PrismaClient();
