@@ -2395,7 +2395,9 @@ router.get('/stats',
       const mostRequestedRoutes = mostRequestedRoutesRaw.map(row => ({
         airportFrom: row.airportFrom,
         airportTo: row.airportTo,
-        bookings: Number(row.bookings)
+        bookings: Number(row.bookings),
+        total_seats: Number(row.totalSeats),
+        booking_ratio: row.totalSeats > 0 ? Number(row.bookings) / Number(row.totalSeats) : 0
       }));
 
       // 4. Airports with Most Flights (top 10)

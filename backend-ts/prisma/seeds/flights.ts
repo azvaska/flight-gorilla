@@ -388,13 +388,14 @@ export async function seedFlights(prisma: PrismaClient) {
 
     console.log(`Processing routes with ${aircrafts.length} aircraft...`);
 
-    const baseDate = new Date();
-    baseDate.setHours(baseDate.getHours() + 2); // Start 2 hours from now
+    // Generate flights across the entire year (2025)
+    const currentYear = new Date().getFullYear();
+    const baseDate = new Date(currentYear, 0, 1); // Start from January 1st of current year
 
     let routeCount = 0;
-    const maxRoutes = 50; // Limit for demo
+    const maxRoutes = 120; // Increased for more comprehensive data
 
-    // Generate European routes
+    // Generate European routes with multiple flights per month
     for (const [depIata, arrIata] of POPULAR_EUROPEAN_ROUTES) {
       if (routeCount >= maxRoutes) break;
       
@@ -409,11 +410,10 @@ export async function seedFlights(prisma: PrismaClient) {
         arrAirport.latitude, arrAirport.longitude
       );
 
-      // Create route
+      // Create route with year-long period
       const flightNumber = generateUniqueFlightNumber(airline.name);
-      const periodStart = new Date(baseDate);
-      const periodEnd = new Date(baseDate);
-      periodEnd.setDate(periodEnd.getDate() + 30); // 30 days period
+      const periodStart = new Date(currentYear, 0, 1); // January 1st
+      const periodEnd = new Date(currentYear, 11, 31); // December 31st
 
       const route = await prisma.route.create({
         data: {
@@ -426,55 +426,61 @@ export async function seedFlights(prisma: PrismaClient) {
         }
       });
 
-      // Create flights for this route (2-3 flights over the period)
-      const numFlights = Math.floor(Math.random() * 2) + 2;
+      // Create multiple flights spread across all 12 months (2-4 flights per month for popular routes)
+      const flightsPerMonth = Math.floor(Math.random() * 3) + 2; // 2-4 flights per month
       
-      for (let i = 0; i < numFlights; i++) {
-        const flightDate = new Date(baseDate);
-        flightDate.setDate(flightDate.getDate() + (i * 10)); // Spread flights over time
-        
-        const departureTime = getRealisticDepartureTime(flightDate, false);
-        const durationMinutes = calculateFlightDuration(distance);
-        const arrivalTime = new Date(departureTime.getTime() + (durationMinutes * 60000));
-        
-        // Check-in and boarding times
-        const checkinStartTime = new Date(departureTime.getTime() - (2 * 60 * 60 * 1000)); // 2 hours before
-        const checkinEndTime = new Date(departureTime.getTime() - (30 * 60 * 1000)); // 30 min before
-        const boardingStartTime = new Date(departureTime.getTime() - (45 * 60 * 1000)); // 45 min before
-        const boardingEndTime = new Date(departureTime.getTime() - (10 * 60 * 1000)); // 10 min before
+      for (let month = 0; month < 12; month++) {
+        for (let flightInMonth = 0; flightInMonth < flightsPerMonth; flightInMonth++) {
+          // Random day within the month
+          const daysInMonth = new Date(currentYear, month + 1, 0).getDate();
+          const randomDay = Math.floor(Math.random() * daysInMonth) + 1;
+          
+          const flightDate = new Date(currentYear, month, randomDay);
+          
+          const departureTime = getRealisticDepartureTime(flightDate, false);
+          const durationMinutes = calculateFlightDuration(distance);
+          const arrivalTime = new Date(departureTime.getTime() + (durationMinutes * 60000));
+          
+          // Check-in and boarding times
+          const checkinStartTime = new Date(departureTime.getTime() - (2 * 60 * 60 * 1000)); // 2 hours before
+          const checkinEndTime = new Date(departureTime.getTime() - (30 * 60 * 1000)); // 30 min before
+          const boardingStartTime = new Date(departureTime.getTime() - (45 * 60 * 1000)); // 45 min before
+          const boardingEndTime = new Date(departureTime.getTime() - (10 * 60 * 1000)); // 10 min before
 
-        // Calculate prices
-        const economyPrice = calculateRealisticPrice(distance, 'ECONOMY_CLASS', true, false);
-        const businessPrice = calculateRealisticPrice(distance, 'BUSINESS_CLASS', true, false);
-        const firstPrice = calculateRealisticPrice(distance, 'FIRST_CLASS', true, false);
+          // Calculate prices with seasonal variation
+          const seasonalMultiplier = month >= 5 && month <= 8 ? 1.3 : 1.0; // Summer premium
+          const economyPrice = calculateRealisticPrice(distance, 'ECONOMY_CLASS', true, false) * seasonalMultiplier;
+          const businessPrice = calculateRealisticPrice(distance, 'BUSINESS_CLASS', true, false) * seasonalMultiplier;
+          const firstPrice = calculateRealisticPrice(distance, 'FIRST_CLASS', true, false) * seasonalMultiplier;
 
-        await prisma.flight.create({
-          data: {
-            id: randomUUID(),
-            route_id: route.id,
-            aircraft_id: aircraft.id,
-            departure_time: departureTime,
-            arrival_time: arrivalTime,
-            checkin_start_time: checkinStartTime,
-            checkin_end_time: checkinEndTime,
-            boarding_start_time: boardingStartTime,
-            boarding_end_time: boardingEndTime,
-            gate: `A${Math.floor(Math.random() * 20) + 1}`,
-            terminal: (Math.floor(Math.random() * 3) + 1).toString(),
-            price_first_class: firstPrice,
-            price_business_class: businessPrice,
-            price_economy_class: economyPrice,
-            price_insurance: Math.round(economyPrice * 0.1),
-            fully_booked: false
-          }
-        });
+          await prisma.flight.create({
+            data: {
+              id: randomUUID(),
+              route_id: route.id,
+              aircraft_id: aircraft.id,
+              departure_time: departureTime,
+              arrival_time: arrivalTime,
+              checkin_start_time: checkinStartTime,
+              checkin_end_time: checkinEndTime,
+              boarding_start_time: boardingStartTime,
+              boarding_end_time: boardingEndTime,
+              gate: `A${Math.floor(Math.random() * 20) + 1}`,
+              terminal: (Math.floor(Math.random() * 3) + 1).toString(),
+              price_first_class: Math.round(firstPrice),
+              price_business_class: Math.round(businessPrice),
+              price_economy_class: Math.round(economyPrice),
+              price_insurance: Math.round(economyPrice * 0.1),
+              fully_booked: false
+            }
+          });
+        }
       }
 
       routeCount++;
     }
 
-    // Generate some intercontinental routes
-    const maxInterRoutes = 10;
+    // Generate intercontinental routes with flights throughout the year
+    const maxInterRoutes = 40; // Increased for more data
     let interRouteCount = 0;
 
     for (const [depIata, arrIata] of INTERCONTINENTAL_ROUTES) {
@@ -491,11 +497,10 @@ export async function seedFlights(prisma: PrismaClient) {
         arrAirport.latitude, arrAirport.longitude
       );
 
-      // Create route
+      // Create route with year-long period
       const flightNumber = generateUniqueFlightNumber(airline.name);
-      const periodStart = new Date(baseDate);
-      const periodEnd = new Date(baseDate);
-      periodEnd.setDate(periodEnd.getDate() + 30);
+      const periodStart = new Date(currentYear, 0, 1);
+      const periodEnd = new Date(currentYear, 11, 31);
 
       const route = await prisma.route.create({
         data: {
@@ -508,53 +513,65 @@ export async function seedFlights(prisma: PrismaClient) {
         }
       });
 
-      // Create 1-2 flights for intercontinental routes
-      const numFlights = Math.floor(Math.random() * 2) + 1;
+      // Create 1-2 flights per month for intercontinental routes
+      const flightsPerMonth = Math.floor(Math.random() * 2) + 1; // 1-2 flights per month
       
-      for (let i = 0; i < numFlights; i++) {
-        const flightDate = new Date(baseDate);
-        flightDate.setDate(flightDate.getDate() + (i * 15)); // More spread for long-haul
-        
-        const departureTime = getRealisticDepartureTime(flightDate, true);
-        const durationMinutes = calculateFlightDuration(distance);
-        const arrivalTime = new Date(departureTime.getTime() + (durationMinutes * 60000));
-        
-        // Longer check-in times for international flights
-        const checkinStartTime = new Date(departureTime.getTime() - (3 * 60 * 60 * 1000)); // 3 hours before
-        const checkinEndTime = new Date(departureTime.getTime() - (60 * 60 * 1000)); // 1 hour before
-        const boardingStartTime = new Date(departureTime.getTime() - (90 * 60 * 1000)); // 90 min before
-        const boardingEndTime = new Date(departureTime.getTime() - (20 * 60 * 1000)); // 20 min before
+      for (let month = 0; month < 12; month++) {
+        for (let flightInMonth = 0; flightInMonth < flightsPerMonth; flightInMonth++) {
+          const daysInMonth = new Date(currentYear, month + 1, 0).getDate();
+          const randomDay = Math.floor(Math.random() * daysInMonth) + 1;
+          
+          const flightDate = new Date(currentYear, month, randomDay);
+          
+          const departureTime = getRealisticDepartureTime(flightDate, true);
+          const durationMinutes = calculateFlightDuration(distance);
+          const arrivalTime = new Date(departureTime.getTime() + (durationMinutes * 60000));
+          
+          // Longer check-in times for international flights
+          const checkinStartTime = new Date(departureTime.getTime() - (3 * 60 * 60 * 1000)); // 3 hours before
+          const checkinEndTime = new Date(departureTime.getTime() - (60 * 60 * 1000)); // 1 hour before
+          const boardingStartTime = new Date(departureTime.getTime() - (90 * 60 * 1000)); // 90 min before
+          const boardingEndTime = new Date(departureTime.getTime() - (20 * 60 * 1000)); // 20 min before
 
-        // Calculate higher prices for intercontinental
-        const economyPrice = calculateRealisticPrice(distance, 'ECONOMY_CLASS', false, true);
-        const businessPrice = calculateRealisticPrice(distance, 'BUSINESS_CLASS', false, true);
-        const firstPrice = calculateRealisticPrice(distance, 'FIRST_CLASS', false, true);
+          // Calculate higher prices for intercontinental with seasonal variation
+          const seasonalMultiplier = month >= 5 && month <= 8 ? 1.4 : 1.0; // Higher summer premium for long-haul
+          const economyPrice = calculateRealisticPrice(distance, 'ECONOMY_CLASS', false, true) * seasonalMultiplier;
+          const businessPrice = calculateRealisticPrice(distance, 'BUSINESS_CLASS', false, true) * seasonalMultiplier;
+          const firstPrice = calculateRealisticPrice(distance, 'FIRST_CLASS', false, true) * seasonalMultiplier;
 
-        await prisma.flight.create({
-          data: {
-            id: randomUUID(),
-            route_id: route.id,
-            aircraft_id: aircraft.id,
-            departure_time: departureTime,
-            arrival_time: arrivalTime,
-            checkin_start_time: checkinStartTime,
-            checkin_end_time: checkinEndTime,
-            boarding_start_time: boardingStartTime,
-            boarding_end_time: boardingEndTime,
-            gate: `B${Math.floor(Math.random() * 15) + 1}`,
-            terminal: (Math.floor(Math.random() * 2) + 1).toString(),
-            price_first_class: firstPrice,
-            price_business_class: businessPrice,
-            price_economy_class: economyPrice,
-            price_insurance: Math.round(economyPrice * 0.15),
-            fully_booked: false
-          }
-        });
+          await prisma.flight.create({
+            data: {
+              id: randomUUID(),
+              route_id: route.id,
+              aircraft_id: aircraft.id,
+              departure_time: departureTime,
+              arrival_time: arrivalTime,
+              checkin_start_time: checkinStartTime,
+              checkin_end_time: checkinEndTime,
+              boarding_start_time: boardingStartTime,
+              boarding_end_time: boardingEndTime,
+              gate: `B${Math.floor(Math.random() * 15) + 1}`,
+              terminal: (Math.floor(Math.random() * 2) + 1).toString(),
+              price_first_class: Math.round(firstPrice),
+              price_business_class: Math.round(businessPrice),
+              price_economy_class: Math.round(economyPrice),
+              price_insurance: Math.round(economyPrice * 0.15),
+              fully_booked: false
+            }
+          });
+        }
       }
 
       interRouteCount++;
     }
-    console.log(`✅ Created ${interRouteCount} original test flights, ${routeCount} European routes and ${interRouteCount} intercontinental routes with flights`);
+
+    // Calculate total flights generated
+    const estimatedEuropeanFlights = routeCount * 12 * 2.5; // avg 2.5 flights per month per route
+    const estimatedInterFlights = interRouteCount * 12 * 1.5; // avg 1.5 flights per month per route
+    const totalEstimatedFlights = estimatedEuropeanFlights + estimatedInterFlights;
+
+    console.log(`✅ Created ${routeCount} European routes and ${interRouteCount} intercontinental routes`);
+    console.log(`📊 Estimated total flights generated: ~${Math.round(totalEstimatedFlights)} flights spread across all 12 months of ${currentYear}`);
   } catch (error) {
     console.error('❌ Error seeding flights:', error);
     throw error;

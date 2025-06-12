@@ -272,7 +272,8 @@ export async function seedBookings(prisma: PrismaClient) {
     console.log(`Creating bookings for ${users.length} users and ${flights.length} flights...`);
 
     let successfulBookings = 0;
-    const targetBookings = 50; // Target number of bookings
+    // Increase target bookings significantly to have data across all months
+    const targetBookings = Math.min(500, flights.length * 0.3); // Up to 500 bookings or 30% of available flights
 
     // Generate single-trip bookings
     for (let i = 0; i < targetBookings * 0.6; i++) { // 60% single trips
@@ -299,7 +300,7 @@ export async function seedBookings(prisma: PrismaClient) {
     }
 
     // Generate some business class bookings
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < Math.min(50, flights.length * 0.05); i++) { // More business class bookings
       const user = users[Math.floor(Math.random() * users.length)];
       const flight = flights[Math.floor(Math.random() * flights.length)];
       
@@ -307,7 +308,16 @@ export async function seedBookings(prisma: PrismaClient) {
       if (success) successfulBookings++;
     }
 
-    console.log(`✅ Successfully created ${successfulBookings} bookings`);
+    // Generate some first class bookings for premium data
+    for (let i = 0; i < Math.min(20, flights.length * 0.02); i++) { // First class bookings
+      const user = users[Math.floor(Math.random() * users.length)];
+      const flight = flights[Math.floor(Math.random() * flights.length)];
+      
+      const success = await createRealisticBooking(prisma, user, flight, null, classtype.FIRST_CLASS);
+      if (success) successfulBookings++;
+    }
+
+    console.log(`✅ Successfully created ${successfulBookings} bookings across all flight classes and months`);
   } catch (error) {
     console.error('❌ Error seeding bookings:', error);
     throw error;
