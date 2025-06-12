@@ -115,7 +115,24 @@ const getSeatsInfo = async (flightId: string) => {
     select: { seat_number: true }
   });
 
-  const bookedSeatNumbers = bookedSeats.map(booking => booking.seat_number);
+  // Get seats reserved in active seat sessions
+  const now = new Date();
+  const activeSeatSessions = await prisma.seat.findMany({
+    where: {
+      flight_id: flightId,
+      seat_session: {
+        session_end_time: {
+          gt: now
+        }
+      }
+    },
+    select: { seat_number: true }
+  });
+
+  const bookedSeatNumbers = [
+    ...bookedSeats.map(booking => booking.seat_number),
+    ...activeSeatSessions.map(seat => seat.seat_number)
+  ];
 
   return {
     first_class_seats: firstClassSeats,
