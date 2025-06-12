@@ -10,45 +10,64 @@ import { seedBookings } from './seeds/bookings.js';
 
 const prisma = new PrismaClient();
 
+async function runSeedOperation(
+  name: string, 
+  emoji: string, 
+  operation: () => Promise<void>
+): Promise<boolean> {
+  try {
+    console.log(`${emoji} Seeding ${name}...`);
+    await operation();
+    console.log(`✅ ${name} seeding completed successfully!`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Error seeding ${name}:`, error);
+    return false;
+  }
+}
+
 async function main() {
   console.log('🌱 Starting database seeding...');
 
-  try {
-    // Seed in the correct order due to foreign key dependencies
-    console.log('📍 Seeding nations...');
-    await seedNations(prisma);
+  const results: { [key: string]: boolean } = {};
 
-    console.log('🏢 Seeding airports...');
-    await seedAirports(prisma);
+  // Seed in the correct order due to foreign key dependencies
+  results['nations'] = await runSeedOperation('nations', '📍', () => seedNations(prisma));
+  
+  results['airports'] = await runSeedOperation('airports', '🏢', () => seedAirports(prisma));
+  
+  results['aircraft'] = await runSeedOperation('aircraft', '✈️', () => seedAircraft(prisma));
+  
+  results['airlines'] = await runSeedOperation('airlines', '🏢', () => seedAirlines(prisma));
+  
+  results['airline aircrafts'] = await runSeedOperation('airline aircrafts', '🛩️', () => seedAirlineAircrafts(prisma));
+  
+  results['users'] = await runSeedOperation('users', '👥', () => seedUsers(prisma));
+  
+  results['flights'] = await runSeedOperation('flights', '🛫', () => seedFlights(prisma));
+  
+  results['extras'] = await runSeedOperation('extras', '🎁', () => seedExtras(prisma));
+  
+  results['bookings'] = await runSeedOperation('bookings', '📋', () => seedBookings(prisma));
 
-    console.log('✈️ Seeding aircraft...');
-    await seedAircraft(prisma);
+  // Summary
+  console.log('\n📊 Seeding Summary:');
+  const successful = Object.entries(results).filter(([_, success]) => success);
+  const failed = Object.entries(results).filter(([_, success]) => !success);
 
-    console.log('🏢 Seeding airlines...');
-    await seedAirlines(prisma);
-
-    console.log('🛩️ Seeding airline aircrafts...');
-    await seedAirlineAircrafts(prisma);
-
-    console.log('👥 Seeding users...');
-    await seedUsers(prisma);
-
-    console.log('🛫 Seeding flights...');
-    await seedFlights(prisma);
-
-    console.log('🎁 Seeding extras...');
-    await seedExtras(prisma);
-
-    console.log('📋 Seeding bookings...');
-    await seedBookings(prisma);
-
-    console.log('✅ Database seeding completed successfully!');
-  } catch (error) {
-    console.error('❌ Error during seeding:', error);
-    throw error;
-  } finally {
-    await prisma.$disconnect();
+  if (successful.length > 0) {
+    console.log('✅ Successful operations:');
+    successful.forEach(([name]) => console.log(`  - ${name}`));
   }
+
+  if (failed.length > 0) {
+    console.log('❌ Failed operations:');
+    failed.forEach(([name]) => console.log(`  - ${name}`));
+  }
+
+  console.log(`\n🎯 Overall: ${successful.length}/${Object.keys(results).length} operations completed successfully`);
+
+  await prisma.$disconnect();
 }
 
 main()
