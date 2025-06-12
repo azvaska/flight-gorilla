@@ -369,13 +369,16 @@ router.get('/flights', async (req: Request, res: Response): Promise<void> => {
     }
     journeys = sortJourneys(filterJourneys(journeys, args), args);
     const limit = args.limit ? parseInt(args.limit as string, 10) : 10;
-    const page = args.page_number ? parseInt(args.page_number as string, 10) : 0;
+    const page = args.page_number ? parseInt(args.page_number as string, 10) : null;
     const totalPages = Math.ceil(journeys.length / limit);
-    if (page) {
+    if (page !== null && limit) {
       const start = (page - 1) * limit;
-      journeys = journeys.slice(start, start + limit);
-    } else {
-      journeys = journeys.slice(0, limit);
+      if (start >= journeys.length || start < 0) {
+        journeys = [];
+      } else {
+        const end = Math.min(start + limit, journeys.length);
+        journeys = journeys.slice(start, end);
+      }
     }
 
     res.json({ journeys, total_pages: totalPages });
