@@ -198,8 +198,8 @@ export class AirlineFetchService {
   public updateRoute(
     routeId: number,
     route: Partial<{
-      departure_airport_id: string;
-      arrival_airport_id: string;
+      departure_airport_id: number;
+      arrival_airport_id: number;
       period_start: string;
       period_end: string;
       flight_number: string;

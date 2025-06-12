@@ -152,8 +152,8 @@ export class RouteAddComponent {
         // Update existing route
         await firstValueFrom(
           this.airlineFetchService.updateRoute(this.routeId, {
-            departure_airport_id: routeData.departure_airport_id.toString(),
-            arrival_airport_id: routeData.arrival_airport_id.toString(),
+            departure_airport_id: routeData.departure_airport_id,
+            arrival_airport_id: routeData.arrival_airport_id,
             period_start: routeData.period_start,
             period_end: routeData.period_end,
             flight_number: routeData.flight_number
