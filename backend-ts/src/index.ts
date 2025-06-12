@@ -9,6 +9,7 @@ import {OpenApiGeneratorV3} from "@asteasolutions/zod-to-openapi";
 import {registry} from "./config/openapi";
 import {airportRouter} from "./apis/airport";
 import {authRouter} from "./apis/auth";
+import {userRouter} from "./apis/user";
 
 // Load environment variables
 dotenv.config();
@@ -32,6 +33,7 @@ app.get("/health", (req, res) => {
 // API Routes - served at root level
 app.use("/airports", airportRouter);
 app.use("/auth", authRouter);
+app.use("/user", userRouter);
 
 // OpenAPI Documentation - served at root
 const generator = new OpenApiGeneratorV3(registry.definitions);
