@@ -16,7 +16,7 @@ import { ErrorResponseSchema, ValidationErrorResponseSchema } from '../config/op
 import { validateBody } from '../utils/validation';
 import { hashPassword, verifyPassword, generateSecurePassword } from '../utils/password';
 import { generateAccessToken, generateRefreshToken, setRefreshTokenCookie, clearRefreshTokenCookie } from '../utils/jwt';
-import { authenticateToken, authenticateRefreshToken, requireRoles } from '../utils/auth';
+import { authenticateToken, authenticateRefreshToken, requireRoles } from '../middleware/auth';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 
