@@ -15,6 +15,7 @@ import {locationRouter} from "./apis/location";
 import {aircraftRouter} from "./apis/aircraft";
 import {seatSessionRouter} from "./apis/seat_session";
 import {searchRouter} from "./apis/search";
+import {bookingRouter} from "./apis/booking";
 
 // Load environment variables
 dotenv.config();
@@ -24,7 +25,11 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:4200"],
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-TOKEN"]
+}));
 app.use(morgan("combined"));
 app.use(cookieParser());
 app.use(express.json());
@@ -44,6 +49,7 @@ app.use("/location", locationRouter);
 app.use("/aircraft", aircraftRouter);
 app.use("/seat_session", seatSessionRouter);
 app.use("/search", searchRouter);
+app.use("/booking", bookingRouter);
 
 // OpenAPI Documentation - served at root
 const generator = new OpenApiGeneratorV3(registry.definitions);

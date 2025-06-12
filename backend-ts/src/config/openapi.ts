@@ -27,4 +27,21 @@ export const ValidationErrorResponseSchema = z.object({
 });
 
 registry.register('ErrorResponse', ErrorResponseSchema);
-registry.register('ValidationErrorResponse', ValidationErrorResponseSchema); 
+registry.register('ValidationErrorResponse', ValidationErrorResponseSchema);
+
+// Import and register booking schemas
+import { 
+  extraInputSchema, 
+  bookingInputSchema, 
+  bookingListQuerySchema,
+  bookedFlightExtraOutputSchema,
+  bookedFlightOutputSchema,
+  bookingOutputSchema
+} from '../schemas/booking';
+
+registry.register('ExtraInput', extraInputSchema);
+registry.register('BookingInput', bookingInputSchema);
+registry.register('BookingListQuery', bookingListQuerySchema);
+registry.register('BookedFlightExtra', bookedFlightExtraOutputSchema);
+registry.register('BookedFlight', bookedFlightOutputSchema);
+registry.register('BookingOutput', bookingOutputSchema); 

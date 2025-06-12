@@ -430,7 +430,7 @@ CREATE INDEX "ix_user_active" ON "user"("active");
 CREATE INDEX "ix_user_email" ON "user"("email");
 
 -- AddForeignKey
-ALTER TABLE "airline" ADD CONSTRAINT "fk_airline_nation_id_nation" FOREIGN KEY ("nation_id") REFERENCES "nation"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "airline" ADD CONSTRAINT "fk_airline_nation_id_nation" FOREIGN KEY ("nation_id") REFERENCES "nation"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "airline_aircraft" ADD CONSTRAINT "fk_airline_aircraft_aircraft_id_aircraft" FOREIGN KEY ("aircraft_id") REFERENCES "aircraft"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
@@ -439,40 +439,40 @@ ALTER TABLE "airline_aircraft" ADD CONSTRAINT "fk_airline_aircraft_aircraft_id_a
 ALTER TABLE "airline_aircraft" ADD CONSTRAINT "fk_airline_aircraft_airline_id_airline" FOREIGN KEY ("airline_id") REFERENCES "airline"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "airline_aircraft_seat" ADD CONSTRAINT "fk_airline_aircraft_seat_airline_aircraft_id_airline_aircraft" FOREIGN KEY ("airline_aircraft_id") REFERENCES "airline_aircraft"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "airline_aircraft_seat" ADD CONSTRAINT "fk_airline_aircraft_seat_airline_aircraft_id_airline_aircraft" FOREIGN KEY ("airline_aircraft_id") REFERENCES "airline_aircraft"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "airport" ADD CONSTRAINT "fk_airport_city_id_city" FOREIGN KEY ("city_id") REFERENCES "city"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "airport" ADD CONSTRAINT "fk_airport_city_id_city" FOREIGN KEY ("city_id") REFERENCES "city"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "booking" ADD CONSTRAINT "fk_booking_user_id_user" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "booking" ADD CONSTRAINT "fk_booking_user_id_user" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "booking_departure_flight" ADD CONSTRAINT "fk_booking_departure_flight_booking_id_booking" FOREIGN KEY ("booking_id") REFERENCES "booking"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "booking_departure_flight" ADD CONSTRAINT "fk_booking_departure_flight_booking_id_booking" FOREIGN KEY ("booking_id") REFERENCES "booking"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "booking_departure_flight" ADD CONSTRAINT "fk_booking_departure_flight_flight_id_flight" FOREIGN KEY ("flight_id") REFERENCES "flight"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "booking_departure_flight" ADD CONSTRAINT "fk_booking_departure_flight_flight_id_flight" FOREIGN KEY ("flight_id") REFERENCES "flight"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "booking_flight_extra" ADD CONSTRAINT "fk_booking_flight_extra_booking_id_booking" FOREIGN KEY ("booking_id") REFERENCES "booking"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "booking_flight_extra" ADD CONSTRAINT "fk_booking_flight_extra_booking_id_booking" FOREIGN KEY ("booking_id") REFERENCES "booking"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "booking_flight_extra" ADD CONSTRAINT "fk_booking_flight_extra_extra_id_flight_extra" FOREIGN KEY ("extra_id") REFERENCES "flight_extra"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "booking_flight_extra" ADD CONSTRAINT "fk_booking_flight_extra_extra_id_flight_extra" FOREIGN KEY ("extra_id") REFERENCES "flight_extra"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE "booking_flight_extra" ADD CONSTRAINT "fk_booking_flight_extra_flight_id_flight" FOREIGN KEY ("flight_id") REFERENCES "flight"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "booking_flight_extra" ADD CONSTRAINT "fk_booking_flight_extra_flight_id_flight" FOREIGN KEY ("flight_id") REFERENCES "flight"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "booking_return_flight" ADD CONSTRAINT "fk_booking_return_flight_booking_id_booking" FOREIGN KEY ("booking_id") REFERENCES "booking"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "booking_return_flight" ADD CONSTRAINT "fk_booking_return_flight_booking_id_booking" FOREIGN KEY ("booking_id") REFERENCES "booking"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "booking_return_flight" ADD CONSTRAINT "fk_booking_return_flight_flight_id_flight" FOREIGN KEY ("flight_id") REFERENCES "flight"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "booking_return_flight" ADD CONSTRAINT "fk_booking_return_flight_flight_id_flight" FOREIGN KEY ("flight_id") REFERENCES "flight"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "city" ADD CONSTRAINT "fk_city_nation_id_nation" FOREIGN KEY ("nation_id") REFERENCES "nation"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "extra" ADD CONSTRAINT "fk_extra_airline_id_airline" FOREIGN KEY ("airline_id") REFERENCES "airline"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "extra" ADD CONSTRAINT "fk_extra_airline_id_airline" FOREIGN KEY ("airline_id") REFERENCES "airline"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "flight" ADD CONSTRAINT "fk_flight_aircraft_id_airline_aircraft" FOREIGN KEY ("aircraft_id") REFERENCES "airline_aircraft"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
@@ -481,13 +481,13 @@ ALTER TABLE "flight" ADD CONSTRAINT "fk_flight_aircraft_id_airline_aircraft" FOR
 ALTER TABLE "flight" ADD CONSTRAINT "fk_flight_route_id_route" FOREIGN KEY ("route_id") REFERENCES "route"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "flight_extra" ADD CONSTRAINT "fk_flight_extra_extra_id_extra" FOREIGN KEY ("extra_id") REFERENCES "extra"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "flight_extra" ADD CONSTRAINT "fk_flight_extra_extra_id_extra" FOREIGN KEY ("extra_id") REFERENCES "extra"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "flight_extra" ADD CONSTRAINT "fk_flight_extra_flight_id_flight" FOREIGN KEY ("flight_id") REFERENCES "flight"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "payement_card" ADD CONSTRAINT "fk_payement_card_user_id_user" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "payement_card" ADD CONSTRAINT "fk_payement_card_user_id_user" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "roles_users" ADD CONSTRAINT "fk_roles_users_role_id_role" FOREIGN KEY ("role_id") REFERENCES "role"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
@@ -496,7 +496,7 @@ ALTER TABLE "roles_users" ADD CONSTRAINT "fk_roles_users_role_id_role" FOREIGN K
 ALTER TABLE "roles_users" ADD CONSTRAINT "fk_roles_users_user_id_user" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "route" ADD CONSTRAINT "fk_route_airline_id_airline" FOREIGN KEY ("airline_id") REFERENCES "airline"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "route" ADD CONSTRAINT "fk_route_airline_id_airline" FOREIGN KEY ("airline_id") REFERENCES "airline"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "route" ADD CONSTRAINT "fk_route_arrival_airport_id_airport" FOREIGN KEY ("arrival_airport_id") REFERENCES "airport"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
@@ -505,16 +505,16 @@ ALTER TABLE "route" ADD CONSTRAINT "fk_route_arrival_airport_id_airport" FOREIGN
 ALTER TABLE "route" ADD CONSTRAINT "fk_route_departure_airport_id_airport" FOREIGN KEY ("departure_airport_id") REFERENCES "airport"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "seat" ADD CONSTRAINT "fk_seat_flight_id_flight" FOREIGN KEY ("flight_id") REFERENCES "flight"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "seat" ADD CONSTRAINT "fk_seat_flight_id_flight" FOREIGN KEY ("flight_id") REFERENCES "flight"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "seat" ADD CONSTRAINT "fk_seat_session_id_seat_session" FOREIGN KEY ("session_id") REFERENCES "seat_session"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "seat" ADD CONSTRAINT "fk_seat_session_id_seat_session" FOREIGN KEY ("session_id") REFERENCES "seat_session"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "seat_session" ADD CONSTRAINT "fk_seat_session_user_id_user" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "seat_session" ADD CONSTRAINT "fk_seat_session_user_id_user" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "user" ADD CONSTRAINT "fk_user_airline_id_airline" FOREIGN KEY ("airline_id") REFERENCES "airline"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "user" ADD CONSTRAINT "fk_user_airline_id_airline" FOREIGN KEY ("airline_id") REFERENCES "airline"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "user" ADD CONSTRAINT "fk_user_nation_id_nation" FOREIGN KEY ("nation_id") REFERENCES "nation"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "user" ADD CONSTRAINT "fk_user_nation_id_nation" FOREIGN KEY ("nation_id") REFERENCES "nation"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
