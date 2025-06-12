@@ -1,0 +1,353 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  extensions = [pg_trgm]
+}
+
+model aircraft {
+  id                Int                @id(map: "pk_aircraft") @default(autoincrement())
+  name              String             @unique(map: "uq_aircraft_name") @db.VarChar
+  rows              Int
+  columns           Int
+  unavailable_seats String[]           @db.VarChar
+  airline_aircraft  airline_aircraft[]
+}
+
+model airline {
+  id                         String             @id(map: "pk_airline") @db.Uuid
+  name                       String             @unique(map: "uq_airline_name") @db.VarChar(255)
+  nation_id                  Int?
+  address                    String?            @db.VarChar(255)
+  zip                        String?            @db.VarChar(255)
+  email                      String?            @db.VarChar(255)
+  website                    String?            @db.VarChar(255)
+  first_class_description    String?
+  business_class_description String?
+  economy_class_description  String?
+  nation                     nation?            @relation(fields: [nation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_airline_nation_id_nation")
+  airline_aircraft           airline_aircraft[]
+  extra                      extra[]
+  route                      route[]
+  user                       user[]
+}
+
+model airline_aircraft {
+  id                    String                  @id(map: "pk_airline_aircraft") @db.Uuid
+  aircraft_id           Int
+  airline_id            String                  @db.Uuid
+  tail_number           String                  @unique(map: "uq_airline_aircraft_tail_number") @db.VarChar(255)
+  aircraft              aircraft                @relation(fields: [aircraft_id], references: [id], onUpdate: NoAction, map: "fk_airline_aircraft_aircraft_id_aircraft")
+  airline               airline                 @relation(fields: [airline_id], references: [id], onUpdate: NoAction, map: "fk_airline_aircraft_airline_id_airline")
+  airline_aircraft_seat airline_aircraft_seat[]
+  flight                flight[]
+}
+
+model airline_aircraft_seat {
+  airline_aircraft_id String           @db.Uuid
+  seat_number         String           @db.VarChar(255)
+  class_type          classtype
+  airline_aircraft    airline_aircraft @relation(fields: [airline_aircraft_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_airline_aircraft_seat_airline_aircraft_id_airline_aircraft")
+
+  @@id([airline_aircraft_id, seat_number], map: "pk_airline_aircraft_seat")
+  @@index([airline_aircraft_id, class_type], map: "ix_airline_aircraft_seat_class")
+}
+
+model airport {
+  id                                        Int     @id(map: "pk_airport") @default(autoincrement())
+  name                                      String  @db.VarChar(255)
+  iata_code                                 String? @unique(map: "uq_airport_iata_code") @db.VarChar(3)
+  icao_code                                 String? @db.VarChar(4)
+  latitude                                  Float
+  longitude                                 Float
+  city_id                                   Int
+  city                                      city    @relation(fields: [city_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_airport_city_id_city")
+  route_route_arrival_airport_idToairport   route[] @relation("route_arrival_airport_idToairport")
+  route_route_departure_airport_idToairport route[] @relation("route_departure_airport_idToairport")
+
+  @@index([name(ops: raw("gin_trgm_ops"))], map: "idx_airport_name_trgm", type: Gin)
+  @@index([city_id], map: "ix_airport_city")
+  @@index([iata_code, icao_code], map: "ix_airport_codes")
+}
+
+model booking {
+  id                       String                     @id(map: "pk_booking") @db.Uuid
+  booking_number           String                     @unique(map: "uq_booking_booking_number") @db.VarChar(10)
+  user_id                  String                     @db.Uuid
+  payment_confirmed        Boolean
+  departure_checkin        DateTime?                  @db.Timestamptz(6)
+  return_checkin           DateTime?                  @db.Timestamptz(6)
+  has_booking_insurance    Boolean
+  created_at               DateTime                   @db.Timestamptz(6)
+  user                     user                       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_booking_user_id_user")
+  booking_departure_flight booking_departure_flight[]
+  booking_flight_extra     booking_flight_extra[]
+  booking_return_flight    booking_return_flight[]
+
+  @@index([booking_number], map: "ix_booking_number")
+  @@index([user_id], map: "ix_booking_user")
+}
+
+model booking_departure_flight {
+  booking_id  String    @db.Uuid
+  flight_id   String    @db.Uuid
+  seat_number String    @db.VarChar
+  class_type  classtype
+  price       Float
+  booking     booking   @relation(fields: [booking_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_booking_departure_flight_booking_id_booking")
+  flight      flight    @relation(fields: [flight_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_booking_departure_flight_flight_id_flight")
+
+  @@id([booking_id, flight_id], map: "pk_booking_departure_flight")
+  @@unique([flight_id, seat_number], map: "uq_booking_departure_flight")
+  @@index([booking_id], map: "ix_booking_departure_booking")
+  @@index([flight_id], map: "ix_booking_departure_flight")
+}
+
+model booking_flight_extra {
+  booking_id   String       @db.Uuid
+  flight_id    String       @db.Uuid
+  extra_id     String       @db.Uuid
+  quantity     Int
+  extra_price  Float
+  booking      booking      @relation(fields: [booking_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_booking_flight_extra_booking_id_booking")
+  flight_extra flight_extra @relation(fields: [extra_id], references: [id], onUpdate: NoAction, map: "fk_booking_flight_extra_extra_id_flight_extra")
+  flight       flight       @relation(fields: [flight_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_booking_flight_extra_flight_id_flight")
+
+  @@id([booking_id, flight_id, extra_id], map: "pk_booking_flight_extra")
+  @@index([booking_id], map: "ix_booking_extra_booking")
+  @@index([extra_id], map: "ix_booking_extra_extra")
+  @@index([flight_id], map: "ix_booking_extra_flight")
+}
+
+model booking_return_flight {
+  booking_id  String    @db.Uuid
+  flight_id   String    @db.Uuid
+  seat_number String    @db.VarChar
+  class_type  classtype
+  price       Float
+  booking     booking   @relation(fields: [booking_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_booking_return_flight_booking_id_booking")
+  flight      flight    @relation(fields: [flight_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_booking_return_flight_flight_id_flight")
+
+  @@id([booking_id, flight_id], map: "pk_booking_return_flight")
+  @@unique([flight_id, seat_number], map: "uq_booking_return_flight")
+  @@index([booking_id], map: "ix_booking_return_booking")
+  @@index([flight_id], map: "ix_booking_return_flight")
+}
+
+model city {
+  id        Int       @id(map: "pk_city") @default(autoincrement())
+  name      String    @db.VarChar(255)
+  nation_id Int?
+  airport   airport[]
+  nation    nation?   @relation(fields: [nation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_city_nation_id_nation")
+
+  @@index([name(ops: raw("gin_trgm_ops"))], map: "idx_city_name_trgm", type: Gin)
+  @@index([nation_id], map: "ix_city_nation")
+}
+
+model extra {
+  id                       String         @id(map: "pk_extra") @db.Uuid
+  name                     String         @db.VarChar(255)
+  description              String         @db.VarChar(255)
+  airline_id               String         @db.Uuid
+  required_on_all_segments Boolean
+  stackable                Boolean
+  airline                  airline        @relation(fields: [airline_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_extra_airline_id_airline")
+  flight_extra             flight_extra[]
+
+  @@unique([name, airline_id], map: "uq_extra_name_airline")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model flight {
+  id                       String                     @id(map: "pk_flight") @db.Uuid
+  route_id                 Int
+  aircraft_id              String                     @db.Uuid
+  departure_time           DateTime                   @db.Timestamptz(6)
+  arrival_time             DateTime                   @db.Timestamptz(6)
+  checkin_start_time       DateTime                   @db.Timestamptz(6)
+  checkin_end_time         DateTime                   @db.Timestamptz(6)
+  boarding_start_time      DateTime                   @db.Timestamptz(6)
+  boarding_end_time        DateTime                   @db.Timestamptz(6)
+  gate                     String?                    @db.VarChar(255)
+  terminal                 String?                    @db.VarChar(255)
+  price_first_class        Float
+  price_business_class     Float
+  price_economy_class      Float
+  price_insurance          Float
+  fully_booked             Boolean
+  booking_departure_flight booking_departure_flight[]
+  booking_flight_extra     booking_flight_extra[]
+  booking_return_flight    booking_return_flight[]
+  airline_aircraft         airline_aircraft           @relation(fields: [aircraft_id], references: [id], onUpdate: NoAction, map: "fk_flight_aircraft_id_airline_aircraft")
+  route                    route                      @relation(fields: [route_id], references: [id], onUpdate: NoAction, map: "fk_flight_route_id_route")
+  flight_extra             flight_extra[]
+  seat                     seat[]
+
+  @@index([departure_time], map: "ix_flight_departure_time")
+  @@index([fully_booked], map: "ix_flight_fully_booked")
+  @@index([price_economy_class, price_business_class, price_first_class], map: "ix_flight_prices")
+  @@index([route_id, departure_time], map: "ix_flight_route_departure")
+  @@index([route_id, departure_time, fully_booked], map: "ix_flight_search_composite")
+}
+
+model flight_extra {
+  id                   String                 @id(map: "pk_flight_extra") @db.Uuid
+  flight_id            String                 @db.Uuid
+  extra_id             String                 @db.Uuid
+  price                Float
+  limit                Int
+  booking_flight_extra booking_flight_extra[]
+  extra                extra                  @relation(fields: [extra_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_flight_extra_extra_id_extra")
+  flight               flight                 @relation(fields: [flight_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_flight_extra_flight_id_flight")
+
+  @@unique([flight_id, extra_id], map: "uq_flight_extra")
+  @@index([extra_id], map: "ix_flight_extra_extra")
+  @@index([flight_id], map: "ix_flight_extra_flight")
+}
+
+model nation {
+  id      Int       @id(map: "pk_nation") @default(autoincrement())
+  name    String    @db.VarChar(255)
+  code    String    @db.VarChar(255)
+  alpha2  String    @db.VarChar(2)
+  airline airline[]
+  city    city[]
+  user    user[]
+
+  @@index([name(ops: raw("gin_trgm_ops"))], map: "idx_nation_name_trgm", type: Gin)
+  @@index([alpha2], map: "ix_nation_alpha2")
+}
+
+model payement_card {
+  id              Int      @id(map: "pk_payement_card") @default(autoincrement())
+  card_name       String   @db.VarChar(255)
+  holder_name     String   @db.VarChar(255)
+  user_id         String   @db.Uuid
+  last_4_digits   String   @db.VarChar(255)
+  expiration_date String   @db.VarChar(255)
+  circuit         String   @db.VarChar(255)
+  card_type       cardtype
+  user            user     @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "fk_payement_card_user_id_user")
+
+  @@index([user_id], map: "ix_payment_card_user")
+}
+
+model role {
+  id              Int           @id(map: "pk_role") @default(autoincrement())
+  name            String        @unique(map: "uq_role_name") @db.VarChar(80)
+  description     String?       @db.VarChar(255)
+  permissions     String?
+  update_datetime DateTime      @default(now()) @db.Timestamp(6)
+  roles_users     roles_users[]
+}
+
+model roles_users {
+  user_id String @db.Uuid
+  role_id Int
+  role    role   @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_roles_users_role_id_role")
+  user    user   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_roles_users_user_id_user")
+
+  @@id([user_id, role_id], map: "pk_roles_users")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model route {
+  id                                          Int      @id(map: "pk_route") @default(autoincrement())
+  flight_number                               String   @unique(map: "uq_route_flight_number") @db.VarChar(255)
+  departure_airport_id                        Int
+  arrival_airport_id                          Int
+  airline_id                                  String   @db.Uuid
+  period_start                                DateTime @db.Timestamptz(6)
+  period_end                                  DateTime @db.Timestamptz(6)
+  flight                                      flight[]
+  airline                                     airline  @relation(fields: [airline_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_route_airline_id_airline")
+  airport_route_arrival_airport_idToairport   airport  @relation("route_arrival_airport_idToairport", fields: [arrival_airport_id], references: [id], onUpdate: NoAction, map: "fk_route_arrival_airport_id_airport")
+  airport_route_departure_airport_idToairport airport  @relation("route_departure_airport_idToairport", fields: [departure_airport_id], references: [id], onUpdate: NoAction, map: "fk_route_departure_airport_id_airport")
+
+  @@index([airline_id], map: "ix_route_airline")
+  @@index([arrival_airport_id], map: "ix_route_arrival_airport")
+  @@index([departure_airport_id], map: "ix_route_departure_airport")
+  @@index([period_start, period_end], map: "ix_route_period")
+}
+
+model seat {
+  session_id   String       @db.Uuid
+  flight_id    String       @db.Uuid
+  seat_number  String       @db.VarChar(255)
+  class_type   classtype
+  flight       flight       @relation(fields: [flight_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_seat_flight_id_flight")
+  seat_session seat_session @relation(fields: [session_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_seat_session_id_seat_session")
+
+  @@id([session_id, flight_id], map: "pk_seat")
+  @@unique([flight_id, seat_number], map: "uix_flight_seat")
+  @@index([flight_id, session_id, seat_number, class_type], map: "ix_seat_flight_session")
+}
+
+model seat_session {
+  id                 String   @id(map: "pk_seat_session") @db.Uuid
+  user_id            String   @db.Uuid
+  session_start_time DateTime @db.Timestamptz(6)
+  session_end_time   DateTime @db.Timestamptz(6)
+  seat               seat[]
+  user               user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_seat_session_user_id_user")
+
+  @@index([session_end_time], map: "ix_seat_session_cleanup")
+  @@index([user_id], map: "ix_seat_session_user")
+}
+
+model user {
+  id                      String          @id(map: "pk_user") @db.Uuid
+  email                   String          @unique(map: "uq_user_email") @db.VarChar(255)
+  password                String          @db.VarChar(255)
+  name                    String          @db.VarChar(255)
+  surname                 String          @db.VarChar(255)
+  address                 String?         @db.VarChar(255)
+  zip                     String?         @db.VarChar(255)
+  nation_id               Int?
+  airline_id              String?         @db.Uuid
+  username                String?         @unique(map: "uq_user_username") @db.VarChar(255)
+  active                  Boolean
+  fs_uniquifier           String          @unique(map: "uq_user_fs_uniquifier") @db.VarChar(64)
+  confirmed_at            DateTime?       @db.Timestamp(6)
+  last_login_at           DateTime?       @db.Timestamp(6)
+  current_login_at        DateTime?       @db.Timestamp(6)
+  last_login_ip           String?         @db.VarChar(64)
+  current_login_ip        String?         @db.VarChar(64)
+  login_count             Int?
+  tf_primary_method       String?         @db.VarChar(64)
+  tf_totp_secret          String?         @db.VarChar(255)
+  tf_phone_number         String?         @db.VarChar(128)
+  us_totp_secrets         String?
+  us_phone_number         String?         @unique(map: "uq_user_us_phone_number") @db.VarChar(128)
+  fs_webauthn_user_handle String?         @unique(map: "uq_user_fs_webauthn_user_handle") @db.VarChar(64)
+  mf_recovery_codes       String?
+  create_datetime         DateTime        @default(now()) @db.Timestamp(6)
+  update_datetime         DateTime        @default(now()) @db.Timestamp(6)
+  booking                 booking[]
+  payement_card           payement_card[]
+  roles_users             roles_users[]
+  seat_session            seat_session[]
+  airline                 airline?        @relation(fields: [airline_id], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "fk_user_airline_id_airline")
+  nation                  nation?         @relation(fields: [nation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_nation_id_nation")
+
+  @@index([active], map: "ix_user_active")
+  @@index([email], map: "ix_user_email")
+}
+
+enum cardtype {
+  DEBIT
+  CREDIT
+  PREPAID
+}
+
+enum classtype {
+  FIRST_CLASS
+  BUSINESS_CLASS
+  ECONOMY_CLASS
+}
