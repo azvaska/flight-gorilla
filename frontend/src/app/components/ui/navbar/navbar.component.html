@@ -38,15 +38,7 @@
           </p>
         </div>
         <ul>
-          @switch (user!.type) { @case ('admin') {
-          <li
-            class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
-            [routerLink]="['../']"
-            (click)="closePopover()"
-          >
-            Roba da admin
-          </li>
-          } @case ('airline-admin') {
+          @switch (user!.type){@case ('airline-admin') {
           <li
             class="py-2 px-4 rounded-sm hover:bg-gray-100 cursor-pointer"
             [routerLink]="['/airline']"
