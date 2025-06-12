@@ -31,7 +31,7 @@ registry.register('ValidationErrorResponse', ValidationErrorResponseSchema);
 
 // Import and register booking schemas
 import { 
-  extraInputSchema, 
+  extraInputSchema as bookingExtraInputSchema, 
   bookingInputSchema, 
   bookingListQuerySchema,
   bookedFlightExtraOutputSchema,
@@ -39,9 +39,62 @@ import {
   bookingOutputSchema
 } from '../schemas/booking';
 
-registry.register('ExtraInput', extraInputSchema);
+registry.register('BookingExtraInput', bookingExtraInputSchema);
 registry.register('BookingInput', bookingInputSchema);
 registry.register('BookingListQuery', bookingListQuerySchema);
 registry.register('BookedFlightExtra', bookedFlightExtraOutputSchema);
 registry.register('BookedFlight', bookedFlightOutputSchema);
-registry.register('BookingOutput', bookingOutputSchema); 
+registry.register('BookingOutput', bookingOutputSchema);
+
+// Import and register airline schemas
+import {
+  extraInputSchema,
+  extraOutputSchema,
+  airlineAircraftInputSchema,
+  airlineAircraftUpdateSchema,
+  airlineAircraftOutputSchema,
+  airlineUpdateSchema,
+  airlineOutputSchema,
+  routeInputSchema,
+  routeUpdateSchema,
+  routeOutputSchema,
+  flightInputSchema,
+  flightUpdateSchema,
+  flightOutputSchema,
+  flightSeatsOutputSchema,
+  airlineListQuerySchema,
+  flightPageQuerySchema,
+  flightsPaginationSchema,
+  airlineStatsSchema,
+  flightExtraItemSchema,
+  flightsFulfillmentSchema,
+  revenueSchema,
+  mostRequestedRouteSchema,
+  airportFlightsSchema,
+  leastUsedRouteSchema
+} from '../schemas/airline';
+
+registry.register('ExtraInput', extraInputSchema);
+registry.register('ExtraOutput', extraOutputSchema);
+registry.register('AirlineAircraftInput', airlineAircraftInputSchema);
+registry.register('AirlineAircraftUpdate', airlineAircraftUpdateSchema);
+registry.register('AirlineAircraftOutput', airlineAircraftOutputSchema);
+registry.register('AirlineUpdate', airlineUpdateSchema);
+registry.register('AirlineOutput', airlineOutputSchema);
+registry.register('RouteInput', routeInputSchema);
+registry.register('RouteUpdate', routeUpdateSchema);
+registry.register('RouteOutput', routeOutputSchema);
+registry.register('FlightInput', flightInputSchema);
+registry.register('FlightUpdate', flightUpdateSchema);
+registry.register('FlightOutput', flightOutputSchema);
+registry.register('FlightSeatsOutput', flightSeatsOutputSchema);
+registry.register('AirlineListQuery', airlineListQuerySchema);
+registry.register('FlightPageQuery', flightPageQuerySchema);
+registry.register('FlightsPagination', flightsPaginationSchema);
+registry.register('AirlineStats', airlineStatsSchema);
+registry.register('FlightExtraItem', flightExtraItemSchema);
+registry.register('FlightsFulfillment', flightsFulfillmentSchema);
+registry.register('Revenue', revenueSchema);
+registry.register('MostRequestedRoute', mostRequestedRouteSchema);
+registry.register('AirportFlights', airportFlightsSchema);
+registry.register('LeastUsedRoute', leastUsedRouteSchema); 
