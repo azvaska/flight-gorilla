@@ -29,7 +29,7 @@ const generateTokenResponse = async (user: any) => {
   const refreshToken = generateRefreshToken(user.id);
 
   // Get user type from roles
-  const userType = user.roles_users.some((ru: any) => ru.role.name.includes('airline')) ? 'airline' : 'user';
+  const userType = user.roles_users[0].role.name
 
   return {
     accessToken,

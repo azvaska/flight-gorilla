@@ -27,7 +27,7 @@ export const userRouter = Router();
 
 // Helper function to format user data for response
 const formatUserResponse = (user: any) => {
-  const userType = user.roles_users?.some((ru: any) => ru.role.name.includes('airline')) ? 'airline' : 'user';
+  const userType = user.roles_users[0].role.name;
   
   return {
     id: user.id,
