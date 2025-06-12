@@ -98,10 +98,206 @@ function getRealisticDepartureTime(baseDate: Date, isIntercontinental = false): 
   return departureTime;
 }
 
+// Generate a manual flight (from original seed file)
+async function generateManualFlight(
+  prisma: PrismaClient,
+  routeId: number,
+  aircraftId: string,
+  day = 1,
+  hour = 12,
+  minute = 0,
+  durationHour = 1
+) {
+  const departureTime = new Date(2026, 0, day, hour, minute, 0); // Month is 0-indexed
+  const arrivalTime = new Date(departureTime.getTime() + (durationHour * 60 + 30) * 60000); // Add duration + 30 min
+
+  await prisma.flight.create({
+    data: {
+      id: randomUUID(),
+      route_id: routeId,
+      aircraft_id: aircraftId,
+      departure_time: departureTime,
+      arrival_time: arrivalTime,
+      checkin_start_time: new Date(departureTime.getTime() - 2 * 60 * 60 * 1000), // 2 hours before
+      checkin_end_time: new Date(departureTime.getTime() - 60 * 60 * 1000), // 1 hour before
+      boarding_start_time: new Date(departureTime.getTime() - 30 * 60 * 1000), // 30 min before
+      boarding_end_time: new Date(departureTime.getTime() - 15 * 60 * 1000), // 15 min before
+      gate: `A${Math.floor(Math.random() * 20) + 1}`,
+      terminal: (Math.floor(Math.random() * 3) + 1).toString(),
+      price_economy_class: Math.round((Math.random() * 400 + 100) * 100) / 100, // 100-500
+      price_business_class: Math.round((Math.random() * 1000 + 500) * 100) / 100, // 500-1500
+      price_first_class: Math.round((Math.random() * 1500 + 1500) * 100) / 100, // 1500-3000
+      price_insurance: Math.round((Math.random() * 80 + 20) * 100) / 100, // 20-100
+      fully_booked: false
+    }
+  });
+}
+
+// Create original test flights (from original seed file)
+async function createOriginalTestFlights(prisma: PrismaClient): Promise<number> {
+  console.log('\n🔧 Creating original test flights for development...');
+  
+  // Get first airline
+  const airline = await prisma.airline.findFirst();
+  if (!airline) {
+    console.log('No airlines found. Cannot create original test flights.');
+    return 0;
+  }
+
+  // Get airline aircraft
+  const airlineAircraft = await prisma.airline_aircraft.findFirst({
+    where: { airline_id: airline.id }
+  });
+  const airlineAircraftSec = await prisma.airline_aircraft.findFirst({
+    where: { airline_id: airline.id },
+    skip: 1
+  });
+
+  if (!airlineAircraft) {
+    console.log('No aircraft found for airline. Cannot create original test flights.');
+    return 0;
+  }
+
+  let originalFlightsCreated = 0;
+
+  // Get all airports for random route generation
+  const allAirports = await prisma.airport.findMany();
+  if (allAirports.length < 5) {
+    console.log('Not enough airports for original test flights.');
+    return 0;
+  }
+
+  // Generate flights for each aircraft (original logic)
+  const allAirlineAircraft = await prisma.airline_aircraft.findMany({
+    where: { airline_id: airline.id }
+  });
+
+  for (const aircraft of allAirlineAircraft) {
+    // Randomly generate a route
+    let departureAirport = allAirports[Math.floor(Math.random() * allAirports.length)];
+    let arrivalAirport = allAirports[Math.floor(Math.random() * allAirports.length)];
+    
+    // Ensure different airports
+    while (arrivalAirport.id === departureAirport.id) {
+      arrivalAirport = allAirports[Math.floor(Math.random() * allAirports.length)];
+    }
+
+    const route = await prisma.route.create({
+      data: {
+        departure_airport_id: departureAirport.id,
+        arrival_airport_id: arrivalAirport.id,
+        airline_id: airline.id,
+        flight_number: `${aircraft.tail_number}${Math.floor(Math.random() * 900) + 100}`,
+        period_start: new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now
+        period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+      }
+    });
+
+    // Generate random departure time within the next 30 days
+    const departureTime = new Date(
+      Date.now() + 
+      Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000 + // Random days (1-30)
+      Math.floor(Math.random() * 24) * 60 * 60 * 1000 + // Random hours
+      Math.floor(Math.random() * 60) * 60 * 1000 // Random minutes
+    );
+
+    // Generate random flight duration (1 to 10 hours)
+    const flightDurationHours = Math.floor(Math.random() * 10) + 1;
+    const flightDurationMinutes = Math.floor(Math.random() * 60);
+    const arrivalTime = new Date(
+      departureTime.getTime() + 
+      flightDurationHours * 60 * 60 * 1000 + 
+      flightDurationMinutes * 60 * 1000
+    );
+
+    await prisma.flight.create({
+      data: {
+        id: randomUUID(),
+        route_id: route.id,
+        aircraft_id: aircraft.id,
+        departure_time: departureTime,
+        arrival_time: arrivalTime,
+        checkin_start_time: new Date(departureTime.getTime() - 2 * 60 * 60 * 1000), // 2 hours before
+        checkin_end_time: new Date(departureTime.getTime() - 30 * 60 * 1000), // 30 min before
+        boarding_start_time: new Date(departureTime.getTime() - 30 * 60 * 1000), // 30 min before
+        boarding_end_time: new Date(departureTime.getTime() - 15 * 60 * 1000), // 15 min before
+        gate: `A${Math.floor(Math.random() * 20) + 1}`,
+        terminal: (Math.floor(Math.random() * 3) + 1).toString(),
+        price_economy_class: Math.round((Math.random() * 400 + 100) * 100) / 100, // 100-500
+        price_business_class: Math.round((Math.random() * 1000 + 500) * 100) / 100, // 500-1500
+        price_first_class: Math.round((Math.random() * 1500 + 1500) * 100) / 100, // 1500-3000
+        price_insurance: Math.round((Math.random() * 80 + 20) * 100) / 100, // 20-100
+        fully_booked: false
+      }
+    });
+
+    originalFlightsCreated++;
+    
+    console.log(`Created original flight ${route.flight_number} from ${departureAirport.iata_code || departureAirport.name} to ${arrivalAirport.iata_code || arrivalAirport.name}`);
+  }
+
+  // Create specific test routes (from original seed file)
+  if (allAirports.length >= 5) {
+    const testRoutesData = [
+      { dep: 1, arr: 2, flight_num: '123', day: 1, hour: 12, duration: 1 },
+      { dep: 1, arr: 2, flight_num: '1N2', day: 1, hour: 2, duration: 1 },
+      { dep: 2, arr: 3, flight_num: '2N3', day: 1, hour: 6, duration: 1 },
+      { dep: 2, arr: 3, flight_num: '2N3S', day: 1, hour: 6, duration: 0 },
+      { dep: 3, arr: 4, flight_num: '3N4', day: 1, hour: 11, duration: 1 },
+      { dep: 3, arr: 4, flight_num: '3N4B', day: 1, hour: 10, duration: 0 },
+      { dep: 1, arr: 5, flight_num: '1N5', day: 1, hour: 3, duration: 1 },
+      { dep: 5, arr: 4, flight_num: '5N4', day: 1, hour: 8, duration: 1 },
+      { dep: 1, arr: 4, flight_num: '1N4', day: 1, hour: 9, duration: 1 },
+      { dep: 4, arr: 1, flight_num: '4N1', day: 3, hour: 10, duration: 1 }
+    ];
+
+    for (const routeData of testRoutesData) {
+      // Check if airports exist (using 1-based indexing from Python)
+      if (routeData.dep <= allAirports.length && routeData.arr <= allAirports.length) {
+        const route = await prisma.route.create({
+          data: {
+            departure_airport_id: allAirports[routeData.dep - 1].id, // Convert to 0-based index
+            arrival_airport_id: allAirports[routeData.arr - 1].id, // Convert to 0-based index
+            airline_id: airline.id,
+            flight_number: routeData.flight_num,
+            period_start: new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now
+            period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+          }
+        });
+
+        // Choose aircraft based on flight number (same logic as Python)
+        const aircraftToUse = (routeData.flight_num.includes('S') || routeData.flight_num.includes('B')) 
+          ? (airlineAircraftSec || airlineAircraft) 
+          : airlineAircraft;
+
+        await generateManualFlight(
+          prisma,
+          route.id,
+          aircraftToUse.id,
+          routeData.day,
+          routeData.hour,
+          0,
+          routeData.duration
+        );
+
+        originalFlightsCreated++;
+        
+        console.log(`Created test route ${routeData.flight_num}: Airport ${routeData.dep} → Airport ${routeData.arr}`);
+      }
+    }
+  }
+
+  return originalFlightsCreated;
+}
+
 export async function seedFlights(prisma: PrismaClient) {
   console.log('Seeding flights into the database...');
   
   try {
+    // Create original test flights first
+    const originalCount = await createOriginalTestFlights(prisma);
+    console.log(`✅ Created ${originalCount} original test flights`);
+
     const airline = await prisma.airline.findFirst();
     if (!airline) {
       console.log('No airline found in the database.');
@@ -245,7 +441,7 @@ export async function seedFlights(prisma: PrismaClient) {
             boarding_start_time: boardingStartTime,
             boarding_end_time: boardingEndTime,
             gate: `A${Math.floor(Math.random() * 20) + 1}`,
-            terminal: Math.floor(Math.random() * 3) + 1 + '',
+            terminal: (Math.floor(Math.random() * 3) + 1).toString(),
             price_first_class: firstPrice,
             price_business_class: businessPrice,
             price_economy_class: economyPrice,
@@ -327,7 +523,7 @@ export async function seedFlights(prisma: PrismaClient) {
             boarding_start_time: boardingStartTime,
             boarding_end_time: boardingEndTime,
             gate: `B${Math.floor(Math.random() * 15) + 1}`,
-            terminal: Math.floor(Math.random() * 2) + 1 + '',
+            terminal: (Math.floor(Math.random() * 2) + 1).toString(),
             price_first_class: firstPrice,
             price_business_class: businessPrice,
             price_economy_class: economyPrice,
@@ -340,7 +536,7 @@ export async function seedFlights(prisma: PrismaClient) {
       interRouteCount++;
     }
 
-    console.log(`✅ Created ${routeCount} European routes and ${interRouteCount} intercontinental routes with flights`);
+    console.log(`✅ Created ${originalCount} original test flights, ${routeCount} European routes and ${interRouteCount} intercontinental routes with flights`);
   } catch (error) {
     console.error('❌ Error seeding flights:', error);
     throw error;
