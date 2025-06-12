@@ -10,7 +10,7 @@ class Extra(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(db.String(255), nullable=False)
     description: Mapped[str] = mapped_column(db.String(255), nullable=False)
-    airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id), nullable=False)
+    airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id,ondelete='CASCADE'), nullable=False)
     required_on_all_segments: Mapped[bool] = mapped_column(db.Boolean, default=False)
     stackable: Mapped[bool] = mapped_column(db.Boolean, default=False)
     __table_args__ = (

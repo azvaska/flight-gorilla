@@ -13,6 +13,8 @@ import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
 import { PopoverTriggerDirective } from '@/app/components/ui/popover/popover-trigger.directive';
 import { AdminFetchService } from '@/app/services/admin/admin-fetch.service';
 import { IAdminAirline } from '@/types/admin/airline';
+import { toast } from 'ngx-sonner';
+import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
 
 @Component({
   selector: 'app-airlines-list',
@@ -28,7 +30,8 @@ import { IAdminAirline } from '@/types/admin/airline';
     BrnAlertDialogContentDirective,
     BrnAlertDialogTriggerDirective,
     HlmSpinnerComponent,
-    PopoverTriggerDirective
+    PopoverTriggerDirective,
+    HlmToasterComponent
   ],
   providers: [provideIcons({ lucideEllipsis })],
   templateUrl: './airlines-list.component.html',
@@ -67,13 +70,27 @@ export class AirlinesListComponent implements OnInit {
     
     this.adminFetchService.deleteAirline(airlineId).subscribe({
       next: () => {
-      this.airlines = this.airlines.filter(airline => airline.id !== airlineId);
-      this.isDeleteAirlineLoading = false;
-      ctx.close();
+        this.airlines = this.airlines.filter(airline => airline.id !== airlineId);
+        this.isDeleteAirlineLoading = false;
+        ctx.close();
       },
       error: (error) => {
         console.error('Errore nella cancellazione della compagnia aerea:', error);
         this.isDeleteAirlineLoading = false;
+        
+        // Check if the error is a 409 Conflict
+        if (error?.status === 409) {
+          toast('Cannot delete this element', {
+            description:
+              'This airline cannot be deleted because it is currently in use.',
+          });
+        } else {
+          toast('Unknown error', {
+            description: 'An unexpected error occurred while deleting the airline.',
+          });
+        }
+        
+        ctx.close();
       }
     });
   }

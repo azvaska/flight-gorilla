@@ -9,7 +9,7 @@ class Airport(db.Model):
     icao_code :  Mapped[str] = mapped_column(db.String(4), nullable=True)
     latitude: Mapped[float] = mapped_column(db.Float, nullable=False)
     longitude: Mapped[float] = mapped_column(db.Float, nullable=False)
-    city_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(City.id), nullable=False)
+    city_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(City.id,ondelete='RESTRICT'), nullable=False)
 
     city: Mapped[City] = relationship(City, back_populates="airports", foreign_keys=[city_id])
     
