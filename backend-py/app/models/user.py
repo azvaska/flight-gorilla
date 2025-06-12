@@ -25,8 +25,8 @@ class User(sqla.FsUserMixin,db.Model):
     surname: Mapped[str] = mapped_column(db.String(255), nullable=False)
     address: Mapped[str] = mapped_column(db.String(255), nullable=True)
     zip: Mapped[str] = mapped_column(db.String(255), nullable=True)
-    nation_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Nation.id), nullable=True)
-    airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id,ondelete='RESTRICT'), nullable=True)
+    nation_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Nation.id,ondelete='RESTRICT'), nullable=True)
+    airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id,ondelete='Cascade'), nullable=True)
 
 
     nation: Mapped[Nation] = relationship(Nation, foreign_keys=[nation_id], lazy='joined')
@@ -51,7 +51,7 @@ class PayementCard(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     card_name: Mapped[str] = mapped_column(db.String(255), nullable=False)
     holder_name: Mapped[str] = mapped_column(db.String(255), nullable=False)
-    user_id: Mapped[uuid.UUID] = mapped_column(db.UUID, db.ForeignKey(User.id,ondelete='RESTRICT'), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(db.UUID, db.ForeignKey(User.id,ondelete='CASCADE'), nullable=False)
     last_4_digits: Mapped[str] = mapped_column(db.String(255), nullable=False)
     expiration_date: Mapped[str] = mapped_column(db.String(255), nullable=False)
     circuit: Mapped[str] = mapped_column(db.String(255), nullable=False)

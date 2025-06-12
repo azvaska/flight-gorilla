@@ -16,7 +16,7 @@ from app.models.user import User
 class Booking(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     booking_number: Mapped[str] = mapped_column(db.String(10), nullable=False, unique=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(db.UUID, db.ForeignKey(User.id), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(db.UUID, db.ForeignKey(User.id,ondelete='CASCADE'), nullable=False)
     payment_confirmed: Mapped[bool] = mapped_column(db.Boolean, default=False)
     departure_checkin: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=True)
     return_checkin: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=True)
@@ -60,8 +60,8 @@ class Booking(db.Model):
         return round(total,2)
 
 class BookingFlightExtra(db.Model):
-    booking_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Booking.id), nullable=False, primary_key=True)
-    flight_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Flight.id), nullable=False, primary_key=True)
+    booking_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Booking.id,ondelete='CASCADE'), nullable=False, primary_key=True)
+    flight_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Flight.id,ondelete='RESTRICT'), nullable=False, primary_key=True)
     extra_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey("flight_extra.id",ondelete='RESTRICT'), nullable=False, primary_key=True)
     quantity: Mapped[int] = mapped_column(db.Integer, nullable=False)
     extra_price: Mapped[float] = mapped_column(db.Float, nullable=False)
@@ -84,8 +84,8 @@ class BookingFlightExtra(db.Model):
     
 class BookingDepartureFlight(db.Model):
     # id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    booking_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Booking.id), nullable=False, primary_key=True)
-    flight_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Flight.id), nullable=False, primary_key=True)
+    booking_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Booking.id,ondelete='CASCADE'), nullable=False, primary_key=True)
+    flight_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Flight.id,ondelete='RESTRICT'), nullable=False, primary_key=True)
     seat_number: Mapped[str] = mapped_column(db.String, nullable=False)
     class_type: Mapped[ClassType] = mapped_column(db.Enum(ClassType), nullable=False)
     price: Mapped[float] = mapped_column(db.Float, nullable=False)
@@ -112,8 +112,8 @@ class BookingDepartureFlight(db.Model):
 
 
 class BookingReturnFlight(db.Model):
-    booking_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Booking.id), nullable=False, primary_key=True)
-    flight_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Flight.id), nullable=False, primary_key=True)
+    booking_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Booking.id,ondelete='CASCADE'), nullable=False, primary_key=True)
+    flight_id: Mapped[uuid.UUID] = mapped_column(UUID, db.ForeignKey(Flight.id,ondelete='RESTRICT'), nullable=False, primary_key=True)
     seat_number: Mapped[str] = mapped_column(db.String, nullable=False)
     class_type: Mapped[ClassType] = mapped_column(db.Enum(ClassType), nullable=False)
     price: Mapped[float] = mapped_column(db.Float, nullable=False)

@@ -12,7 +12,7 @@ from app.models.location import Nation
 class Airline(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(db.String(255), nullable=False,unique=True)
-    nation_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Nation.id), nullable=True)
+    nation_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Nation.id,ondelete='RESTRICT'), nullable=True)
     address: Mapped[str] = mapped_column(db.String(255), nullable=True)
     zip: Mapped[str] = mapped_column(db.String(255), nullable=True)
     email: Mapped[str] = mapped_column(db.String(255), nullable=True)
@@ -118,7 +118,7 @@ class AirlineAircraft(db.Model):
 
 class AirlineAircraftSeat(db.Model):
     __tablename__ = 'airline_aircraft_seat'
-    airline_aircraft_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(AirlineAircraft.id), primary_key=True)
+    airline_aircraft_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(AirlineAircraft.id,ondelete='CASCADE'), primary_key=True)
     seat_number: Mapped[str] = mapped_column(db.String(255), primary_key=True)
     class_type: Mapped[ClassType] = mapped_column(db.Enum(ClassType), nullable=False)
 

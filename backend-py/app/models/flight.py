@@ -19,7 +19,7 @@ class Route(db.Model):
     flight_number: Mapped[str] = mapped_column(db.String(255), nullable=False,unique=True)
     departure_airport_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Airport.id,ondelete='RESTRICT'), nullable=False)
     arrival_airport_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Airport.id,ondelete='RESTRICT'), nullable=False)
-    airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id), nullable=False)
+    airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id,ondelete='CASCADE'), nullable=False)
     period_start: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
     period_end: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
 
@@ -167,7 +167,7 @@ class Flight(db.Model):
 class FlightExtra(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     flight_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Flight.id,ondelete='CASCADE'))
-    extra_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Extra.id))
+    extra_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Extra.id,ondelete='RESTRICT'))
     price: Mapped[float] = mapped_column(db.Float, nullable=False)
     limit: Mapped[int] = mapped_column(db.Integer, nullable=False)
 

@@ -12,7 +12,7 @@ from app.models.user import User
 
 class SeatSession(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(db.UUID, db.ForeignKey('user.id'), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(db.UUID, db.ForeignKey('user.id',ondelete='CASCADE'), nullable=False)
     session_start_time: Mapped[datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
     session_end_time: Mapped[datetime] = mapped_column(db.DateTime(timezone=True), nullable=False)
     user: Mapped[User] = relationship(User, foreign_keys=[user_id], lazy='joined')
@@ -22,8 +22,8 @@ class SeatSession(db.Model):
         db.Index('ix_seat_session_user', 'user_id'),  )
 
 class Seat(db.Model):
-    session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(SeatSession.id),primary_key=True)
-    flight_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey('flight.id'),primary_key=True)
+    session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(SeatSession.id,ondelete='CASCADE'),primary_key=True)
+    flight_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey('flight.id',ondelete='CASCADE'),primary_key=True)
     seat_number: Mapped[str] = mapped_column(db.String(255), nullable=False)
 
     session = relationship(SeatSession, back_populates='seats', foreign_keys=[session_id], lazy='joined')
