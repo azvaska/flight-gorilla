@@ -1732,13 +1732,19 @@ router.get('/flights', authenticateToken, requireRoles(['airline-admin']), async
           include: {
             aircraft: true
           }
-        }
+        },
+        booking_departure_flight: true,
+        booking_return_flight: true
       },
       skip: offset,
       take: limit
     });
 
-    const formattedFlights = flights.map(flight => ({
+    const formattedFlights = flights.map(flight => {
+      const isEditable = flight.booking_departure_flight.length === 0 && flight.booking_return_flight.length === 0;
+
+
+      return ({
       id: flight.id,
       flight_number: flight.route.flight_number,
       aircraft: {
@@ -1750,8 +1756,9 @@ router.get('/flights', authenticateToken, requireRoles(['airline-admin']), async
       departure_time: flight.departure_time.toISOString(),
       arrival_time: flight.arrival_time.toISOString(),
       departure_airport: flight.route.airport_route_departure_airport_idToairport,
-      arrival_airport: flight.route.airport_route_arrival_airport_idToairport
-    }));
+      arrival_airport: flight.route.airport_route_arrival_airport_idToairport,
+      is_editable: isEditable,
+    })});
 
     res.json({
       items: formattedFlights,
