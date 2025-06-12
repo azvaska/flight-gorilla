@@ -3,4 +3,10 @@
 .env/
 .DS_Store
 
+# Node and TypeScript build artifacts
+backend-ts/node_modules/
+backend-ts/dist/
+backend-ts/package-lock.json
+*.log
+
 FlightGorilla API/
