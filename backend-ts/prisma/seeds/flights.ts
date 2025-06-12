@@ -79,8 +79,23 @@ function calculateRealisticPrice(distanceKm: number, classType: 'FIRST_CLASS' | 
 }
 
 function generateUniqueFlightNumber(airlineName: string): string {
-  const airlineCode = airlineName.split(' ').map(word => word[0]).join('').toUpperCase();
-  const number = Math.floor(Math.random() * 9000) + 1000;
+  // Generate a more robust airline code (2-3 characters)
+  const words = airlineName.split(' ').filter(word => word.length > 0);
+  let airlineCode = '';
+  
+  if (words.length >= 2) {
+    // Use first 2 letters of first word + first letter of second word
+    airlineCode = (words[0].substring(0, 2) + words[1][0]).toUpperCase();
+  } else if (words.length === 1) {
+    // Use first 3 letters of the word
+    airlineCode = words[0].substring(0, 3).toUpperCase();
+  } else {
+    // Fallback
+    airlineCode = 'AIR';
+  }
+  
+  // Use a much larger number pool (10000-99999 for 5-digit numbers)
+  const number = Math.floor(Math.random() * 90000) + 10000;
   return `${airlineCode}${number}`;
 }
 
@@ -295,8 +310,12 @@ export async function seedFlights(prisma: PrismaClient) {
   
   try {
     // Create original test flights first
-    const originalCount = await createOriginalTestFlights(prisma);
-    console.log(`✅ Created ${originalCount} original test flights`);
+    try {
+      const originalCount = await createOriginalTestFlights(prisma);
+      console.log(`✅ Created ${originalCount} original test flights`);
+    } catch (error) {
+      console.error('❌ Error creating original test flights:', error);
+    }
 
     const airline = await prisma.airline.findFirst();
     if (!airline) {
@@ -535,8 +554,7 @@ export async function seedFlights(prisma: PrismaClient) {
 
       interRouteCount++;
     }
-
-    console.log(`✅ Created ${originalCount} original test flights, ${routeCount} European routes and ${interRouteCount} intercontinental routes with flights`);
+    console.log(`✅ Created ${interRouteCount} original test flights, ${routeCount} European routes and ${interRouteCount} intercontinental routes with flights`);
   } catch (error) {
     console.error('❌ Error seeding flights:', error);
     throw error;

@@ -206,7 +206,7 @@ async function createRealisticBooking(
             data: {
               booking_id: bookingId,
               flight_id: departureFlight.id,
-              extra_id: flightExtra.extra_id,
+              extra_id: flightExtra.id,
               quantity: quantity,
               extra_price: flightExtra.price
             }
@@ -217,7 +217,7 @@ async function createRealisticBooking(
             const returnExtra = await prisma.flight_extra.findFirst({
               where: {
                 flight_id: returnFlight.id,
-                extra_id: flightExtra.extra_id
+                extra_id: flightExtra.id
               }
             });
 
