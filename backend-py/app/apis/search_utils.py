@@ -5,6 +5,7 @@ from app.models import Aircraft, Nation, City
 from app.models.airlines import Airline, AirlineAircraft
 from app.models.airport import Airport
 from app.models.flight import Flight, Route
+from sqlalchemy.orm import joinedload
 
 
 class SearchFlight:
@@ -43,7 +44,13 @@ class SearchFlight:
 
                 # Find flights departing after min_dep_time and within the same travel day
                 flights_q = (
-                    Flight.query
+                    Flight.query.options(
+                        joinedload(Flight.route).joinedload(Route.airline),
+                        joinedload(Flight.route).joinedload(Route.departure_airport),
+                        joinedload(Flight.route).joinedload(Route.arrival_airport),
+                        joinedload(Flight.aircraft).joinedload(AirlineAircraft.aircraft)
+                    )
+                    .join(Route, Flight.route_id == Route.id)
                     .join(Route, Flight.route_id == Route.id)
                     .filter(
                         Route.departure_airport_id == current_airport,
@@ -56,7 +63,7 @@ class SearchFlight:
                 possible_flights = flights_q.all()
 
                 for flight in possible_flights:
-                    route = Route.query.get(flight.route_id)
+                    route = flight.route
                     if not route:
                         continue
                     # Build the new path
@@ -102,25 +109,25 @@ class SearchFlight:
         last_flight = flight_path[-1]
 
         # Get origin and destination airports
-        origin_airport = Airport.query.get(origin_id)
-        destination_airport = Airport.query.get(destination_id)
+        origin_airport = first_flight.route.departure_airport
+        destination_airport = last_flight.route.arrival_airport
 
         if not origin_airport or not destination_airport:
             return None
 
         # Get first route for airline info
-        first_route = Route.query.get(first_flight.route_id)
+        first_route = first_flight.route
         if not first_route:
             return None
 
         # Get airline
-        airline = Airline.query.get(first_route.airline_id)
+        airline = first_route.airline
 
         # Calculate total duration
         total_duration_minutes = int((last_flight.arrival_time - first_flight.departure_time).total_seconds() / 60)
 
         # Calculate available seats (use first flight's available seats for booking purposes)
-        aircraft_instance = AirlineAircraft.query.get(first_flight.aircraft_id)
+        aircraft_instance = first_flight.aircraft
         if not aircraft_instance:
             return None
 
@@ -132,12 +139,12 @@ class SearchFlight:
         # Create segments
         segments = []
         for i, flight in enumerate(flight_path):
-            route = Route.query.get(flight.route_id)
+            route = flight.route
             if not route:
                 continue
 
-            departure_airport = Airport.query.get(route.departure_airport_id)
-            arrival_airport = Airport.query.get(route.arrival_airport_id)
+            departure_airport = route.departure_airport
+            arrival_airport = route.arrival_airport
 
             if not departure_airport or not arrival_airport:
                 continue
@@ -151,12 +158,12 @@ class SearchFlight:
         for i in range(len(flight_path) - 1):
             current_flight = flight_path[i]
             next_flight = flight_path[i + 1]
-            current_route = Route.query.get(current_flight.route_id)
+            current_route = current_flight.route
 
             if not current_route:
                 continue
 
-            airport = Airport.query.get(current_route.arrival_airport_id)
+            airport = current_route.arrival_airport
             if not airport:
                 continue
 
@@ -190,12 +197,12 @@ class SearchFlight:
         if not route:
             return None
 
-        airline = Airline.query.get(route.airline_id)
-        aircraft_instance = AirlineAircraft.query.get(flight.aircraft_id)
+        airline = route.airline
+        aircraft_instance = flight.aircraft
         if not aircraft_instance:
             return None
 
-        aircraft = Aircraft.query.get(aircraft_instance.aircraft_id)
+        aircraft = aircraft_instance.aircraft
         if not aircraft:
             return None
 
