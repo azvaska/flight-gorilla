@@ -1249,31 +1249,6 @@ router.post('/aircrafts', authenticateToken, requireRoles(['airline-admin']), as
   }
 });
 
-// GET /airline/:airline_id - Fetch an airline given its identifier
-router.get('/:airline_id', async (req: Request, res: Response) => {
-  try {
-    const airlineId = req.params.airline_id;
-
-    const airline = await prisma.airline.findUnique({
-      where: { id: airlineId },
-      include: {
-        nation: true,
-        extra: true
-      }
-    });
-
-    if (!airline) {
-      res.status(404).json({ error: 'Airline not found' });
-      return;
-    }
-
-    res.json(airline);
-  } catch (error) {
-    console.error('Error fetching airline:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 // GET /airline/aircrafts/:aircraft_id - Get a specific aircraft
 router.get('/aircrafts/:aircraft_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
@@ -1560,8 +1535,16 @@ router.get('/routes/:route_id', authenticateToken, requireRoles(['airline-admin'
     const route = await prisma.route.findUnique({
       where: { id: routeId },
       include: {
-        airport_route_departure_airport_idToairport: true,
-        airport_route_arrival_airport_idToairport: true,
+        airport_route_departure_airport_idToairport: {
+          include: {
+            city: true
+          }
+        },
+        airport_route_arrival_airport_idToairport: {
+          include: {
+            city: true
+          }
+        },
         flight: {
           include: {
             booking_departure_flight: true,
@@ -1985,8 +1968,16 @@ router.get('/flights/:flight_id', authenticateToken, requireRoles(['airline-admi
       include: {
         route: {
           include: {
-            airport_route_departure_airport_idToairport: true,
-            airport_route_arrival_airport_idToairport: true
+            airport_route_departure_airport_idToairport: {
+              include: {
+                city: true
+              }
+            },
+            airport_route_arrival_airport_idToairport: {
+              include: {
+                city: true
+              }
+            }
           }
         },
         airline_aircraft: {
@@ -2364,6 +2355,31 @@ router.put('/:airline_id', authenticateToken, requireRoles(['airline-admin']), a
       return;
     }
     console.error('Error updating airline:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /airline/:airline_id - Fetch an airline given its identifier (MUST BE LAST)
+router.get('/:airline_id', async (req: Request, res: Response) => {
+  try {
+    const airlineId = req.params.airline_id;
+
+    const airline = await prisma.airline.findUnique({
+      where: { id: airlineId },
+      include: {
+        nation: true,
+        extra: true
+      }
+    });
+
+    if (!airline) {
+      res.status(404).json({ error: 'Airline not found' });
+      return;
+    }
+
+    res.json(airline);
+  } catch (error) {
+    console.error('Error fetching airline:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
