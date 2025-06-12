@@ -199,7 +199,7 @@ async function createRealisticBooking(
           .slice(0, Math.min(numExtras, departureExtras.length));
 
         for (const flightExtra of selectedExtras) {
-          const quantity = Math.floor(Math.random() * Math.min(flightExtra.limit, 3)) + 1;
+          const quantity = 1;
           
           // Create booking extra for departure flight
           await prisma.booking_flight_extra.create({
