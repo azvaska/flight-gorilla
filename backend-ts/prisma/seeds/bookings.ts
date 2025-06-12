@@ -248,11 +248,8 @@ export async function seedBookings(prisma: PrismaClient) {
   console.log('Seeding bookings into the database...');
   
   try {
-    const users = await prisma.user.findMany();
-    if (users.length === 0) {
-      console.log('No users found in the database.');
-      return;
-    }
+    const user = await prisma.user.findFirst();
+    let users = [user];
 
     const flights = await prisma.flight.findMany({
       include: {

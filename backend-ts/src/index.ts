@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: ["http://localhost:4200"],
+  origin: ["http://localhost:4200","http://127.0.0.1:4200", "http://127.0.0.1", "http://localhost"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-TOKEN"]
 }));
