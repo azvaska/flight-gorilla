@@ -2254,35 +2254,213 @@ router.delete('/flights/:flight_id', authenticateToken, requireRoles(['airline-a
 });
 
 // GET /airline/stats - Get airline statistics
-router.get('/stats', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
-  try {
-    const userId = req.user!.id;
-    const airlineId = await getAirlineIdFromUser(userId);
-    
-    if (!airlineId) {
-      res.status(400).json({ error: 'Airline ID is required for airline-admin' });
-      return;
+// GET /airline/stats - Get airline statistics
+// Stats endpoint
+router.get('/stats',
+  authenticateToken,
+  requireRoles(['airline-admin']),
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.user!.id;
+        const airlineId = await getAirlineIdFromUser(userId);
+      
+      if (!airlineId) {
+        res.status(403).json({ error: 'User is not associated with an airline' });
+        return;
+      }
+
+      const currentYear = new Date().getFullYear();
+
+      // 1. Flights Fulfillment - Monthly stats for current year
+      const flightFulfillmentRaw = await prisma.$queryRaw<Array<{
+        month: number;
+        totalSeats: bigint;
+        totalBooks: bigint;
+      }>>`
+        SELECT 
+          EXTRACT(MONTH FROM f.departure_time)::int as month,
+          COUNT(DISTINCT aas.seat_number) as "totalSeats",
+          (COUNT(DISTINCT (bdf.booking_id, bdf.flight_id)) + 
+           COUNT(DISTINCT (brf.booking_id, brf.flight_id))) as "totalBooks"
+        FROM flight f
+        JOIN route r ON f.route_id = r.id
+        JOIN airline_aircraft aa ON f.aircraft_id = aa.id
+        JOIN airline_aircraft_seat aas ON aa.id = aas.airline_aircraft_id
+        LEFT JOIN booking_departure_flight bdf ON f.id = bdf.flight_id
+        LEFT JOIN booking_return_flight brf ON f.id = brf.flight_id
+        WHERE r.airline_id = ${airlineId}::uuid
+          AND EXTRACT(YEAR FROM f.departure_time) = ${currentYear}
+        GROUP BY EXTRACT(MONTH FROM f.departure_time)
+        ORDER BY month
+      `;
+
+      // Initialize all months with zero values
+      const flightsFulfillment = Array.from({ length: 12 }, (_, i) => ({
+        month: i + 1,
+        totalSeats: 0,
+        totalBooks: 0
+      }));
+
+      // Update with actual data
+      flightFulfillmentRaw.forEach(row => {
+        const monthIndex = row.month - 1;
+        flightsFulfillment[monthIndex] = {
+          month: row.month,
+          totalSeats: Number(row.totalSeats),
+          totalBooks: Number(row.totalBooks)
+        };
+      });
+
+      // 2. Revenue - Monthly revenue for current year
+      const revenueRaw = await prisma.$queryRaw<Array<{
+        month: number;
+        departureRevenue: number;
+        returnRevenue: number;
+      }>>`
+        SELECT 
+          EXTRACT(MONTH FROM f.departure_time)::int as month,
+          COALESCE(SUM(bdf.price), 0) as "departureRevenue",
+          COALESCE(SUM(brf.price), 0) as "returnRevenue"
+        FROM flight f
+        JOIN route r ON f.route_id = r.id
+        LEFT JOIN booking_departure_flight bdf ON f.id = bdf.flight_id
+        LEFT JOIN booking_return_flight brf ON f.id = brf.flight_id
+        WHERE r.airline_id = ${airlineId}::uuid
+          AND EXTRACT(YEAR FROM f.departure_time) = ${currentYear}
+        GROUP BY EXTRACT(MONTH FROM f.departure_time)
+        ORDER BY month
+      `;
+
+      // Initialize all months with zero revenue
+      const revenue = Array.from({ length: 12 }, (_, i) => ({
+        month: i + 1,
+        total: 0
+      }));
+
+      // Update with actual data
+      revenueRaw.forEach(row => {
+        const monthIndex = row.month - 1;
+        revenue[monthIndex] = {
+          month: row.month,
+          total: Math.round((row.departureRevenue + row.returnRevenue) * 100) / 100
+        };
+      });
+
+      // 3. Most Requested Routes (top 10 by booking-to-seat ratio)
+      const mostRequestedRoutesRaw = await prisma.$queryRaw<Array<{
+        airportFrom: string;
+        airportTo: string;
+        bookings: bigint;
+        totalSeats: bigint;
+      }>>`
+        WITH route_seats AS (
+          SELECT 
+            r.id as route_id,
+            dep_ap.iata_code as departure_iata,
+            arr_ap.iata_code as arrival_iata,
+            COUNT(aas.seat_number) as total_seats
+          FROM route r
+          JOIN airport dep_ap ON r.departure_airport_id = dep_ap.id
+          JOIN airport arr_ap ON r.arrival_airport_id = arr_ap.id
+          JOIN flight f ON r.id = f.route_id
+          JOIN airline_aircraft aa ON f.aircraft_id = aa.id
+          JOIN airline_aircraft_seat aas ON aa.id = aas.airline_aircraft_id
+          WHERE r.airline_id = ${airlineId}::uuid
+          GROUP BY r.id, dep_ap.iata_code, arr_ap.iata_code
+        ),
+        route_bookings AS (
+          SELECT 
+            r.id as route_id,
+            (COUNT(DISTINCT (bdf.booking_id, bdf.flight_id)) + 
+             COUNT(DISTINCT (brf.booking_id, brf.flight_id))) as total_bookings
+          FROM route r
+          JOIN flight f ON r.id = f.route_id
+          LEFT JOIN booking_departure_flight bdf ON f.id = bdf.flight_id
+          LEFT JOIN booking_return_flight brf ON f.id = brf.flight_id
+          WHERE r.airline_id = ${airlineId}::uuid
+          GROUP BY r.id
+        )
+        SELECT 
+          rs.departure_iata as "airportFrom",
+          rs.arrival_iata as "airportTo",
+          COALESCE(rb.total_bookings, 0) as bookings,
+          rs.total_seats as "totalSeats"
+        FROM route_seats rs
+        LEFT JOIN route_bookings rb ON rs.route_id = rb.route_id
+        WHERE rs.total_seats > 0
+        ORDER BY (COALESCE(rb.total_bookings, 0)::float / rs.total_seats) DESC
+        LIMIT 10
+      `;
+
+      const mostRequestedRoutes = mostRequestedRoutesRaw.map(row => ({
+        airportFrom: row.airportFrom,
+        airportTo: row.airportTo,
+        bookings: Number(row.bookings)
+      }));
+
+      // 4. Airports with Most Flights (top 10)
+      const airportsWithMostFlightsRaw = await prisma.$queryRaw<Array<{
+        airport: string;
+        flights: bigint;
+      }>>`
+        SELECT 
+          dep_ap.iata_code as airport,
+          COUNT(f.id) as flights
+        FROM flight f
+        JOIN route r ON f.route_id = r.id
+        JOIN airport dep_ap ON r.departure_airport_id = dep_ap.id
+        WHERE r.airline_id = ${airlineId}::uuid
+        GROUP BY dep_ap.iata_code
+        ORDER BY COUNT(f.id) DESC
+        LIMIT 10
+      `;
+
+      const airportsWithMostFlights = airportsWithMostFlightsRaw.map(row => ({
+        airport: row.airport,
+        flights: Number(row.flights)
+      }));
+
+      // 5. Least Used Routes (bottom 10 by flight count)
+      const leastUsedRouteRaw = await prisma.$queryRaw<Array<{
+        airportFrom: string;
+        airportTo: string;
+        flights: bigint;
+      }>>`
+        SELECT 
+          dep_ap.iata_code as "airportFrom",
+          arr_ap.iata_code as "airportTo",
+          COUNT(f.id) as flights
+        FROM route r
+        JOIN airport dep_ap ON r.departure_airport_id = dep_ap.id
+        JOIN airport arr_ap ON r.arrival_airport_id = arr_ap.id
+        JOIN flight f ON r.id = f.route_id
+        WHERE r.airline_id = ${airlineId}::uuid
+        GROUP BY dep_ap.iata_code, arr_ap.iata_code
+        ORDER BY COUNT(f.id) ASC
+        LIMIT 10
+      `;
+
+      const leastUsedRoute = leastUsedRouteRaw.map(row => ({
+        airportFrom: row.airportFrom,
+        airportTo: row.airportTo,
+        flights: Number(row.flights)
+      }));
+
+      const stats = {
+        flights_fullfilment: flightsFulfillment,
+        revenue: revenue,
+        mostRequestedRoutes: mostRequestedRoutes,
+        airportsWithMostFlights: airportsWithMostFlights,
+        leastUsedRoute: leastUsedRoute
+      };
+
+      res.status(200).json(stats);
+    } catch (error) {
+      console.error('Error fetching airline stats:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
-
-    // TODO: Implement Redis caching like in Python version
-    // For now, calculate stats directly
-    
-    // This is a simplified version - you would need to implement the full stats calculation
-    // matching the Python calculate_airline_stats function
-    const stats = {
-      flights_fullfilment: [],
-      revenue: [],
-      mostRequestedRoutes: [],
-      airportsWithMostFlights: [],
-      leastUsedRoute: []
-    };
-
-    res.json(stats);
-  } catch (error) {
-    console.error('Error fetching airline stats:', error);
-    res.status(500).json({ error: 'Internal server error' });
   }
-});
+);
 
 // PUT /airline/:airline_id - Update an airline given its identifier
 router.put('/:airline_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
