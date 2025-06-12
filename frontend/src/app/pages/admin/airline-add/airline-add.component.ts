@@ -7,6 +7,8 @@ import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
 import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
 import { HlmSpinnerComponent } from '@spartan-ng/ui-spinner-helm';
 import { AdminFetchService } from '@/app/services/admin/admin-fetch.service';
+import { toast } from 'ngx-sonner';
+import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
 
 @Component({
   selector: 'app-airline-add',
@@ -17,7 +19,8 @@ import { AdminFetchService } from '@/app/services/admin/admin-fetch.service';
     HlmButtonDirective,
     HlmInputDirective,
     HlmLabelDirective,
-    HlmSpinnerComponent
+    HlmSpinnerComponent,
+    HlmToasterComponent
   ],
   templateUrl: './airline-add.component.html',
   host: {
@@ -74,7 +77,10 @@ export class AirlineAddComponent implements OnInit {
         error: (error) => {
           console.error('Errore nella registrazione della compagnia aerea:', error);
           this.isLoading = false;
-          // Qui potresti aggiungere una notifica di errore per l'utente
+          
+          toast('Unknown error', {
+            description: 'An unexpected error occurred while registering the airline.',
+          });
         }
       });
     } else {
