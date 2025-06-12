@@ -33,16 +33,17 @@ const router = Router();
  *       401:
  *         description: Unauthorized
  */
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', async (req: Request, res: Response): Promise<void> => {
   const repo = getRepository(User);
   const { email, password } = req.body as { email: string; password: string };
   const user: any = await repo.findOne({ where: { email } });
   if (!user || user.password !== password) {
-    return res.status(401).json({ error: 'Invalid credentials' });
+    res.status(401).json({ error: 'Invalid credentials' });
+    return;
   }
   const token = jwt.sign({ sub: user.id }, config.jwtSecret, { expiresIn: '15m' });
   const type = user.roles?.[0]?.name;
-  return res.json({ access_token: token, user: { id: user.id, active: user.active, type } });
+  res.json({ access_token: token, user: { id: user.id, active: user.active, type } });
 });
 
 /**
@@ -58,8 +59,8 @@ router.post('/login', async (req: Request, res: Response) => {
  *             schema:
  *               $ref: '#/components/schemas/LoginOutput'
  */
-router.post('/refresh', (req: Request, res: Response) => {
-  return res.status(501).json({ error: 'Not implemented' });
+router.post('/refresh', (req: Request, res: Response): void => {
+  res.status(501).json({ error: 'Not implemented' });
 });
 
 /**
@@ -75,8 +76,8 @@ router.post('/refresh', (req: Request, res: Response) => {
  *             schema:
  *               $ref: '#/components/schemas/Message'
  */
-router.post('/logout', (_req: Request, res: Response) => {
-  return res.json({ message: 'Successfully logged out' });
+router.post('/logout', (_req: Request, res: Response): void => {
+  res.json({ message: 'Successfully logged out' });
 });
 
 /**
@@ -100,7 +101,7 @@ router.post('/logout', (_req: Request, res: Response) => {
  *       400:
  *         description: Bad Request
  */
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', async (req: Request, res: Response): Promise<void> => {
   const repo = getRepository(User);
   const roleRepo = getRepository(Role);
   try {
@@ -111,9 +112,11 @@ router.post('/register', async (req: Request, res: Response) => {
     }
     await repo.save(user);
     const token = jwt.sign({ sub: user.id }, config.jwtSecret, { expiresIn: '15m' });
-    return res.status(200).json({ access_token: token, user: { id: user.id, active: user.active, type: user.roles?.[0]?.name } });
+    res.status(200).json({ access_token: token, user: { id: user.id, active: user.active, type: user.roles?.[0]?.name } });
+    return;
   } catch (e) {
-    return res.status(400).json({ error: 'User already exists' });
+    res.status(400).json({ error: 'User already exists' });
+    return;
   }
 });
 
@@ -130,8 +133,8 @@ router.post('/register', async (req: Request, res: Response) => {
  *             schema:
  *               $ref: '#/components/schemas/Message'
  */
-router.post('/register_airline', (_req: Request, res: Response) => {
-  return res.status(501).json({ error: 'Not implemented' });
+router.post('/register_airline', (_req: Request, res: Response): void => {
+  res.status(501).json({ error: 'Not implemented' });
 });
 
 export default router;

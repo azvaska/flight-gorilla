@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { createConnection } from 'typeorm';
 import authRoutes from './routes/auth';
 import aircraftRoutes from './routes/aircraft';
@@ -264,7 +264,9 @@ async function start() {
     apis: ['./src/routes/*.ts'],
   });
 
-  app.use('/swagger.json', (_req, res) => res.json(swaggerSpec));
+  app.get('/swagger.json', (_req: Request, res: Response): void => {
+    res.json(swaggerSpec);
+  });
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
   app.use('/auth', authRoutes);
