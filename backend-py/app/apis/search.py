@@ -3,12 +3,14 @@ from collections import defaultdict, deque
 from flask_restx import Namespace, Resource, fields, reqparse, marshal
 import datetime
 import uuid
+import json
+import hashlib
 
 from sqlalchemy.orm import joinedload
 
 from app.apis.search_utils import generate_journey, filter_journeys, sort_journeys, get_airports, \
     lowest_price_multiple_dates
-from app.extensions import db
+from app.extensions import db, redis_client
 from app.models import Flight
 from app.models.airport import Airport
 from app.models.flight import Route
@@ -24,6 +26,12 @@ def str_to_bool(value: str) -> bool:
     elif value.lower() in {'false', '0', 'no'}:
         return False
     raise ValueError(f"Invalid boolean value: {value}")
+
+# Generate a cache key based on request arguments
+def _generate_cache_key(prefix: str, args: dict) -> str:
+    serialized = json.dumps(sorted(args.items()), default=str)
+    digest = hashlib.sha256(serialized.encode()).hexdigest()
+    return f"{prefix}:{digest}"
 
 # --- Request Parser ---
 def build_base_search_parser():
@@ -127,6 +135,12 @@ class FlightSearch(Resource):
         """Search for flights based on departure/arrival airports and date using RAPTOR algorithm"""
         args = flight_search_parser.parse_args()
 
+        # Check cache first
+        cache_key = _generate_cache_key("flight_search", args)
+        cached = redis_client.get(cache_key)
+        if cached:
+            return json.loads(cached), 200
+
         # Parse and validate date
         try:
             departure_date = datetime.datetime.strptime(args['departure_date'], '%d-%m-%Y').date()
@@ -185,7 +199,13 @@ class FlightSearch(Resource):
 
     
 
-        return marshal({'journeys':departure_journeys,'total_pages':math.ceil(original_len/args['limit'])},search_output_model), 200 #flight_search_result_schema.dump(results)
+        result = marshal({'journeys': departure_journeys,
+                          'total_pages': math.ceil(original_len/args['limit'])},
+                         search_output_model)
+
+        redis_client.set(cache_key, json.dumps(result, default=str), ex=300)
+
+        return result, 200
 
 
 @api.route('/flexible-dates')
@@ -213,6 +233,11 @@ class FlexibleFlightSearch(Resource):
         """Get minimum prices for each day in a month for a given departure and arrival airport"""
         args = flexible_date_search_parser.parse_args()
 
+        cache_key = _generate_cache_key("flex_search", args)
+        cached = redis_client.get(cache_key)
+        if cached:
+            return json.loads(cached), 200
+
         # Parse and validate date
         departure_journeys =[]
         try:
@@ -235,6 +260,7 @@ class FlexibleFlightSearch(Resource):
             departure_journeys = [None] * today_d.day
 
         # for each day in the range of dates, generate journeys
+
         departure_journeys.extend(lowest_price_multiple_dates(
             departure_date_range,
             departure_airports,
@@ -242,5 +268,6 @@ class FlexibleFlightSearch(Resource):
             args
         ))
 
+        redis_client.set(cache_key, json.dumps(departure_journeys, default=str), ex=300)
 
         return departure_journeys, 200
