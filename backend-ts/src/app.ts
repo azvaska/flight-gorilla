@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import express, { Request, Response } from 'express';
+import cookieParser from 'cookie-parser';
 import { createConnection } from 'typeorm';
 import authRoutes from './routes/auth';
 import aircraftRoutes from './routes/aircraft';
@@ -60,6 +61,7 @@ async function start() {
 
   const app = express();
   app.use(express.json());
+  app.use(cookieParser());
 
   const swaggerSpec = swaggerJsdoc({
     definition: {

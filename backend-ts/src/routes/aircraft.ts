@@ -1,4 +1,6 @@
 import { Router, Request, Response } from 'express';
+import { getRepository } from 'typeorm';
+import { Aircraft } from '../models/Aircraft';
 
 const router = Router();
 
@@ -17,8 +19,20 @@ const router = Router();
  *               items:
  *                 $ref: '#/components/schemas/Aircraft'
  */
-router.get('/', (_req: Request, res: Response) => {
-  res.status(501).json({ error: 'Not implemented' });
+router.get('/', async (req: Request, res: Response): Promise<void> => {
+  const repo = getRepository(Aircraft);
+  try {
+    const query = repo.createQueryBuilder('aircraft');
+    if (req.query.name) {
+      query.where('LOWER(aircraft.name) LIKE LOWER(:name)', {
+        name: `%${req.query.name}%`,
+      });
+    }
+    const aircrafts = await query.getMany();
+    res.json(aircrafts);
+  } catch (e) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 /**
@@ -40,8 +54,20 @@ router.get('/', (_req: Request, res: Response) => {
  *             schema:
  *               $ref: '#/components/schemas/Aircraft'
  */
-router.get('/:aircraft_id', (_req: Request, res: Response) => {
-  res.status(501).json({ error: 'Not implemented' });
+router.get('/:aircraft_id', async (req: Request, res: Response): Promise<void> => {
+  const repo = getRepository(Aircraft);
+  try {
+    const aircraft = await repo.findOne({
+      where: { id: parseInt(req.params.aircraft_id, 10) },
+    });
+    if (!aircraft) {
+      res.status(404).json({ error: 'Not Found' });
+      return;
+    }
+    res.json(aircraft);
+  } catch (e) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 export default router;
