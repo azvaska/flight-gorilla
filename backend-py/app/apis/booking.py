@@ -252,6 +252,14 @@ class BookingList(Resource):
                             .filter(Flight.id == flight_id)
                             .first()
                         )
+                        already_booked_flight = BookingDepartureFlight.query.filter_by(flight_id=flight_id).first() is None and BookingReturnFlight.query.filter_by(flight_id=flight_id).first() is None
+                        if not already_booked_flight:
+                            return {
+                                "error": "Flight already booked",
+                                "code": 409,
+                            }, 409
+
+
                         class_type = seat.class_type
                         flight_price = price_from_flight(flight, class_type)
                         booking_flight = BookingDepartureFlight(
