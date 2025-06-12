@@ -26,7 +26,7 @@ import {
   lucideEllipsis,
 } from '@ng-icons/lucide';
 import { BrnCommandEmptyDirective } from '@spartan-ng/brain/command';
-import { NgClass, NgForOf, NgIf, NgOptimizedImage } from '@angular/common';
+import { NgClass, NgForOf, NgOptimizedImage } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { dateToString, formatTime } from '@/utils/date';
 import { FormsModule } from '@angular/forms';
@@ -69,6 +69,7 @@ import { IAirlineFlight } from '@/types/airline/flight';
 import { FlightFetchService } from '@/app/services/flight/flight-fetch.service';
 import { toast } from 'ngx-sonner';
 import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
+
 
 interface FlightExtra {
   id: string;
@@ -191,6 +192,10 @@ export class FlightsAddComponent implements OnInit {
   // Date helper
   protected readonly today = new Date();
 
+  // Memoized date properties to prevent re-rendering issues
+  protected flightMinDate: Date | undefined = undefined;
+  protected flightMaxDate: Date | undefined = undefined;
+
   constructor(
     private airlineFetchService: AirlineFetchService,
     private flightFetchService: FlightFetchService,
@@ -249,6 +254,7 @@ export class FlightsAddComponent implements OnInit {
       const route = this.routes.find(r => r.id.toString() === this.existingFlight!.route_id.toString());
       if (route) {
         this.currentRoute.set(route);
+        this.updateFlightDates();
       }
 
       // Set aircraft
@@ -308,6 +314,8 @@ export class FlightsAddComponent implements OnInit {
   command1Selected(route: IRoute) {
     if (this.currentRoute()?.id !== route.id) {
       this.currentRoute.set(route);
+      // Update memoized dates when route changes
+      this.updateFlightDates();
     }
     this.state1.set('closed');
   }
@@ -527,7 +535,15 @@ export class FlightsAddComponent implements OnInit {
   protected readonly formatTime = formatTime;
   protected readonly dateToString = dateToString;
   protected readonly Math = Math;
-  protected toDate(date: string) {
-    return new Date(date);
+
+  private updateFlightDates() {
+    const route = this.currentRoute();
+    if (route) {
+      this.flightMinDate = new Date(route.period_start);
+      this.flightMaxDate = new Date(route.period_end);
+    } else {
+      this.flightMinDate = undefined;
+      this.flightMaxDate = undefined;
+    }
   }
 }

@@ -254,19 +254,17 @@
     <div class="relative col-span-2">
       <label hlmLabel class="block mb-2"> Flight date </label>
       <div class="w-full border border-input rounded-md p-3 bg-white shadow-sm">
+        @if(currentRoute()) {
         <date-input
           [popoverRelativePosition]="{ top: 20, left: -20 }"
           [popoverWidth]="'auto'"
           [(value)]="flightDate"
           [placeholder]="'Select a date'"
           [enableFlexibleDate]="false"
-          [minDate]="
-            currentRoute() ? toDate(currentRoute()!.period_start) : undefined
-          "
-          [maxDate]="
-            currentRoute() ? toDate(currentRoute()!.period_end) : undefined
-          "
+          [minDate]="flightMinDate"
+          [maxDate]="flightMaxDate"
         />
+        }
       </div>
     </div>
 
