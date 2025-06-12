@@ -69,11 +69,8 @@ const formatAirlineAircraftData = (aircraft: any) => {
 
 // Helper function to format route data
 const formatRouteData = (route: any) => {
-  // Check if route is editable (no associated flights with bookings)
-  const isEditable = !route.flight?.some((flight: any) => 
-    flight.booking_departure_flight?.length > 0 || 
-    flight.booking_return_flight?.length > 0
-  );
+  // Check if route is editable (no associated flights)
+  const isEditable = !route.flight || route.flight.length === 0;
 
   return {
     id: route.id,
