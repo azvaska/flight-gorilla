@@ -31,6 +31,7 @@ interface SearchArgs {
   page_number?: number;
   limit?: number;
   max_transfers: number;
+  user_id?: string;
 }
 
 export class SearchFlight {
@@ -293,13 +294,53 @@ export class SearchFlight {
   }
 }
 
-export function filterJourneys(unfilteredJourneys: (Journey | null)[], args: SearchArgs): (Journey | null)[] {
+export async function checkDuplicateFlight(journey: Journey, args: SearchArgs): Promise<boolean> {
+  if (!args.user_id) return false;
+  
+  for (const segment of journey.segments) {
+    // Check if the user has a booking with this flight as departure flight
+    const bookingDeparture = await prisma.booking_departure_flight.findFirst({
+      where: {
+        flight_id: segment.id,
+        booking: {
+          user_id: args.user_id
+        }
+      }
+    });
+
+    // Check if the user has a booking with this flight as return flight
+    const bookingReturn = await prisma.booking_return_flight.findFirst({
+      where: {
+        flight_id: segment.id,
+        booking: {
+          user_id: args.user_id
+        }
+      }
+    });
+
+    if (bookingDeparture || bookingReturn) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+export async function filterJourneys(unfilteredJourneys: (Journey | null)[], args: SearchArgs): Promise<(Journey | null)[]> {
   const filteredJourneys: (Journey | null)[] = [];
 
   for (const journey of unfilteredJourneys) {
     if (journey === null) {
       filteredJourneys.push(null);
       continue;
+    }
+
+    // Remove journeys where user already has a booking for any segment
+    if (args.user_id) {
+      const userHasBooking = await checkDuplicateFlight(journey, args);
+      if (userHasBooking) {
+        continue;
+      }
     }
 
     // Filter by departure time range
@@ -441,7 +482,8 @@ export async function lowestPriceMultipleDates(
     // Get the best price for each day
     let bestPrice: number | null = null;
     if (sortedJourneys.length > 0) {
-      const filtered = filterJourneys(sortedJourneys, args).filter(j => j !== null) as Journey[];
+      // Use async filter function
+      const filtered = (await filterJourneys(sortedJourneys, args)).filter(j => j !== null) as Journey[];
       if (filtered.length > 0) {
         bestPrice = filtered[0].price_economy;
       }
@@ -479,4 +521,4 @@ export async function generateJourney(
   }
 
   return result;
-} 
+}

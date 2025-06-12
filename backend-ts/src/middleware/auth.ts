@@ -116,6 +116,54 @@ export const authenticateRefreshToken = async (req: Request, res: Response, next
   }
 };
 
+export const optionalAuthenticateToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (!token) {
+      // Continue without authentication
+      next();
+      return;
+    }
+
+    try {
+      const decoded = verifyAccessToken(token);
+      
+      // Get user from database with roles
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        include: {
+          roles_users: {
+            include: {
+              role: true
+            }
+          }
+        }
+      });
+
+      if (user) {
+        // Attach user info to request
+        req.user = {
+          id: user.id,
+          email: user.email,
+          active: user.active,
+          airline_id: user.airline_id || undefined,
+          roles: user.roles_users.map(ru => ru.role.name)
+        };
+      }
+    } catch (error) {
+      // Ignore token errors in optional auth
+      console.log('Optional auth token error:', error);
+    }
+
+    next();
+  } catch (error) {
+    console.error('Optional auth error:', error);
+    next(error);
+  }
+};
+
 export const requireRoles = (requiredRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
@@ -137,4 +185,4 @@ export const requireRoles = (requiredRoles: string[]) => {
 // Cleanup on app termination
 process.on('beforeExit', async () => {
   await prisma.$disconnect();
-}); 
+});

@@ -17,6 +17,7 @@ import {
   getAirports, 
   lowestPriceMultipleDates 
 } from '../utils/search';
+import { optionalAuthenticateToken } from '../middleware/auth';
 
 export const searchRouter = Router();
 
@@ -106,10 +107,17 @@ function calculateDates(date: Date): Date[] {
 
 // Routes
 searchRouter.get('/flights', 
+  optionalAuthenticateToken,
   validateQuery(FlightSearchQuerySchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const query = req.validatedQuery as FlightSearchQuery;
+      // Create query with proper type that includes user_id
+      const query = req.validatedQuery as unknown as FlightSearchQuery;
+      
+      // Add user_id if user is authenticated
+      if (req.user) {
+        query.user_id = req.user.id;
+      }
 
       // Parse and validate date
       let departureDate: Date;
@@ -151,8 +159,8 @@ searchRouter.get('/flights',
         }
       }
 
-      // Filter resulting journeys
-      const filteredJourneys = filterJourneys(unfilteredDepartureJourneys, query);
+      // Filter resulting journeys - now async
+      const filteredJourneys = await filterJourneys(unfilteredDepartureJourneys, query);
       
       // Remove null values for sorting
       const validJourneys = filteredJourneys.filter(j => j !== null);
@@ -193,10 +201,17 @@ searchRouter.get('/flights',
 );
 
 searchRouter.get('/flexible-dates', 
+  optionalAuthenticateToken,
   validateQuery(FlexibleDateSearchQuerySchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const query = req.validatedQuery as FlexibleDateSearchQuery;
+      // Create query with proper type that includes user_id
+      const query = req.validatedQuery as unknown as FlexibleDateSearchQuery;
+      
+      // Add user_id if user is authenticated
+      if (req.user) {
+        query.user_id = req.user.id;
+      }
 
       // Parse and validate date
       let departureDate: Date;

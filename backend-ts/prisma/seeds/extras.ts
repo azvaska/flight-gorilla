@@ -70,7 +70,7 @@ export async function seedExtras(prisma: PrismaClient) {
             id: randomUUID(),
             flight_id: flight.id,
             extra_id: extra.id,
-            limit: 1, // Random limit between 1-5
+            limit: 1, 
             price: Math.floor(Math.random() * 91) + 10 // Random price between 10-100
           }
         });
