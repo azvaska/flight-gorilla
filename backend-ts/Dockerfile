@@ -1,5 +1,5 @@
 # Use the official Node.js 18 runtime as the base image
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -49,10 +49,6 @@ EXPOSE 5000
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=5000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:5000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => { process.exit(1) })"
 
 # Start the application
 CMD ["npm", "start"]
