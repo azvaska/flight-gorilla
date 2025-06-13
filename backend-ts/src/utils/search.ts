@@ -15,6 +15,7 @@ interface FlightPath {
   gate: string | null;
   terminal: string | null;
   fully_booked: boolean;
+  route?: any;
 }
 
 interface SearchArgs {
@@ -34,7 +35,25 @@ interface SearchArgs {
   user_id?: string;
 }
 
+interface EarliestArrival {
+  time: Date;
+  path: FlightPath[];
+  cost: number;
+}
+
+interface PreloadedData {
+  flights: Map<number, FlightPath[]>; // airportId -> flights
+  airports: Map<number, any>;
+  routes: Map<number, any>;
+  airlineAircraft: Map<string, any>;
+}
+
 export class SearchFlight {
+  private preloadedData: PreloadedData | null = null;
+
+  /**
+   * Optimized RAPTOR search with proper earliest arrival tracking
+   */
   async raptorSearch(
     originId: number,
     destinationId: number,
@@ -43,13 +62,16 @@ export class SearchFlight {
     minTransferMinutes: number,
     args: SearchArgs
   ): Promise<{ [k: number]: Journey[] }> {
-    // Prepare date window
+    // Prepare extended date window (support multi-day journeys)
     const startOfDay = new Date(departureDate);
     startOfDay.setHours(0, 0, 0, 0);
     const dateMin = startOfDay;
     const dateMax = new Date(departureDate);
-    dateMax.setDate(dateMax.getDate() + 1);
+    dateMax.setDate(dateMax.getDate() + 2); // Extended to 2 days for international travel
     dateMax.setHours(0, 0, 0, 0);
+
+    // Preload all relevant data to minimize DB queries
+    await this.preloadData(dateMin, dateMax, args);
 
     // Storage for all itineraries by exact #transfers
     const allByTransfers: { [k: number]: Journey[] } = {};
@@ -57,116 +79,249 @@ export class SearchFlight {
       allByTransfers[k] = [];
     }
 
-    // Keep track of processed flight paths to avoid duplicates
+    // RAPTOR's earliest arrival times per round
+    const earliestArrival: EarliestArrival[][] = [];
+    for (let k = 0; k <= maxTransfers + 1; k++) {
+      earliestArrival[k] = [];
+    }
+
+    // Initialize round 0 - direct flights from origin
+    earliestArrival[0][originId] = {
+      time: startOfDay,
+      path: [],
+      cost: 0
+    };
+
     const processedPaths = new Set<string>();
+    const markedStops = new Set<number>();
 
-    // BFS-like expansion over k transfers
-    let frontier: Array<[number, Date, FlightPath[]]> = [[originId, startOfDay, []]];
-
-    for (let k = 0; k <= maxTransfers; k++) {
-      const nextFrontier: Array<[number, Date, FlightPath[]]> = [];
-
-      for (const [currentAirport, arrivalTime, path] of frontier) {
-        // Determine minimum departure time
-        let minDepTime = arrivalTime;
-        if (path.length > 0) {
-          minDepTime = new Date(arrivalTime.getTime() + minTransferMinutes * 60 * 1000);
+    // RAPTOR rounds
+    for (let k = 1; k <= maxTransfers + 1; k++) {
+      markedStops.clear();
+      
+      // Mark stops improved in previous round
+      for (const airportId in earliestArrival[k - 1]) {
+        const airport = parseInt(airportId);
+        if (earliestArrival[k - 1][airport]) {
+          markedStops.add(airport);
         }
+      }
 
-        // Find flights departing after minDepTime and within the same travel day
-        let flightsQuery = prisma.flight.findMany({
-          where: {
-            route: {
-              departure_airport_id: currentAirport,
-            },
-            departure_time: {
-              gte: minDepTime,
-              lt: dateMax,
-            },
-            fully_booked: false,
-          },
-          include: {
-            route: true,
-          },
-        });
+      if (markedStops.size === 0) break; // No improvements possible
 
-        const possibleFlights = await this.applyFilters(flightsQuery, departureDate, args);
+      // Process each marked stop
+      for (const currentAirport of markedStops) {
+        const currentState = earliestArrival[k - 1][currentAirport];
+        if (!currentState) continue;
 
-        for (const flight of possibleFlights) {
+        // Get all flights from this airport
+        const flights = this.preloadedData?.flights.get(currentAirport) || [];
+        
+        for (const flight of flights) {
           if (!flight.route) continue;
 
-          const newPath = [...path, flight as FlightPath];
+          // Calculate minimum departure time
+          let minDepTime = currentState.time;
+          if (currentState.path.length > 0) {
+            minDepTime = new Date(currentState.time.getTime() + minTransferMinutes * 60 * 1000);
+          }
+
+          // Check if flight is valid
+          if (flight.departure_time < minDepTime || flight.departure_time >= dateMax) {
+            continue;
+          }
+
+          // Apply filters
+          if (!this.passesFilters(flight, args)) {
+            continue;
+          }
+
           const destAirport = flight.route.arrival_airport_id;
+          const newPath = [...currentState.path, flight];
+          const newCost = currentState.cost + flight.price_economy_class;
 
-          // If this flight reaches the final destination, record it
-          if (destAirport === destinationId) {
-            // Only record if exactly k transfers
-            if (newPath.length - 1 === k) {
+          // Check if this improves the arrival time at destination
+          const existingArrival = earliestArrival[k][destAirport];
+          const shouldUpdate = !existingArrival || 
+            flight.arrival_time < existingArrival.time ||
+            (flight.arrival_time.getTime() === existingArrival.time.getTime() && newCost < existingArrival.cost);
+
+          if (shouldUpdate) {
+            earliestArrival[k][destAirport] = {
+              time: flight.arrival_time,
+              path: newPath,
+              cost: newCost
+            };
+
+            // If this reaches the destination, record the journey
+            if (destAirport === destinationId && newPath.length - 1 === k - 1) {
               const flightIds = newPath.map(f => f.id).join(',');
-
               if (!processedPaths.has(flightIds)) {
                 processedPaths.add(flightIds);
                 const result = await this.formatJourneyResult(newPath, originId, destinationId);
                 if (result) {
-                  allByTransfers[k].push(result);
-                  continue;
+                  allByTransfers[k - 1].push(result);
                 }
               }
             }
           }
-
-          // For non-destination flights, add to next frontier
-          if (k < maxTransfers) {
-            nextFrontier.push([destAirport, flight.arrival_time, newPath]);
-          }
         }
       }
 
-      frontier = nextFrontier;
+      // Copy non-improved arrivals from previous round
+      for (const airportId in earliestArrival[k - 1]) {
+        const airport = parseInt(airportId);
+        if (!earliestArrival[k][airport] && earliestArrival[k - 1][airport]) {
+          earliestArrival[k][airport] = earliestArrival[k - 1][airport];
+        }
+      }
     }
 
     return allByTransfers;
   }
 
-  private async applyFilters(
-    flightsQuery: Promise<any[]>,
-    departureDate: Date,
-    args: SearchArgs
-  ): Promise<any[]> {
-    let flights = await flightsQuery;
+  /**
+   * Preload all relevant data to minimize database queries
+   */
+  private async preloadData(dateMin: Date, dateMax: Date, args: SearchArgs): Promise<void> {
+    // Get all relevant flights in the date range
+    const whereClause: any = {
+      departure_time: {
+        gte: dateMin,
+        lt: dateMax,
+      },
+      fully_booked: false,
+    };
 
-    // Apply airline filter
+    // Apply airline filter to reduce data load
     if (args.airline_id) {
-      flights = flights.filter(flight => 
-        flight.route && flight.route.airline_id === args.airline_id
-      );
+      whereClause.route = {
+        airline_id: args.airline_id
+      };
     }
 
-    // Apply price filter
-    if (args.price_max) {
-      flights = flights.filter(flight => 
-        flight.price_economy_class <= args.price_max!
-      );
+    const flights = await prisma.flight.findMany({
+      where: whereClause,
+      include: {
+        route: {
+          include: {
+            airline: true
+          }
+        }
+      },
+      orderBy: {
+        departure_time: 'asc'
+      }
+    });
+
+    // Group flights by departure airport
+    const flightsByAirport = new Map<number, FlightPath[]>();
+    for (const flight of flights) {
+      if (!flight.route) continue;
+      
+      const departureAirportId = flight.route.departure_airport_id;
+      if (!flightsByAirport.has(departureAirportId)) {
+        flightsByAirport.set(departureAirportId, []);
+      }
+      flightsByAirport.get(departureAirportId)!.push(flight as FlightPath);
     }
 
-    return flights;
+    // Preload airports (batch query)
+    const airportIds = new Set<number>();
+    flights.forEach(f => {
+      if (f.route) {
+        airportIds.add(f.route.departure_airport_id);
+        airportIds.add(f.route.arrival_airport_id);
+      }
+    });
+
+    const airports = await prisma.airport.findMany({
+      where: {
+        id: { in: Array.from(airportIds) }
+      }
+    });
+
+    const airportMap = new Map<number, any>();
+    airports.forEach(airport => airportMap.set(airport.id, airport));
+
+    // Preload aircraft data (batch query)
+    const aircraftIds = flights.map(f => f.aircraft_id).filter(Boolean);
+    const aircraftData = await prisma.airline_aircraft.findMany({
+      where: {
+        id: { in: aircraftIds }
+      },
+      include: {
+        aircraft: true
+      }
+    });
+
+    const aircraftMap = new Map<string, any>();
+    aircraftData.forEach(ac => aircraftMap.set(ac.id, ac));
+
+    // Preload routes (already included in flights)
+    const routeMap = new Map<number, any>();
+    flights.forEach(f => {
+      if (f.route) {
+        routeMap.set(f.route.id, f.route);
+      }
+    });
+
+    this.preloadedData = {
+      flights: flightsByAirport,
+      airports: airportMap,
+      routes: routeMap,
+      airlineAircraft: aircraftMap
+    };
   }
 
+  /**
+   * Optimized filter checking using preloaded data
+   */
+  private passesFilters(flight: FlightPath, args: SearchArgs): boolean {
+    // Airline filter (already applied in preload if specified)
+    if (args.airline_id && flight.route?.airline_id !== args.airline_id) {
+      return false;
+    }
+
+    // Price filter
+    if (args.price_max && flight.price_economy_class > args.price_max) {
+      return false;
+    }
+
+    // Time range filters
+    if (args.departure_time_min) {
+      const timeStr = flight.departure_time.toTimeString().substring(0, 5);
+      if (timeStr < args.departure_time_min) {
+        return false;
+      }
+    }
+
+    if (args.departure_time_max) {
+      const timeStr = flight.departure_time.toTimeString().substring(0, 5);
+      if (timeStr > args.departure_time_max) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Optimized journey formatting using preloaded data
+   */
   private async formatJourneyResult(
     flightPath: FlightPath[],
     originId: number,
     destinationId: number
   ): Promise<Journey | null> {
-    if (!flightPath.length) return null;
+    if (!flightPath.length || !this.preloadedData) return null;
 
     const firstFlight = flightPath[0];
     const lastFlight = flightPath[flightPath.length - 1];
 
-    // Get origin and destination airports
-    const [originAirport, destinationAirport] = await Promise.all([
-      prisma.airport.findUnique({ where: { id: originId } }),
-      prisma.airport.findUnique({ where: { id: destinationId } })
-    ]);
+    // Get origin and destination airports from preloaded data
+    const originAirport = this.preloadedData.airports.get(originId);
+    const destinationAirport = this.preloadedData.airports.get(destinationId);
 
     if (!originAirport || !destinationAirport) return null;
     if (!originAirport.iata_code || !destinationAirport.iata_code) return null;
@@ -181,24 +336,18 @@ export class SearchFlight {
     const totalBusinessPrice = flightPath.reduce((sum, flight) => sum + flight.price_business_class, 0);
     const totalFirstPrice = flightPath.reduce((sum, flight) => sum + flight.price_first_class, 0);
 
-    // Create segments
+    // Create segments using preloaded data
     const segments: FlightSegment[] = [];
     for (const flight of flightPath) {
-      const route = await prisma.route.findUnique({
-        where: { id: flight.route_id },
-        include: { airline: true }
-      });
-
+      const route = this.preloadedData.routes.get(flight.route_id);
       if (!route) continue;
 
-      const [departureAirport, arrivalAirport] = await Promise.all([
-        prisma.airport.findUnique({ where: { id: route.departure_airport_id } }),
-        prisma.airport.findUnique({ where: { id: route.arrival_airport_id } })
-      ]);
+      const departureAirport = this.preloadedData.airports.get(route.departure_airport_id);
+      const arrivalAirport = this.preloadedData.airports.get(route.arrival_airport_id);
 
       if (!departureAirport || !arrivalAirport) continue;
 
-      const segment = await this.processFlightResult(flight, route, departureAirport, arrivalAirport);
+      const segment = this.processFlightSegment(flight, route, departureAirport, arrivalAirport);
       if (segment) {
         segments.push(segment);
       }
@@ -210,16 +359,10 @@ export class SearchFlight {
       const currentFlight = flightPath[i];
       const nextFlight = flightPath[i + 1];
       
-      const currentRoute = await prisma.route.findUnique({
-        where: { id: currentFlight.route_id }
-      });
-
+      const currentRoute = this.preloadedData.routes.get(currentFlight.route_id);
       if (!currentRoute) continue;
 
-      const airport = await prisma.airport.findUnique({
-        where: { id: currentRoute.arrival_airport_id }
-      });
-
+      const airport = this.preloadedData.airports.get(currentRoute.arrival_airport_id);
       if (!airport || !airport.iata_code) continue;
 
       const layoverDuration = Math.floor(
@@ -246,28 +389,24 @@ export class SearchFlight {
     };
   }
 
-  private async processFlightResult(
+  /**
+   * Process flight segment using preloaded data
+   */
+  private processFlightSegment(
     flight: FlightPath,
     route: any,
     departureAirport: any,
     arrivalAirport: any
-  ): Promise<FlightSegment | null> {
-    const airline = route.airline;
-    
-    // Check if airports have valid IATA codes
+  ): FlightSegment | null {
     if (!departureAirport.iata_code || !arrivalAirport.iata_code) {
       return null;
     }
     
-    const aircraftInstance = await prisma.airline_aircraft.findUnique({
-      where: { id: flight.aircraft_id },
-      include: { aircraft: true }
-    });
-
-    if (!aircraftInstance) return null;
+    const aircraftInstance = this.preloadedData?.airlineAircraft.get(flight.aircraft_id);
+    if (!aircraftInstance?.aircraft) return null;
 
     const aircraft = aircraftInstance.aircraft;
-    if (!aircraft) return null;
+    const airline = route.airline;
 
     // Calculate flight duration in minutes
     const durationMinutes = Math.floor(
@@ -292,6 +431,9 @@ export class SearchFlight {
       terminal: flight.terminal || null
     };
   }
+
+  // Remove the old applyFilters method as it's now integrated into passesFilters
+  // Remove the old processFlightResult method as it's now processFlightSegment
 }
 
 export async function checkDuplicateFlight(journey: Journey, args: SearchArgs): Promise<boolean> {
