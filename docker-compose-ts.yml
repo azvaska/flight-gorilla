@@ -21,10 +21,8 @@ services:
     build:
       context: ./backend-ts
       dockerfile: Dockerfile
-    env_file:
-      - ./backend-ts/.env
     environment:
-      - DATABASE_URL="postgresql://postgres:12345@db:5432/flight_gorilla"
+      - DATABASE_URL=postgresql://postgres:12345@db:5432/flight_gorilla_ts
       - NODE_ENV=production
       - PORT=5000
     ports:
