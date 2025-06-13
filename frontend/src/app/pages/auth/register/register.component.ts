@@ -1,4 +1,4 @@
-// src/app/pages/auth/register/register.component.ts
+
 import { Component, OnInit } from '@angular/core';
 import {
   FormGroup,

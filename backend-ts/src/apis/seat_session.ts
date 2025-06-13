@@ -17,11 +17,11 @@ import { authenticateToken, requireRoles } from '../middleware/auth';
 const prisma = new PrismaClient();
 export const seatSessionRouter = Router();
 
-// Constants
+
 const SESSION_GRAY_TIME = 2 * 60 * 1000; // 2 minutes in milliseconds
 const SESSION_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
 
-// Register OpenAPI paths
+
 registry.registerPath({
   method: 'get',
   path: '/seat_session',
@@ -229,7 +229,7 @@ registry.registerPath({
   },
 });
 
-// Helper function to format seat session response
+
 const formatSeatSession = (session: any) => {
   return {
     id: session.id,
@@ -242,7 +242,7 @@ const formatSeatSession = (session: any) => {
   };
 };
 
-// Routes
+
 seatSessionRouter.get('/', 
   authenticateToken,
   requireRoles(['user']),

@@ -1,7 +1,7 @@
 import { classtype } from '../../generated/prisma';
 import { randomBytes } from 'crypto';
 
-// Price calculation from flight based on class type (matches Python utils.py)
+
 export function priceFromFlight(flight: any, classType: classtype): number {
   let flightPrice = 0.0;
   
@@ -16,7 +16,7 @@ export function priceFromFlight(flight: any, classType: classtype): number {
   return flightPrice;
 }
 
-// Generate unique booking number (matches Python booking.py)
+
 export function generateUniqueBookingNumber(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let result = '';
@@ -29,7 +29,7 @@ export function generateUniqueBookingNumber(): string {
   return result;
 }
 
-// Check and update flight capacity (matches Python booking.py)
+
 export async function checkAndUpdateFlightCapacity(prisma: any, flightId: string): Promise<void> {
   const flight = await prisma.flight.findUnique({
     where: { id: flightId },

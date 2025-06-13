@@ -42,6 +42,6 @@ def seed_airports():
     db_session.commit()
     db_session.close()
 
-# Register the command
+
 def init_app(app):
     app.cli.add_command(seed_airports)

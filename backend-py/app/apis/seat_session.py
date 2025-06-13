@@ -16,7 +16,7 @@ from app.schemas.seat_session import seat_session_schema
 
 api = Namespace('seat_session', description='Seat reservation session operations')
 SESSION_GRAY_TIME = datetime.timedelta(minutes=2)
-# --- RESTx Models ---
+
 
 seat_model = api.model('Seat', {
     'seat_number': fields.String(required=True, description='Seat number'),
@@ -30,7 +30,7 @@ seat_session_model = api.model('SeatSession', {
     'session_end_time': fields.DateTime(readonly=True, description='Session end time (expiration)'),
 })
 
-# --- Request Parsers ---
+
 seat_session_parser = reqparse.RequestParser()
 seat_session_parser.add_argument('session_id', type=str, required=True,
                                 help='Session UUID is required', location='json')

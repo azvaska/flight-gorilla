@@ -3,7 +3,7 @@ import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
 
 extendZodWithOpenApi(z);
 
-// Helper function to convert string to boolean
+
 const stringToBoolean = z.string().optional().transform(val => {
   if (val === undefined) return false;
   if (typeof val === 'boolean') return val;
@@ -12,7 +12,7 @@ const stringToBoolean = z.string().optional().transform(val => {
   throw new Error(`Invalid boolean value: ${val}`);
 });
 
-// Flight Segment schema
+
 export const FlightSegmentSchema = z.object({
   id: z.string().openapi({ description: 'Flight segment ID' }),
   flight_number: z.string().openapi({ description: 'Flight number for this segment' }),
@@ -31,13 +31,13 @@ export const FlightSegmentSchema = z.object({
   terminal: z.string().nullable().openapi({ description: 'Departure terminal for this segment' }),
 }).openapi('FlightSegment');
 
-// Layover schema
+
 export const LayoverSchema = z.object({
   airport: z.string().openapi({ description: 'Layover airport code' }),
   duration_minutes: z.number().int().openapi({ description: 'Layover duration in minutes' }),
 }).openapi('Layover');
 
-// Journey schema
+
 export const JourneySchema = z.object({
   departure_airport: z.string().openapi({ description: 'Origin airport code for the journey' }),
   arrival_airport: z.string().openapi({ description: 'Destination airport code for the journey' }),
@@ -51,7 +51,7 @@ export const JourneySchema = z.object({
   layovers: z.array(LayoverSchema).openapi({ description: 'List of layovers in the journey' }),
 }).openapi('Journey');
 
-// Base search query schema
+
 const BaseSearchQuerySchema = z.object({
   departure_id: z.string().transform(val => parseInt(val, 10)).pipe(
     z.number().int().positive().openapi({ description: 'Departure id' })
@@ -94,34 +94,34 @@ const BaseSearchQuerySchema = z.object({
   ).openapi({ description: 'Maximum number of transfers' }),
 });
 
-// Flight search query schema
+
 export const FlightSearchQuerySchema = BaseSearchQuerySchema.extend({
   departure_date: z.string().openapi({ 
     description: 'Departure date (DD-MM-YYYY)' 
   }),
 }).openapi('FlightSearchQuery');
 
-// Flexible date search query schema
+
 export const FlexibleDateSearchQuerySchema = BaseSearchQuerySchema.extend({
   departure_date: z.string().openapi({ 
     description: 'Departure date (MM-YYYY)' 
   }),
 }).openapi('FlexibleDateSearchQuery');
 
-// Search output schema
+
 export const SearchOutputSchema = z.object({
   journeys: z.array(JourneySchema).openapi({ description: 'List of flight journeys' }),
   total_pages: z.number().int().openapi({ description: 'Total number of pages for pagination' }),
 }).openapi('SearchOutput');
 
-// Flexible date response schema (array of prices or null)
+
 export const FlexibleDateResponseSchema = z.array(
   z.number().nullable()
 ).openapi('FlexibleDateResponse', {
   description: 'Array of minimum prices for each day in the month, null for days with no flights'
 });
 
-// Type exports
+
 export type FlightSegment = z.infer<typeof FlightSegmentSchema>;
 export type Layover = z.infer<typeof LayoverSchema>;
 export type Journey = z.infer<typeof JourneySchema>;

@@ -15,6 +15,6 @@ class AircraftSchema(ma.SQLAlchemyAutoSchema):
     columns = ma.Integer(required=True, validate=validate.Range(min=1),
                          error_messages={"required": "Columns are required", "invalid": "Columns must be at least 1"})
 
-# Create schema instances
+
 aircraft_schema = AircraftSchema()
 aircrafts_schema = AircraftSchema(many=True) 

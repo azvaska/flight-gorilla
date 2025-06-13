@@ -1,4 +1,4 @@
-# app/apis/aircraft.py
+
 from flask_restx import Namespace, Resource, fields, marshal, reqparse
 from app.models.aircraft import Aircraft
 from app.schemas.aircraft import aircraft_schema, aircrafts_schema
@@ -13,7 +13,7 @@ aircraft_model = api.model('Aircraft', {
     'unavailable_seats': fields.List(fields.String, description='List of unavailable seats')
 })
 
-# --- Request Parsers ---
+
 aircraft_list_parser = reqparse.RequestParser()
 aircraft_list_parser.add_argument('name', type=str, help='Filter by aircraft name/model (case-insensitive)', location='args')
 

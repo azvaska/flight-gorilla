@@ -37,7 +37,7 @@ user_model = api.model('User', {
     'type': fields.String(required=True, description='User type (airline or user)',enum=['airline','user']),
 })
 
-# Modello per l'output delle airlines con utenti
+
 airline_with_users_model = api.model('AirlineWithUsers', {
     'id': fields.String(readonly=True, description='Airline ID'),
     'name': fields.String(required=True, description='Airline name'),

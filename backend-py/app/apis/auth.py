@@ -202,8 +202,8 @@ register_airline_model_output = api.model('RegisterAirlineModelOutput', {
     'credentials': fields.Nested(credentials_model, required=True, description='Login credentials')
 })
 
-#DELETE THIS LATER ROBA CON DIP FUNZ RESTRICTED
-#AGGIUGNERE SEED BOOKING
+
+
 @api.route('/register_airline')
 class AirlineRegister(Resource):
     @jwt_required()

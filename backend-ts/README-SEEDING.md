@@ -70,11 +70,11 @@ The seeding is modular. Each function can be imported and used individually if n
 import { PrismaClient } from './generated/prisma';
 import { seedNations } from './prisma/seeds/nations';
 import { seedAircraft } from './prisma/seeds/aircraft';
-// ... other imports
+
 
 const prisma = new PrismaClient();
 
-// Seed only aircraft
+
 await seedAircraft(prisma);
 ```
 

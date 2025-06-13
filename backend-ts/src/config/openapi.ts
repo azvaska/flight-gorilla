@@ -6,14 +6,14 @@ extendZodWithOpenApi(z);
 
 export const registry = new OpenAPIRegistry();
 
-// Register security schemes
+
 registry.registerComponent('securitySchemes', 'bearerAuth', {
   type: 'http',
   scheme: 'bearer',
   bearerFormat: 'JWT',
 });
 
-// Common error responses
+
 export const ErrorResponseSchema = z.object({
   error: z.string().describe('Error message'),
 });
@@ -29,7 +29,7 @@ export const ValidationErrorResponseSchema = z.object({
 registry.register('ErrorResponse', ErrorResponseSchema);
 registry.register('ValidationErrorResponse', ValidationErrorResponseSchema);
 
-// Import and register booking schemas
+
 import { 
   extraInputSchema as bookingExtraInputSchema, 
   bookingInputSchema, 
@@ -46,7 +46,7 @@ registry.register('BookedFlightExtra', bookedFlightExtraOutputSchema);
 registry.register('BookedFlight', bookedFlightOutputSchema);
 registry.register('BookingOutput', bookingOutputSchema);
 
-// Import and register airline schemas
+
 import {
   extraInputSchema,
   extraOutputSchema,
@@ -99,7 +99,7 @@ registry.register('MostRequestedRoute', mostRequestedRouteSchema);
 registry.register('AirportFlights', airportFlightsSchema);
 registry.register('LeastUsedRoute', leastUsedRouteSchema);
 
-// Import and register admin schemas
+
 import {
   AdminUserSchema,
   AirlineWithUsersSchema,

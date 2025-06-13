@@ -1,4 +1,4 @@
-// src/app/my-profile/my-profile.component.ts
+
 import { Component } from '@angular/core';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import {PayementCardListComponent} from '@/app/components/user/payement-card-list/payement-card-list.component';

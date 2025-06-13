@@ -16,7 +16,7 @@ import '../types/express';
 const prisma = new PrismaClient();
 export const airportRouter = Router();
 
-// Register OpenAPI paths
+
 registry.registerPath({
   method: 'get',
   path: '/airports',
@@ -99,7 +99,7 @@ registry.registerPath({
   },
 });
 
-// Routes
+
 airportRouter.get('/', validateQuery(AirportListQuerySchema), async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const query = req.validatedQuery as AirportListQuery;
@@ -200,7 +200,7 @@ airportRouter.get('/:airport_id', validateParams(AirportParamsSchema), async (re
   }
 });
 
-// Cleanup on app termination
+
 process.on('beforeExit', async () => {
   await prisma.$disconnect();
 }); 

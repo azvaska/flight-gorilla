@@ -53,7 +53,6 @@ export class BookingExtrasComponent {
       this.flightFetchService.getFlightExtras(this.currentFlight!.id)
     );
     this.loadingService.endLoadingTask();
-    console.log('Fetched new extras', extras);
     return extras;
   }
 

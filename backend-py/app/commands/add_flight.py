@@ -9,7 +9,7 @@ import random
 import math
 from typing import List, Dict, Tuple
 
-# Major worldwide airports with realistic data - EXPANDED
+
 WORLD_AIRPORTS = {
     # Europe - Major hubs
     'LHR': {'name': 'London Heathrow', 'city': 'London', 'country': 'UK', 'lat': 51.4700, 'lon': -0.4543, 'timezone_offset': 0},
@@ -104,7 +104,7 @@ WORLD_AIRPORTS = {
     'EZE': {'name': 'Buenos Aires Ezeiza', 'city': 'Buenos Aires', 'country': 'Argentina', 'lat': -34.8222, 'lon': -58.5358, 'timezone_offset': -3}
 }
 
-# Popular European routes (higher frequency) - EXPANDED
+
 POPULAR_EUROPEAN_ROUTES = [
     # UK routes
     ('LHR', 'CDG'), ('LHR', 'FRA'), ('LHR', 'AMS'), ('LHR', 'MAD'), ('LHR', 'FCO'),
@@ -146,7 +146,7 @@ POPULAR_EUROPEAN_ROUTES = [
     ('MUC', 'PRG'), ('MUC', 'WAW'), ('CDG', 'WAW'), ('CDG', 'PRG')
 ]
 
-# Popular intercontinental routes from Europe
+
 INTERCONTINENTAL_ROUTES = [
     # From London
     ('LHR', 'JFK'), ('LHR', 'LAX'), ('LHR', 'ORD'), ('LHR', 'BOS'), ('LHR', 'MIA'),
@@ -862,6 +862,6 @@ def generate_comprehensive_flights(start_hours, max_routes_per_airline, include_
         db_session.close()
 
 
-# Register the command
+
 def init_app(app):
     app.cli.add_command(generate_comprehensive_flights)

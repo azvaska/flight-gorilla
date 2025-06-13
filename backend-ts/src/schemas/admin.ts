@@ -4,7 +4,7 @@ import { NationSchema } from './user';
 
 extendZodWithOpenApi(z);
 
-// User model schema for admin operations
+
 export const AdminUserSchema = z.object({
   id: z.string().uuid().openapi({ description: 'User ID' }),
   email: z.string().email().openapi({ description: 'Email address' }),
@@ -17,7 +17,7 @@ export const AdminUserSchema = z.object({
   type: z.enum(['airline', 'user']).openapi({ description: 'User type (airline or user)' }),
 }).openapi('AdminUser');
 
-// Airline with users model schema
+
 export const AirlineWithUsersSchema = z.object({
   id: z.string().uuid().openapi({ description: 'Airline ID' }),
   name: z.string().openapi({ description: 'Airline name' }),
@@ -32,7 +32,7 @@ export const AirlineWithUsersSchema = z.object({
   user: AdminUserSchema.nullable().optional().openapi({ description: 'User associated with this airline' }),
 }).openapi('AirlineWithUsers');
 
-// Airline update schema for admin operations
+
 export const AdminAirlineUpdateSchema = z.object({
   name: z.string().min(1).optional().openapi({ description: 'Airline name' }),
   address: z.string().optional().openapi({ description: 'Airline address' }),
@@ -45,7 +45,7 @@ export const AdminAirlineUpdateSchema = z.object({
   economy_class_description: z.string().optional().openapi({ description: 'Economy class description' }),
 }).openapi('AdminAirlineUpdate');
 
-// User list query parameters for admin
+
 export const AdminUserListQuerySchema = z.object({
   email: z.string().optional().openapi({ description: 'Filter by email (case-insensitive)' }),
   name: z.string().optional().openapi({ description: 'Filter by name (case-insensitive)' }),
@@ -53,7 +53,7 @@ export const AdminUserListQuerySchema = z.object({
   role: z.string().optional().openapi({ description: 'Filter by role' }),
 }).openapi('AdminUserListQuery');
 
-// Path parameters
+
 export const AdminAirlineParamsSchema = z.object({
   airline_id: z.string().uuid().openapi({ description: 'The airline identifier' }),
 }).openapi('AdminAirlineParams');
@@ -62,7 +62,7 @@ export const AdminUserParamsSchema = z.object({
   user_id: z.string().uuid().openapi({ description: 'The user identifier' }),
 }).openapi('AdminUserParams');
 
-// Response schemas
+
 export const AdminAirlineListResponseSchema = z.array(AirlineWithUsersSchema).openapi('AdminAirlineListResponse', {
   description: 'List of airlines with their associated users'
 });
@@ -80,7 +80,7 @@ export const AdminErrorResponseSchema = z.object({
   code: z.number().int().optional().openapi({ description: 'Error code' }),
 }).openapi('AdminErrorResponse');
 
-// Type exports
+
 export type AdminUser = z.infer<typeof AdminUserSchema>;
 export type AirlineWithUsers = z.infer<typeof AirlineWithUsersSchema>;
 export type AdminAirlineUpdate = z.infer<typeof AdminAirlineUpdateSchema>;

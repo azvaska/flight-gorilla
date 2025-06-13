@@ -24,7 +24,7 @@ import { validateBody, validateParams, validateQuery } from '../utils/validation
 const router = Router();
 const prisma = new PrismaClient();
 
-// Helper function to format user data for admin response
+
 const formatAdminUserResponse = (user: any) => {
   const userType = user.roles_users?.[0]?.role?.name || 'user';
   
@@ -41,7 +41,7 @@ const formatAdminUserResponse = (user: any) => {
   };
 };
 
-// Helper function to format airline with user data
+
 const formatAirlineWithUserResponse = (airline: any, user: any) => {
   return {
     id: airline.id,
@@ -58,7 +58,7 @@ const formatAirlineWithUserResponse = (airline: any, user: any) => {
   };
 };
 
-// Register OpenAPI routes
+
 registry.registerPath({
   method: 'get',
   path: '/admin/airlines',
@@ -261,7 +261,7 @@ registry.registerPath({
   },
 });
 
-// GET /admin/airlines - List all airlines with their associated user
+
 router.get('/airlines', 
   authenticateToken, 
   requireRoles(['admin']), 
@@ -303,7 +303,7 @@ router.get('/airlines',
   }
 );
 
-// PUT /admin/airlines/:airline_id - Update an airline
+
 router.put('/airlines/:airline_id',
   authenticateToken,
   requireRoles(['admin']),
@@ -358,7 +358,7 @@ router.put('/airlines/:airline_id',
   }
 );
 
-// DELETE /admin/airlines/:airline_id - Delete an airline
+
 router.delete('/airlines/:airline_id',
   authenticateToken,
   requireRoles(['admin']),
@@ -410,7 +410,7 @@ router.delete('/airlines/:airline_id',
   }
 );
 
-// GET /admin/users - List all users with optional filtering
+
 router.get('/users',
   authenticateToken,
   requireRoles(['admin']),
@@ -469,7 +469,7 @@ router.get('/users',
   }
 );
 
-// DELETE /admin/users/:user_id - Delete a user
+
 router.delete('/users/:user_id',
   authenticateToken,
   requireRoles(['admin']),

@@ -43,7 +43,7 @@ def str_to_bool(value: str) -> bool:
     raise ValueError(f"Invalid boolean value: {value}")
 
 
-# --- Request Parsers ---
+
 list_parser = reqparse.RequestParser()
 list_parser.add_argument('name', type=str, help='Filter by city name (case-insensitive, partial match)',
                          location='args')
@@ -173,7 +173,7 @@ class CityResource(Resource):
         city = City.query.options(joinedload(City.nation)).get_or_404(city_id)
         return marshal(city_schema.dump(city), city_model), 200
 
-# --- Request Parsers for Nation ---
+
 nation_list_parser = reqparse.RequestParser()
 nation_list_parser.add_argument('name', type=str, help='Filter by nation name (case-insensitive, partial match)',
                          location='args')

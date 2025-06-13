@@ -35,7 +35,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         if value is not None and not db.session.get(Nation, value):
             raise ValidationError("Nation with given ID does not exist.")
 
-# Create schema instances
+
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
 debit_card_schema = DebitCardSchema()

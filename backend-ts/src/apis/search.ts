@@ -21,7 +21,7 @@ import { optionalAuthenticateToken } from '../middleware/auth';
 
 export const searchRouter = Router();
 
-// Register OpenAPI paths
+
 registry.registerPath({
   method: 'get',
   path: '/search/flights',
@@ -80,19 +80,19 @@ registry.registerPath({
   },
 });
 
-// Helper function to parse date in DD-MM-YYYY format
+
 function parseDateDDMMYYYY(dateStr: string): Date {
   const [day, month, year] = dateStr.split('-').map(Number);
   return new Date(year, month - 1, day);
 }
 
-// Helper function to parse date in MM-YYYY format
+
 function parseDateMMYYYY(dateStr: string): Date {
   const [month, year] = dateStr.split('-').map(Number);
   return new Date(year, month - 1, 1);
 }
 
-// Helper function to calculate dates for a month
+
 function calculateDates(date: Date): Date[] {
   const startDate = new Date(date.getFullYear(), date.getMonth(), 1);
   const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
@@ -105,7 +105,7 @@ function calculateDates(date: Date): Date[] {
   return dateRange;
 }
 
-// Routes
+
 searchRouter.get('/flights', 
   optionalAuthenticateToken,
   validateQuery(FlightSearchQuerySchema),
@@ -167,8 +167,6 @@ searchRouter.get('/flights',
       
       // Sort results
       const sortedJourneys = sortJourneys(validJourneys, query);
-
-      console.log('Found journeys:', sortedJourneys.length);
 
       const originalLen = sortedJourneys.length;
       

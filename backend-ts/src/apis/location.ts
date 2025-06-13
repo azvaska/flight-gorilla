@@ -24,7 +24,7 @@ import { validateQuery, validateParams } from '../utils/validation';
 const prisma = new PrismaClient();
 export const locationRouter = Router();
 
-// Register OpenAPI paths
+
 registry.registerPath({
   method: 'get',
   path: '/location/all',
@@ -186,7 +186,7 @@ registry.registerPath({
   },
 });
 
-// Routes
+
 locationRouter.get('/all', 
   validateQuery(LocationListQuerySchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -404,7 +404,7 @@ locationRouter.get('/nation/:nation_id',
   }
 );
 
-// Cleanup on app termination
+
 process.on('beforeExit', async () => {
   await prisma.$disconnect();
 }); 

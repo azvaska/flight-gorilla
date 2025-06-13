@@ -3,10 +3,10 @@ import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
 
 extendZodWithOpenApi(z);
 
-// Import airport schema from existing file
+
 import { AirportSchema } from './airport';
 
-// Flight airline schema (nested in flight response)
+
 export const FlightAirlineSchema = z.object({
   id: z.string().uuid().openapi({ description: 'Airline ID' }),
   name: z.string().min(1).openapi({ description: 'Airline name' }),
@@ -15,7 +15,7 @@ export const FlightAirlineSchema = z.object({
   economy_class_description: z.string().nullable().openapi({ description: 'Economy class description' }),
 }).openapi('FlightAirline');
 
-// Flight output schema
+
 export const FlightOutputSchema = z.object({
   id: z.string().uuid().openapi({ description: 'Flight ID' }),
   airline: FlightAirlineSchema.openapi({ description: 'Airline' }),
@@ -30,7 +30,7 @@ export const FlightOutputSchema = z.object({
   price_insurance: z.number().min(0).openapi({ description: 'Insurance price' }),
 }).openapi('FlightOutput');
 
-// Seats info schema
+
 export const SeatsInfoSchema = z.object({
   first_class_seats: z.array(z.string()).openapi({ description: 'First class seats' }),
   business_class_seats: z.array(z.string()).openapi({ description: 'Business class seats' }),
@@ -38,14 +38,14 @@ export const SeatsInfoSchema = z.object({
   booked_seats: z.array(z.string()).openapi({ description: 'Booked seats' }),
 }).openapi('SeatsInfo');
 
-// Booked seats schema
+
 export const BookedSeatsSchema = z.object({
   flight_id: z.string().uuid().openapi({ description: 'Flight ID' }),
   seats_info: SeatsInfoSchema.openapi({ description: 'Seats info' }),
   rows: z.number().int().positive().openapi({ description: 'Rows of the aircraft' }),
 }).openapi('BookedSeats');
 
-// Flight extra schema
+
 export const FlightExtraSchema = z.object({
   id: z.string().uuid().openapi({ description: 'Flight Extra ID' }),
   name: z.string().min(1).openapi({ description: 'Name of the extra' }),
@@ -57,17 +57,17 @@ export const FlightExtraSchema = z.object({
   required_on_all_segments: z.boolean().openapi({ description: 'Is the extra required on all segments' }),
 }).openapi('FlightExtra');
 
-// Path parameters
+
 export const FlightParamsSchema = z.object({
   flight_id: z.string().uuid().openapi({ description: 'The flight identifier' }),
 }).openapi('FlightParams');
 
-// Response schemas
+
 export const FlightExtraListResponseSchema = z.array(FlightExtraSchema).openapi('FlightExtraListResponse', { 
   description: 'List of flight extras'
 });
 
-// Type exports
+
 export type FlightOutput = z.infer<typeof FlightOutputSchema>;
 export type FlightAirline = z.infer<typeof FlightAirlineSchema>;
 export type SeatsInfo = z.infer<typeof SeatsInfoSchema>;

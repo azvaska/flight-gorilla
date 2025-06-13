@@ -1,4 +1,4 @@
-// src/app/guards/search-redirect.guard.ts
+
 import { Injectable } from '@angular/core';
 import {
   CanActivate,

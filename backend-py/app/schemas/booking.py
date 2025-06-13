@@ -94,7 +94,7 @@ class BookingOutputSchema(ma.SQLAlchemySchema):
         return obj.total_price
 
 
-# Create schema instances
+
 booking_schema = BookingInputSchema()
 bookings_schema = BookingInputSchema(many=True)
 booking_output_schema = BookingOutputSchema()

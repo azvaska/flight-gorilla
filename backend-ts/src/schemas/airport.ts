@@ -3,7 +3,7 @@ import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
 
 extendZodWithOpenApi(z);
 
-// City schema
+
 export const CitySchema = z.object({
   id: z.number().int().positive().openapi({ description: 'City ID' }),
   name: z.string().min(1).openapi({ description: 'City name' }),
@@ -13,7 +13,7 @@ export const CitySchema = z.object({
   }).optional().openapi({ description: 'Associated Nation' }),
 }).openapi('City');
 
-// Airport schema
+
 export const AirportSchema = z.object({
   id: z.number().int().positive().openapi({ description: 'Airport ID' }),
   name: z.string().min(1).openapi({ description: 'Airport name' }),
@@ -24,7 +24,7 @@ export const AirportSchema = z.object({
   city: CitySchema.openapi({ description: 'Associated City' }),
 }).openapi('Airport');
 
-// Query parameters for airport list
+
 export const AirportListQuerySchema = z.object({
   name: z.string().optional().openapi({ 
     description: 'Filter by airport name (case-insensitive, partial match)',
@@ -48,14 +48,14 @@ export const AirportListQuerySchema = z.object({
   }),
 }).openapi('AirportListQuery');
 
-// Path parameters
+
 export const AirportParamsSchema = z.object({
   airport_id: z.string().transform((val) => parseInt(val, 10)).pipe(
     z.number().int().positive().openapi({ description: 'The airport identifier' })
   ),
 }).openapi('AirportParams');
 
-// Response schemas
+
 export const AirportListResponseSchema = z.array(AirportSchema).openapi('AirportListResponse', { 
   description: 'List of airports'
 });
@@ -64,7 +64,7 @@ export const AirportResponseSchema = AirportSchema.openapi('AirportResponse', {
   description: 'Single airport details'
 });
 
-// Type exports for TypeScript
+
 export type Airport = z.infer<typeof AirportSchema>;
 export type City = z.infer<typeof CitySchema>;
 export type AirportListQuery = z.infer<typeof AirportListQuerySchema>;

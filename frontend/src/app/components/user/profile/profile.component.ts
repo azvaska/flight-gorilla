@@ -231,7 +231,6 @@ export class ProfileComponent {
       );
 
       if (updatedUser.password && updatedUser.oldPassword) {
-        console.log("changing password")
         try{
 
           await firstValueFrom(

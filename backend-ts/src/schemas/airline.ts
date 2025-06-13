@@ -5,7 +5,7 @@ import { classtype } from '../../generated/prisma';
 
 extendZodWithOpenApi(z);
 
-// Base schemas
+
 export const NationSchema = z.object({
   id: z.number().int(),
   name: z.string(),
@@ -31,7 +31,7 @@ export const AirportSchema = z.object({
   city_id: z.number().int(),
 });
 
-// Airline schemas
+
 export const AirlineSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
@@ -68,7 +68,7 @@ export const NewAirlineSchema = z.object({
   admin_credentials: AdminCredentialsSchema,
 });
 
-// Extra schemas
+
 export const extraInputSchema = z.object({
   name: z.string().min(1, 'Name is required').openapi({ description: 'Extra name', example: 'Priority Boarding' }),
   description: z.string().min(1, 'Description is required').openapi({ description: 'Extra description', example: 'Board the aircraft before other passengers' }),
@@ -85,7 +85,7 @@ export const extraOutputSchema = z.object({
   stackable: z.boolean().openapi({ description: 'Can be stacked with other extras', example: true })
 }).openapi({ title: 'ExtraOutput', description: 'Extra service details' });
 
-// Airline Aircraft schemas
+
 export const airlineAircraftInputSchema = z.object({
   aircraft_id: z.number().int().min(1, 'Aircraft ID is required').openapi({ description: 'Aircraft ID', example: 1 }),
   first_class_seats: z.array(z.string()).optional().openapi({ description: 'First class seat numbers', example: ['1A', '1B', '1C'] }),
@@ -112,7 +112,7 @@ export const airlineAircraftOutputSchema = z.object({
   tail_number: z.string().openapi({ description: 'Aircraft tail number', example: 'N123AB' })
 }).openapi({ title: 'AirlineAircraftOutput', description: 'Airline aircraft details' });
 
-// Airline schemas
+
 export const airlineUpdateSchema = z.object({
   name: z.string().min(1).optional().openapi({ description: 'Airline name', example: 'Sky Airlines' }),
   address: z.string().min(1).optional().openapi({ description: 'Airline address', example: '123 Airport Blvd' }),
@@ -139,7 +139,7 @@ export const airlineOutputSchema = z.object({
   economy_class_description: z.string().nullable().openapi({ description: 'Economy class description', example: 'Standard seating with basic amenities' })
 }).openapi({ title: 'AirlineOutput', description: 'Airline details' });
 
-// Route schemas
+
 export const routeInputSchema = z.object({
   departure_airport_id: z.number().int().min(1, 'Departure airport ID is required').openapi({ description: 'Departure airport ID', example: 1 }),
   arrival_airport_id: z.number().int().min(1, 'Arrival airport ID is required').openapi({ description: 'Arrival airport ID', example: 2 }),
@@ -167,7 +167,7 @@ export const routeOutputSchema = z.object({
   is_editable: z.boolean().openapi({ description: 'Is the route editable', example: true })
 }).openapi({ title: 'RouteOutput', description: 'Route details' });
 
-// Flight schemas
+
 export const flightExtraItemSchema = z.object({
   extra_id: z.string().uuid('Invalid extra ID format').openapi({ description: 'Extra ID', example: '123e4567-e89b-12d3-a456-426614174000' }),
   price: z.number().min(0, 'Price must be non-negative').openapi({ description: 'Price of the extra', example: 25.50 }),
@@ -242,7 +242,7 @@ export const flightSeatsOutputSchema = z.object({
   is_editable: z.boolean().openapi({ description: 'Is editable', example: true })
 }).openapi({ title: 'FlightSeatsOutput', description: 'Flight details with seat information' });
 
-// Query parameter schemas
+
 export const airlineListQuerySchema = z.object({
   name: z.string().optional().openapi({ description: 'Filter by airline name (case-insensitive)', example: 'Sky' }),
   nation_id: z.string().optional().transform(val => val ? parseInt(val) : undefined).openapi({ description: 'Filter by nation ID', example: '1' })
@@ -253,13 +253,13 @@ export const flightPageQuerySchema = z.object({
   limit: z.string().optional().transform(val => val ? parseInt(val) : 10).openapi({ description: 'Limit the number of results returned for page', example: '10' })
 }).openapi({ title: 'FlightPageQuery', description: 'Flight pagination query parameters' });
 
-// Pagination response schema
+
 export const flightsPaginationSchema = z.object({
   items: z.array(z.any()).openapi({ description: 'List of flights' }),
   total_pages: z.number().openapi({ description: 'Total number of flight pages', example: 5 })
 }).openapi({ title: 'FlightsPagination', description: 'Paginated flights response' });
 
-// Stats schemas
+
 export const flightsFulfillmentSchema = z.object({
   month: z.number().openapi({ description: 'Month number', example: 6 }),
   totalSeats: z.number().openapi({ description: 'Total available seats', example: 1000 }),
@@ -298,7 +298,7 @@ export const airlineStatsSchema = z.object({
   leastUsedRoute: z.array(leastUsedRouteSchema).openapi({ description: 'Least used routes' })
 }).openapi({ title: 'AirlineStats', description: 'Airline statistics' });
 
-// Type exports
+
 export type ExtraInput = z.infer<typeof extraInputSchema>;
 export type ExtraOutput = z.infer<typeof extraOutputSchema>;
 export type AirlineAircraftInput = z.infer<typeof airlineAircraftInputSchema>;

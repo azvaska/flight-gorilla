@@ -26,6 +26,6 @@ class SeatSessionSchema(ma.SQLAlchemyAutoSchema):
     session_start_time = ma.DateTime(format='iso')
     session_end_time = ma.DateTime(format='iso')
 
-# Create schema instances
+
 seat_session_schema = SeatSessionSchema()
 seat_sessions_schema = SeatSessionSchema(many=True) 

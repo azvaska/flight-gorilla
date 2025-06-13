@@ -3,20 +3,20 @@
  * @description Defines interfaces for the dashboard statistics data.
  */
 
-// Interface for Flight Fulfillment data
+
 export interface IFlightFulfillmentData {
   month: number;
   totalSeats: number;
   totalBooks: number;
 }
 
-// Interface for Revenue data
+
 export interface IRevenueData {
   month: number;
   total: number;
 }
 
-// Interface for Most Requested Routes data
+
 export interface IMostRequestedRouteData {
   airportFrom: string;
   airportTo: string;
@@ -25,13 +25,13 @@ export interface IMostRequestedRouteData {
   booking_ratio: number;
 }
 
-// Interface for Airports with Most Flights data
+
 export interface IAirportsWithMostFlightsData {
   airport: string;
   flights: number;
 }
 
-// Interface for Least Used Routes data
+
 export interface ILeastUsedRouteData {
   airportFrom: string;
   airportTo: string;

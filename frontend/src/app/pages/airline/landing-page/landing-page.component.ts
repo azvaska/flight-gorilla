@@ -3,31 +3,37 @@ import { HlmCardDirective } from '@spartan-ng/ui-card-helm';
 import { ChartData, ChartEvent, ChartType, ChartOptions } from 'chart.js';
 import { AirlineFetchService } from '@/app/services/airline/airline-fetch.service';
 import { BaseChartDirective } from 'ng2-charts';
-import {DecimalPipe} from '@angular/common';
-import {IStats} from '@/types/airline/stats'; // Import IStats
+import { DecimalPipe } from '@angular/common';
+import { IStats } from '@/types/airline/stats'; // Import IStats
 import { LoadingService } from '@/app/services/loading.service';
 import { firstValueFrom } from 'rxjs';
-import {hexToRgba} from '@/utils/colors';
-
+import { hexToRgba } from '@/utils/colors';
 
 @Component({
   selector: 'app-landing-page',
   templateUrl: './landing-page.component.html',
-  imports: [
-    HlmCardDirective,
-    BaseChartDirective,
-    DecimalPipe
-  ],
+  imports: [HlmCardDirective, BaseChartDirective, DecimalPipe],
   host: {
     class: 'block w-full h-fit',
   },
 })
-export class LandingPageComponent implements OnInit { // Implement OnInit
+export class LandingPageComponent implements OnInit {
+  // Implement OnInit
 
   public dashboardData: IStats | undefined;
   public months: string[] = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   private colorPalette: string[] = [
@@ -35,7 +41,7 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
     '#607466', // Palette Color 2
     '#aedcc0', // Palette Color 3 (Black)
     '#7bd389', // Palette Color 4
-    '#38e4ae'  // Palette Color 5
+    '#38e4ae', // Palette Color 5
   ];
 
   constructor(
@@ -47,12 +53,11 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
     // Fetch data and then prepare charts
     this.fetchStats().then((response) => {
       this.dashboardData = response;
-      console.log('Dashboard Data:', this.dashboardData);
       this.prepareChartData(); // Call prepareChartData AFTER dashboardData is set
     });
   }
 
-  protected async fetchStats(){
+  protected async fetchStats() {
     this.loadingService.startLoadingTask();
     const response = await firstValueFrom(
       this.airlineFetchService.getAirlineStats()
@@ -67,16 +72,16 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
     maintainAspectRatio: false, // Allow charts to adapt to container size
     plugins: {
       legend: {
-        display: false // Hide the legend for all charts as per request
-      }
-    }
+        display: false, // Hide the legend for all charts as per request
+      },
+    },
   };
 
   // --- Flights Fulfillment Chart (Line Chart) ---
   public flightsFulfillmentLabels: string[] = [];
   public flightsFulfillmentData: ChartData<'line'> = {
     labels: [],
-    datasets: []
+    datasets: [],
   };
   public flightsFulfillmentType: ChartType = 'line';
 
@@ -84,7 +89,7 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
   public periodicRevenueLabels: string[] = [];
   public periodicRevenueData: ChartData<'line'> = {
     labels: [],
-    datasets: []
+    datasets: [],
   };
   public periodicRevenueType: ChartType = 'line';
 
@@ -95,7 +100,7 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
   public mostRequestedRoutesLabels: string[] = [];
   public mostRequestedRoutesData: ChartData<'bar'> = {
     labels: [],
-    datasets: []
+    datasets: [],
   };
   public mostRequestedRoutesType: ChartType = 'bar';
 
@@ -103,7 +108,7 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
   public airportsWithMostFlightsLabels: string[] = [];
   public airportsWithMostFlightsData: ChartData<'bar'> = {
     labels: [],
-    datasets: []
+    datasets: [],
   };
   public airportsWithMostFlightsType: ChartType = 'bar';
 
@@ -111,10 +116,9 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
   public leastUsedRoutesLabels: string[] = [];
   public leastUsedRoutesData: ChartData<'bar'> = {
     labels: [],
-    datasets: []
+    datasets: [],
   };
   public leastUsedRoutesType: ChartType = 'bar';
-
 
   private prepareChartData(): void {
     // Ensure dashboardData is not undefined before accessing its properties
@@ -126,97 +130,125 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
     // Flights Fulfillment
     this.flightsFulfillmentLabels = this.dashboardData.flights_fullfilment
       .sort((a, b) => a.month - b.month)
-      .map(item => this.months[item.month - 1]);
+      .map((item) => this.months[item.month - 1]);
     this.flightsFulfillmentData = {
       labels: this.flightsFulfillmentLabels,
       datasets: [
         {
           data: this.dashboardData.flights_fullfilment
             .sort((a, b) => a.month - b.month)
-            .map(item => (item.totalBooks / item.totalSeats) * 100),
+            .map((item) => (item.totalBooks / item.totalSeats) * 100),
           label: 'Fulfillment %',
           fill: true,
           tension: 0.4,
           borderColor: this.colorPalette[1],
           backgroundColor: hexToRgba(this.colorPalette[1], 0.2),
-        }
-      ]
+        },
+      ],
     };
 
     // Periodic Revenue
     this.periodicRevenueLabels = this.dashboardData.revenue
       .sort((a, b) => a.month - b.month)
-      .map(item => this.months[item.month - 1]);
+      .map((item) => this.months[item.month - 1]);
     this.periodicRevenueData = {
       labels: this.periodicRevenueLabels,
       datasets: [
         {
           data: this.dashboardData.revenue
             .sort((a, b) => a.month - b.month)
-            .map(item => item.total),
+            .map((item) => item.total),
           label: 'Revenue (€)',
           fill: true,
           tension: 0.4,
           borderColor: this.colorPalette[0],
           backgroundColor: hexToRgba(this.colorPalette[0], 0.2),
-        }
-      ]
+        },
+      ],
     };
-    this.totalRevenue = this.dashboardData.revenue.reduce((sum, item) => sum + item.total, 0);
+    this.totalRevenue = this.dashboardData.revenue.reduce(
+      (sum, item) => sum + item.total,
+      0
+    );
 
     // Most Requested Routes
     this.mostRequestedRoutesLabels = this.dashboardData.mostRequestedRoutes.map(
-      route => `${route.airportFrom}-${route.airportTo}`
+      (route) => `${route.airportFrom}-${route.airportTo}`
     );
     this.mostRequestedRoutesData = {
       labels: this.mostRequestedRoutesLabels,
       datasets: [
         {
-          data: this.dashboardData.mostRequestedRoutes.map(route => route.booking_ratio),
-          backgroundColor: this.generateDistinctColors(this.dashboardData.mostRequestedRoutes.length),
-          borderColor: this.generateDistinctColors(this.dashboardData.mostRequestedRoutes.length, 0.8),
-          borderWidth: 1
-        }
-      ]
+          data: this.dashboardData.mostRequestedRoutes.map(
+            (route) => route.booking_ratio
+          ),
+          backgroundColor: this.generateDistinctColors(
+            this.dashboardData.mostRequestedRoutes.length
+          ),
+          borderColor: this.generateDistinctColors(
+            this.dashboardData.mostRequestedRoutes.length,
+            0.8
+          ),
+          borderWidth: 1,
+        },
+      ],
     };
 
     // Airports with Most Flights
-    this.airportsWithMostFlightsLabels = this.dashboardData.airportsWithMostFlights.map(
-      airport => airport.airport
-    );
+    this.airportsWithMostFlightsLabels =
+      this.dashboardData.airportsWithMostFlights.map(
+        (airport) => airport.airport
+      );
     this.airportsWithMostFlightsData = {
       labels: this.airportsWithMostFlightsLabels,
       datasets: [
         {
-          data: this.dashboardData.airportsWithMostFlights.map(airport => airport.flights),
-          backgroundColor: this.generateDistinctColors(this.dashboardData.airportsWithMostFlights.length),
-          borderColor: this.generateDistinctColors(this.dashboardData.airportsWithMostFlights.length, 0.8),
-          borderWidth: 1
-        }
-      ]
+          data: this.dashboardData.airportsWithMostFlights.map(
+            (airport) => airport.flights
+          ),
+          backgroundColor: this.generateDistinctColors(
+            this.dashboardData.airportsWithMostFlights.length
+          ),
+          borderColor: this.generateDistinctColors(
+            this.dashboardData.airportsWithMostFlights.length,
+            0.8
+          ),
+          borderWidth: 1,
+        },
+      ],
     };
 
-    console.log(this.dashboardData.leastUsedRoute);
-    console.log(this.dashboardData.leastUsedRoute.length);
     // Least Used Routes
     this.leastUsedRoutesLabels = this.dashboardData.leastUsedRoute.map(
-      route => `${route.airportFrom}-${route.airportTo}`
+      (route) => `${route.airportFrom}-${route.airportTo}`
     );
     this.leastUsedRoutesData = {
       labels: this.leastUsedRoutesLabels,
       datasets: [
         {
-          data: this.dashboardData.leastUsedRoute.map(route => route.flights),
-          backgroundColor: this.generateDistinctColors(this.dashboardData.leastUsedRoute.length, 0.6, 3), // Different hue for distinction
-          borderColor: this.generateDistinctColors(this.dashboardData.leastUsedRoute.length, 0.8, 3),
-          borderWidth: 1
-        }
-      ]
+          data: this.dashboardData.leastUsedRoute.map((route) => route.flights),
+          backgroundColor: this.generateDistinctColors(
+            this.dashboardData.leastUsedRoute.length,
+            0.6,
+            3
+          ), // Different hue for distinction
+          borderColor: this.generateDistinctColors(
+            this.dashboardData.leastUsedRoute.length,
+            0.8,
+            3
+          ),
+          borderWidth: 1,
+        },
+      ],
     };
   }
 
   // Helper to generate distinct colors for bar charts
-  private generateDistinctColors(count: number, alpha: number = 0.6, startIndex: number = 0): string[] {
+  private generateDistinctColors(
+    count: number,
+    alpha: number = 0.6,
+    startIndex: number = 0
+  ): string[] {
     const colors: string[] = [];
     const paletteLength = this.colorPalette.length;
     for (let i = 0; i < count; i++) {
@@ -228,11 +260,19 @@ export class LandingPageComponent implements OnInit { // Implement OnInit
   }
 
   // Generic chart event handlers for all charts
-  public chartClicked({ event, active }: { event: ChartEvent; active: object[]; }): void {
-    console.log('Chart Clicked:', event, active);
-  }
+  public chartClicked({
+    event,
+    active,
+  }: {
+    event: ChartEvent;
+    active: object[];
+  }): void {}
 
-  public chartHovered({ event, active }: { event: ChartEvent; active: object[]; }): void {
-    console.log('Chart Hovered:', event, active);
-  }
+  public chartHovered({
+    event,
+    active,
+  }: {
+    event: ChartEvent;
+    active: object[];
+  }): void {}
 }

@@ -14,7 +14,7 @@ import { validateParams } from '../utils/validation';
 const prisma = new PrismaClient();
 export const flightRouter = Router();
 
-// Helper function to format flight data for response
+
 const formatFlightResponse = (flight: any) => {
   return {
     id: flight.id,
@@ -53,7 +53,7 @@ const formatFlightResponse = (flight: any) => {
   };
 };
 
-// Helper function to get seats info for a flight
+
 const getSeatsInfo = async (flightId: string) => {
   // Get aircraft seat configuration
   const flight = await prisma.flight.findUnique({
@@ -142,7 +142,7 @@ const getSeatsInfo = async (flightId: string) => {
   };
 };
 
-// Register OpenAPI paths
+
 registry.registerPath({
   method: 'get',
   path: '/flight/{flight_id}',
@@ -254,8 +254,8 @@ registry.registerPath({
   },
 });
 
-// Routes
-// Specific routes must come before parameterized routes
+
+
 flightRouter.get('/extra/:flight_id', 
   validateParams(FlightParamsSchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -386,7 +386,7 @@ flightRouter.get('/:flight_id',
   }
 );
 
-// Cleanup on app termination
+
 process.on('beforeExit', async () => {
   await prisma.$disconnect();
 }); 

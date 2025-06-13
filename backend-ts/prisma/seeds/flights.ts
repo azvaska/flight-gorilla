@@ -1,7 +1,7 @@
 import { PrismaClient } from '../../generated/prisma';
 import { randomUUID } from 'crypto';
 
-// Major worldwide airports with realistic data - simplified version
+
 const WORLD_AIRPORTS = {
   // Europe - Major hubs
   'LHR': { name: 'London Heathrow', city: 'London', country: 'UK', lat: 51.4700, lon: -0.4543, timezone_offset: 0 },
@@ -23,7 +23,7 @@ const WORLD_AIRPORTS = {
   'SIN': { name: 'Singapore Changi', city: 'Singapore', country: 'Singapore', lat: 1.3644, lon: 103.9915, timezone_offset: 8 }
 };
 
-// Popular European routes (higher frequency)
+
 const POPULAR_EUROPEAN_ROUTES = [
   ['LHR', 'CDG'], ['LHR', 'FRA'], ['LHR', 'AMS'], ['LHR', 'MAD'], ['LHR', 'FCO'],
   ['LHR', 'MXP'], ['LHR', 'BCN'], ['CDG', 'FRA'], ['CDG', 'MAD'], ['CDG', 'FCO'],
@@ -31,7 +31,7 @@ const POPULAR_EUROPEAN_ROUTES = [
   ['FCO', 'VCE'], ['FCO', 'NAP'], ['MXP', 'VCE'], ['MXP', 'NAP'], ['BCN', 'FCO']
 ];
 
-// Popular intercontinental routes from Europe
+
 const INTERCONTINENTAL_ROUTES = [
   ['LHR', 'JFK'], ['LHR', 'LAX'], ['LHR', 'DXB'], ['LHR', 'NRT'], ['LHR', 'SIN'],
   ['CDG', 'JFK'], ['CDG', 'LAX'], ['CDG', 'DXB'], ['CDG', 'SIN'], ['CDG', 'NRT'],
@@ -113,7 +113,7 @@ function getRealisticDepartureTime(baseDate: Date, isIntercontinental = false): 
   return departureTime;
 }
 
-// Generate a manual flight (from original seed file)
+
 async function generateManualFlight(
   prisma: PrismaClient,
   routeId: number,
@@ -148,7 +148,7 @@ async function generateManualFlight(
   });
 }
 
-// Create original test flights (from original seed file)
+
 async function createOriginalTestFlights(prisma: PrismaClient): Promise<number> {
   console.log('\n🔧 Creating original test flights for development...');
   

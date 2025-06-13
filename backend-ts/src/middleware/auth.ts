@@ -4,7 +4,7 @@ import { verifyAccessToken, verifyRefreshToken } from '../utils/jwt';
 
 const prisma = new PrismaClient();
 
-// Extend Express Request interface to include user
+
 declare global {
   namespace Express {
     interface Request {
@@ -182,7 +182,7 @@ export const requireRoles = (requiredRoles: string[]) => {
   };
 };
 
-// Cleanup on app termination
+
 process.on('beforeExit', async () => {
   await prisma.$disconnect();
 });

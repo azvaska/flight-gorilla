@@ -1,4 +1,4 @@
-// extras-list.component.ts
+
 import { Component, QueryList, ViewChild, viewChild, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgClass, NgForOf, NgOptimizedImage, NgIf } from '@angular/common';

@@ -27,5 +27,5 @@ class FlightSearchResultSchema(ma.Schema):
     gate = ma.String()
     terminal = ma.String()
 
-# Create schema instance
+
 flight_search_result_schema = FlightSearchResultSchema(many=True) 

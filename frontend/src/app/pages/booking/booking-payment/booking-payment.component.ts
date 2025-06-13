@@ -75,7 +75,6 @@ export class BookingPaymentComponent {
   protected onContinue() {
     try {
       this.createBooking().then((booking) => {
-        console.log('Successfully created booking', booking);
         this.bookingStateStore.updateBookingState({
           phase: BookingPhase.CONFIRMED,
         });

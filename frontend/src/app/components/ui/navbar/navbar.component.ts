@@ -1,4 +1,4 @@
-// navbar.component.ts
+
 import { Component, ViewChild } from '@angular/core';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import {

@@ -22,7 +22,7 @@ airport_model = api.model('Airport', {
     'city': fields.Nested(city_model, description='Associated City')
     })
 
-# --- Request Parsers ---
+
 list_parser = reqparse.RequestParser()
 list_parser.add_argument('name', type=str, help='Filter by airport name (case-insensitive, partial match)', location='args')
 list_parser.add_argument('city_name', type=str, help='Filter by city name (case-insensitive, partial match)', location='args')

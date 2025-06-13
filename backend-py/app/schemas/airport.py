@@ -10,6 +10,6 @@ class AirportSchema(ma.SQLAlchemyAutoSchema):
         model = Airport
         load_instance = True
 
-# Create schema instances
+
 airport_schema = AirportSchema()
 airports_schema = AirportSchema(many=True) 

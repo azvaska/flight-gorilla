@@ -29,7 +29,7 @@ from app.schemas.booking import (
 
 api = Namespace("booking", description="Booking related operations")
 
-# --- RESTx Models ---
+
 
 extra_model_input = api.model(
     "ExtraInput",
@@ -104,7 +104,7 @@ booking_model_output = api.model(
     },
 )
 
-# --- Request Parsers ---
+
 booking_list_parser = reqparse.RequestParser()
 booking_list_parser.add_argument(
     "flight_id", type=str, help="Filter by flight ID", location="args"

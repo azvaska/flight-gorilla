@@ -164,7 +164,7 @@ model extra {
   @@unique([name, airline_id], map: "uq_extra_name_airline")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+
 model flight {
   id                       String                     @id(map: "pk_flight") @db.Uuid
   route_id                 Int
@@ -257,7 +257,7 @@ model roles_users {
   @@id([user_id, role_id], map: "pk_roles_users")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+
 model route {
   id                                          Int      @id(map: "pk_route") @default(autoincrement())
   flight_number                               String   @unique(map: "uq_route_flight_number") @db.VarChar(255)

@@ -15,7 +15,7 @@ import { validateQuery, validateParams } from '../utils/validation';
 const prisma = new PrismaClient();
 export const aircraftRouter = Router();
 
-// Register OpenAPI paths
+
 registry.registerPath({
   method: 'get',
   path: '/aircraft',
@@ -82,7 +82,7 @@ registry.registerPath({
   },
 });
 
-// Routes
+
 aircraftRouter.get('/', 
   validateQuery(AircraftListQuerySchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {

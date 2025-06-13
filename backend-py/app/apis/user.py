@@ -1,4 +1,4 @@
-# app/apis/user.py
+
 import datetime
 from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -17,7 +17,7 @@ api = Namespace('user', description='User related operations')
 
 card_type_values = [member.value.upper() for member in CardType]
 
-# --- RESTx Models ---
+
 payement_card_model_input = api.model('DebitCard', {
     'holder_name': fields.String(required=True, description='Card holder full name'),
     'card_name': fields.String(required=True, description='Card name'),
@@ -74,7 +74,7 @@ user_put_model = api.model('UserUpdate', {
 })
 
 
-# --- Request Parsers ---
+
 user_list_parser = reqparse.RequestParser()
 user_list_parser.add_argument('email', type=str, help='Filter by email (case-insensitive)', location='args')
 user_list_parser.add_argument('name', type=str, help='Filter by name (case-insensitive)', location='args')

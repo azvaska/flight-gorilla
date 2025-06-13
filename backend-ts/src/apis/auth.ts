@@ -23,7 +23,7 @@ import crypto from 'crypto';
 const prisma = new PrismaClient();
 export const authRouter = Router();
 
-// Helper function to generate user response data
+
 const generateTokenResponse = async (user: any) => {
   const accessToken = generateAccessToken(user.id);
   const refreshToken = generateRefreshToken(user.id);
@@ -42,7 +42,7 @@ const generateTokenResponse = async (user: any) => {
   };
 };
 
-// Register OpenAPI paths
+
 registry.registerPath({
   method: 'post',
   path: '/auth/login',
@@ -265,7 +265,7 @@ registry.registerPath({
   },
 });
 
-// Routes
+
 authRouter.post('/login', validateBody(LoginInputSchema), async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { email, password } = req.body as LoginInput;
@@ -539,7 +539,7 @@ authRouter.post('/register_airline',
   }
 );
 
-// Cleanup on app termination
+
 process.on('beforeExit', async () => {
   await prisma.$disconnect();
 }); 

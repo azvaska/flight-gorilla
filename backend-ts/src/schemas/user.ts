@@ -3,10 +3,10 @@ import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
 
 extendZodWithOpenApi(z);
 
-// Card type enum
+
 export const CardTypeSchema = z.enum(['DEBIT', 'CREDIT', 'PREPAID']).openapi('CardType');
 
-// Nation schema (for nested responses)
+
 export const NationSchema = z.object({
   id: z.number().int().positive().openapi({ description: 'Nation ID' }),
   name: z.string().min(1).openapi({ description: 'Nation name' }),
@@ -14,7 +14,7 @@ export const NationSchema = z.object({
   alpha2: z.string().length(2).openapi({ description: 'Nation alpha2 code' }),
 }).openapi('Nation');
 
-// Payment card input schema
+
 export const PaymentCardInputSchema = z.object({
   holder_name: z.string().min(1).openapi({ description: 'Card holder full name' }),
   card_name: z.string().min(1).openapi({ description: 'Card name' }),
@@ -24,7 +24,7 @@ export const PaymentCardInputSchema = z.object({
   card_type: CardTypeSchema.openapi({ description: 'Card type' }),
 }).openapi('PaymentCardInput');
 
-// Payment card output schema
+
 export const PaymentCardOutputSchema = z.object({
   id: z.number().int().positive().openapi({ description: 'Card ID' }),
   holder_name: z.string().openapi({ description: 'Card holder full name' }),
@@ -35,7 +35,7 @@ export const PaymentCardOutputSchema = z.object({
   card_type: CardTypeSchema.openapi({ description: 'Card type' }),
 }).openapi('PaymentCardOutput');
 
-// User base schema
+
 export const UserSchema = z.object({
   id: z.string().uuid().openapi({ description: 'User ID' }),
   email: z.string().email().openapi({ description: 'Email address' }),
@@ -48,7 +48,7 @@ export const UserSchema = z.object({
   active: z.boolean().openapi({ description: 'Account active status' }),
 }).openapi('User');
 
-// User output schema (with nested relations)
+
 export const UserOutputSchema = z.object({
   id: z.string().uuid().openapi({ description: 'User ID' }),
   email: z.string().email().openapi({ description: 'Email address' }),
@@ -63,7 +63,7 @@ export const UserOutputSchema = z.object({
   type: z.enum(['airline', 'user']).openapi({ description: 'User type (airline or user)' }),
 }).openapi('UserOutput');
 
-// User update schema
+
 export const UserUpdateSchema = z.object({
   email: z.string().email().optional().openapi({ description: 'Email address' }),
   name: z.string().min(1).optional().openapi({ description: 'First name' }),
@@ -73,13 +73,13 @@ export const UserUpdateSchema = z.object({
   nation_id: z.number().int().positive().optional().openapi({ description: 'Nation ID' }),
 }).openapi('UserUpdate');
 
-// Password update schema
+
 export const UpdatePasswordSchema = z.object({
   old_password: z.string().min(1).openapi({ description: 'Current password' }),
   new_password: z.string().min(6).openapi({ description: 'New password (minimum 6 characters)' }),
 }).openapi('UpdatePassword');
 
-// User list query parameters
+
 export const UserListQuerySchema = z.object({
   email: z.string().optional().openapi({ description: 'Filter by email (case-insensitive)' }),
   name: z.string().optional().openapi({ description: 'Filter by name (case-insensitive)' }),
@@ -87,7 +87,7 @@ export const UserListQuerySchema = z.object({
   role: z.string().optional().openapi({ description: 'Filter by role' }),
 }).openapi('UserListQuery');
 
-// Path parameters
+
 export const UserParamsSchema = z.object({
   user_id: z.string().uuid().openapi({ description: 'The user identifier' }),
 }).openapi('UserParams');
@@ -98,7 +98,7 @@ export const CardParamsSchema = z.object({
   ),
 }).openapi('CardParams');
 
-// Response schemas
+
 export const UserListResponseSchema = z.array(UserOutputSchema).openapi('UserListResponse', { 
   description: 'List of users'
 });
@@ -111,7 +111,7 @@ export const MessageResponseSchema = z.object({
   message: z.string().openapi({ description: 'Success message' }),
 }).openapi('MessageResponse');
 
-// Type exports
+
 export type User = z.infer<typeof UserSchema>;
 export type UserOutput = z.infer<typeof UserOutputSchema>;
 export type UserUpdate = z.infer<typeof UserUpdateSchema>;

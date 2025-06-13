@@ -20,7 +20,7 @@ import {
 const router = Router();
 const prisma = new PrismaClient();
 
-// Validation middleware
+
 const validateBookingInput = (req: Request, res: Response, next: any) => {
   try {
     // Validate request body without reassigning
@@ -49,7 +49,7 @@ const validateBookingListQuery = (req: Request, res: Response, next: any) => {
   }
 };
 
-// Helper function to format booking output (matches Python schemas)
+
 async function formatBookingOutput(booking: any) {
   // Helper function to format flight data to match Python structure
   const formatFlightData = (flightData: any) => {
@@ -701,7 +701,7 @@ router.delete('/:booking_id', authenticateToken, async (req: Request, res: Respo
   }
 });
 
-// Register OpenAPI paths
+
 registry.registerPath({
   method: 'get',
   path: '/booking',

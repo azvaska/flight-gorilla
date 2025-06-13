@@ -3,7 +3,7 @@ import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
 
 extendZodWithOpenApi(z);
 
-// Nation schema
+
 export const NationSchema = z.object({
   id: z.number().int().positive().openapi({ description: 'Nation ID' }),
   name: z.string().min(1).openapi({ description: 'Nation name' }),
@@ -11,27 +11,27 @@ export const NationSchema = z.object({
   alpha2: z.string().length(2).openapi({ description: 'Nation alpha2 code' }),
 }).openapi('Nation');
 
-// City schema without nation (for when include_nation is false)
+
 export const CityWithoutNationSchema = z.object({
   id: z.number().int().positive().openapi({ description: 'City ID' }),
   name: z.string().min(1).openapi({ description: 'City name' }),
 }).openapi('CityWithoutNation');
 
-// City schema with nation
+
 export const CitySchema = z.object({
   id: z.number().int().positive().openapi({ description: 'City ID' }),
   name: z.string().min(1).openapi({ description: 'City name' }),
   nation: NationSchema.nullable().optional().openapi({ description: 'Associated Nation' }),
 }).openapi('City');
 
-// Location schema for combined search
+
 export const LocationSchema = z.object({
   id: z.number().int().positive().openapi({ description: 'Unique identifier' }),
   name: z.string().min(1).openapi({ description: 'Name of the location' }),
   type: z.enum(['city', 'nation', 'airport']).openapi({ description: 'Type: city, nation, or airport' }),
 }).openapi('Location');
 
-// Query parameters for location search
+
 export const LocationListQuerySchema = z.object({
   name: z.string().optional().openapi({ 
     description: 'Filter by location name (case-insensitive, partial match)',
@@ -43,7 +43,7 @@ export const LocationListQuerySchema = z.object({
   }),
 }).openapi('LocationListQuery');
 
-// Query parameters for city list
+
 export const CityListQuerySchema = z.object({
   name: z.string().optional().openapi({ 
     description: 'Filter by city name (case-insensitive, partial match)',
@@ -61,7 +61,7 @@ export const CityListQuerySchema = z.object({
   }),
 }).openapi('CityListQuery');
 
-// Query parameters for nation list
+
 export const NationListQuerySchema = z.object({
   name: z.string().optional().openapi({ 
     description: 'Filter by nation name (case-insensitive, partial match)',
@@ -77,7 +77,7 @@ export const NationListQuerySchema = z.object({
   }),
 }).openapi('NationListQuery');
 
-// Path parameters
+
 export const CityParamsSchema = z.object({
   city_id: z.string().transform((val) => parseInt(val, 10)).pipe(
     z.number().int().positive().openapi({ description: 'The city identifier' })
@@ -90,7 +90,7 @@ export const NationParamsSchema = z.object({
   ),
 }).openapi('NationParams');
 
-// Response schemas
+
 export const LocationListResponseSchema = z.array(LocationSchema).openapi('LocationListResponse', { 
   description: 'List of locations (cities, nations, airports)'
 });
@@ -107,7 +107,7 @@ export const NationListResponseSchema = z.array(NationSchema).openapi('NationLis
   description: 'List of nations'
 });
 
-// Type exports
+
 export type Nation = z.infer<typeof NationSchema>;
 export type City = z.infer<typeof CitySchema>;
 export type CityWithoutNation = z.infer<typeof CityWithoutNationSchema>;

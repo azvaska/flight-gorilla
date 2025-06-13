@@ -25,7 +25,7 @@ import { authenticateToken } from '../middleware/auth';
 const prisma = new PrismaClient();
 export const userRouter = Router();
 
-// Helper function to format user data for response
+
 const formatUserResponse = (user: any) => {
   const userType = user.roles_users[0].role.name;
   
@@ -44,7 +44,7 @@ const formatUserResponse = (user: any) => {
   };
 };
 
-// Register OpenAPI paths
+
 registry.registerPath({
   method: 'get',
   path: '/user/{user_id}',
@@ -346,8 +346,8 @@ registry.registerPath({
   },
 });
 
-// Routes
-// Note: More specific routes must come before parameterized routes
+
+
 userRouter.get('/me', 
   authenticateToken, 
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -380,7 +380,7 @@ userRouter.get('/me',
   }
 );
 
-// Specific routes must come before parameterized routes
+
 userRouter.post('/update_password', 
   authenticateToken, 
   validateBody(UpdatePasswordSchema),
@@ -689,7 +689,7 @@ userRouter.put('/:user_id',
   }
 );
 
-// Cleanup on app termination
+
 process.on('beforeExit', async () => {
   await prisma.$disconnect();
 }); 

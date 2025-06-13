@@ -30,7 +30,7 @@ const prisma = new PrismaClient();
 
 
 
-// Helper function to get airline ID from user (matches Python decorator)
+
 const getAirlineIdFromUser = async (userId: string): Promise<string | null> => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -41,7 +41,7 @@ const getAirlineIdFromUser = async (userId: string): Promise<string | null> => {
 
 
 
-// Helper function to format airline aircraft data
+
 const formatAirlineAircraftData = (aircraft: any) => {
   // Get seat arrays from airline_aircraft_seat relationships
   const firstClassSeats = aircraft.airline_aircraft_seat
@@ -67,7 +67,7 @@ const formatAirlineAircraftData = (aircraft: any) => {
   };
 };
 
-// Helper function to format route data
+
 const formatRouteData = (route: any) => {
   // Check if route is editable (no associated flights)
   const isEditable = !route.flight || route.flight.length === 0;
@@ -84,7 +84,7 @@ const formatRouteData = (route: any) => {
   };
 };
 
-// Register OpenAPI routes
+
 registry.registerPath({
   method: 'get',
   path: '/airline/all',
@@ -425,7 +425,7 @@ registry.registerPath({
   tags: ['Airline Aircraft'],
 });
 
-// Additional aircraft endpoints
+
 registry.registerPath({
   method: 'get',
   path: '/airline/aircrafts/{aircraft_id}',
@@ -524,7 +524,7 @@ registry.registerPath({
   tags: ['Airline Aircraft'],
 });
 
-// Route endpoints
+
 registry.registerPath({
   method: 'get',
   path: '/airline/routes',
@@ -682,7 +682,7 @@ registry.registerPath({
   tags: ['Airline Routes'],
 });
 
-// Flight endpoints
+
 registry.registerPath({
   method: 'get',
   path: '/airline/flights',
@@ -843,7 +843,7 @@ registry.registerPath({
   tags: ['Airline Flights'],
 });
 
-// Stats endpoint
+
 registry.registerPath({
   method: 'get',
   path: '/airline/stats',
@@ -869,7 +869,7 @@ registry.registerPath({
   tags: ['Airline Stats'],
 });
 
-// GET /airline/all - List all airlines with optional filtering
+
 router.get('/all', async (req: Request, res: Response) => {
   try {
     const query = airlineListQuerySchema.parse(req.query);
@@ -905,7 +905,7 @@ router.get('/all', async (req: Request, res: Response) => {
   }
 });
 
-// GET /airline/ - Fetch the airline associated with the current user
+
 router.get('/', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -936,7 +936,7 @@ router.get('/', authenticateToken, requireRoles(['airline-admin']), async (req: 
   }
 });
 
-// GET /airline/extras - Get all extras for the current airline
+
 router.get('/extras', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -958,7 +958,7 @@ router.get('/extras', authenticateToken, requireRoles(['airline-admin']), async 
   }
 });
 
-// POST /airline/extras - Add a new extra for the current airline
+
 router.post('/extras', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -994,7 +994,7 @@ router.post('/extras', authenticateToken, requireRoles(['airline-admin']), async
   }
 });
 
-// GET /airline/extras/:extra_id - Get a specific extra
+
 router.get('/extras/:extra_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1027,7 +1027,7 @@ router.get('/extras/:extra_id', authenticateToken, requireRoles(['airline-admin'
   }
 });
 
-// PUT /airline/extras/:extra_id - Update an extra
+
 router.put('/extras/:extra_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1075,7 +1075,7 @@ router.put('/extras/:extra_id', authenticateToken, requireRoles(['airline-admin'
   }
 });
 
-// DELETE /airline/extras/:extra_id - Delete an extra
+
 router.delete('/extras/:extra_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1119,7 +1119,7 @@ router.delete('/extras/:extra_id', authenticateToken, requireRoles(['airline-adm
   }
 });
 
-// GET /airline/aircrafts - Get all aircraft for the current airline
+
 router.get('/aircrafts', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1146,7 +1146,7 @@ router.get('/aircrafts', authenticateToken, requireRoles(['airline-admin']), asy
   }
 });
 
-// POST /airline/aircrafts - Add a new aircraft for the current airline
+
 router.post('/aircrafts', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1234,7 +1234,7 @@ router.post('/aircrafts', authenticateToken, requireRoles(['airline-admin']), as
   }
 });
 
-// GET /airline/aircrafts/:aircraft_id - Get a specific aircraft
+
 router.get('/aircrafts/:aircraft_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1271,7 +1271,7 @@ router.get('/aircrafts/:aircraft_id', authenticateToken, requireRoles(['airline-
   }
 });
 
-// PUT /airline/aircrafts/:aircraft_id - Update an aircraft
+
 router.put('/aircrafts/:aircraft_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1382,7 +1382,7 @@ router.put('/aircrafts/:aircraft_id', authenticateToken, requireRoles(['airline-
   }
 });
 
-// DELETE /airline/aircrafts/:aircraft_id - Delete an aircraft
+
 router.delete('/aircrafts/:aircraft_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1426,7 +1426,7 @@ router.delete('/aircrafts/:aircraft_id', authenticateToken, requireRoles(['airli
   }
 });
 
-// GET /airline/routes - Get all routes for the current airline
+
 router.get('/routes', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1459,7 +1459,7 @@ router.get('/routes', authenticateToken, requireRoles(['airline-admin']), async 
   }
 });
 
-// POST /airline/routes - Add a new route for the current airline
+
 router.post('/routes', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1505,7 +1505,7 @@ router.post('/routes', authenticateToken, requireRoles(['airline-admin']), async
   }
 });
 
-// GET /airline/routes/:route_id - Get a specific route
+
 router.get('/routes/:route_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1556,7 +1556,7 @@ router.get('/routes/:route_id', authenticateToken, requireRoles(['airline-admin'
   }
 });
 
-// PUT /airline/routes/:route_id - Update a route
+
 router.put('/routes/:route_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1616,7 +1616,7 @@ router.put('/routes/:route_id', authenticateToken, requireRoles(['airline-admin'
   }
 });
 
-// DELETE /airline/routes/:route_id - Delete a route
+
 router.delete('/routes/:route_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1669,7 +1669,7 @@ router.delete('/routes/:route_id', authenticateToken, requireRoles(['airline-adm
   }
 });
 
-// GET /airline/flights - Get all flights for the current airline with pagination
+
 router.get('/flights', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1774,7 +1774,7 @@ router.get('/flights', authenticateToken, requireRoles(['airline-admin']), async
   }
 });
 
-// POST /airline/flights - Create a new flight for the current airline
+
 router.post('/flights', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -1938,7 +1938,7 @@ router.post('/flights', authenticateToken, requireRoles(['airline-admin']), asyn
   }
 });
 
-// GET /airline/flights/:flight_id - Get a specific flight with seat information
+
 router.get('/flights/:flight_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -2038,7 +2038,7 @@ router.get('/flights/:flight_id', authenticateToken, requireRoles(['airline-admi
   }
 });
 
-// PUT /airline/flights/:flight_id - Update a flight
+
 router.put('/flights/:flight_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -2197,7 +2197,7 @@ router.put('/flights/:flight_id', authenticateToken, requireRoles(['airline-admi
   }
 });
 
-// DELETE /airline/flights/:flight_id - Delete a flight
+
 router.delete('/flights/:flight_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -2257,9 +2257,9 @@ router.delete('/flights/:flight_id', authenticateToken, requireRoles(['airline-a
   }
 });
 
-// GET /airline/stats - Get airline statistics
-// GET /airline/stats - Get airline statistics
-// Stats endpoint
+
+
+
 router.get('/stats',
   authenticateToken,
   requireRoles(['airline-admin']),
@@ -2468,7 +2468,7 @@ router.get('/stats',
   }
 );
 
-// PUT /airline/:airline_id - Update an airline given its identifier
+
 router.put('/:airline_id', authenticateToken, requireRoles(['airline-admin']), async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -2531,7 +2531,7 @@ router.put('/:airline_id', authenticateToken, requireRoles(['airline-admin']), a
   }
 });
 
-// GET /airline/:airline_id - Fetch an airline given its identifier (MUST BE LAST)
+
 router.get('/:airline_id', async (req: Request, res: Response) => {
   try {
     const airlineId = req.params.airline_id;

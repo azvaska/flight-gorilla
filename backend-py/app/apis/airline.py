@@ -1,4 +1,4 @@
-# app/apis/airline.py
+
 import json
 
 from flask import request, current_app
@@ -29,7 +29,7 @@ from app.apis.airport import airport_model
 
 api = Namespace('airline', description='Airline related operations')
 
-# --- RESTx Models ---
+
 extra_model = api.model('Extra', {
     'id': fields.String(readonly=True, description='Extra ID'),
     'name': fields.String(required=True, description='Extra name'),
@@ -269,7 +269,7 @@ stats_model = api.model('AirlineStats', {
 
 
 
-# --- Request Parsers ---
+
 airline_list_parser = reqparse.RequestParser()
 airline_list_parser.add_argument('name', type=str, help='Filter by airline name (case-insensitive)', location='args')
 airline_list_parser.add_argument('nation_id', type=int, help='Filter by nation ID', location='args')
@@ -953,7 +953,7 @@ class MyAirlineFlightResource(Resource):
         except Exception as e:
             return {'error': str(e)}, 500
 
-# ...existing code...
+
 
 @api.route('/stats')
 class AirlineStats(Resource):
@@ -978,4 +978,3 @@ class AirlineStats(Resource):
             return {'error': 'Internal server error'}, 500
 
 
-# ...existing code...

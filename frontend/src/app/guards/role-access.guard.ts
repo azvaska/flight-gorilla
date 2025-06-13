@@ -8,8 +8,6 @@ export class RoleGuard implements CanMatch {
 
   canMatch(route: Route, segments: UrlSegment[]): boolean | UrlTree {
 
-    console.log("segments", segments.join('/'))
-
     if(!route.data) {
       return true;
     }

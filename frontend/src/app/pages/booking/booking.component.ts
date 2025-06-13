@@ -88,7 +88,6 @@ export class BookingComponent {
         return;
       }
 
-      console.log('New booking state', this.bookingStore.getBookingState());
 
       this._currentPhase = state.phase;
       switch (this._currentPhase) {

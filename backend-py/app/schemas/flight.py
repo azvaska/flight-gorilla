@@ -73,7 +73,7 @@ class AirlineAircraftSchemaMinified(ma.SQLAlchemyAutoSchema):
         include_fk = True
         only = ('id', 'aircraft_id', 'airline_id','tail_number')
 
-# Create schema instances
+
 class AllFlightSchema(ma.SQLAlchemyAutoSchema):
     departure_airport = ma.Nested(AirportSchema, dump_only=True)
     arrival_airport = ma.Nested(AirportSchema, dump_only=True)

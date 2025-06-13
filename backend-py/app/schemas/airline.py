@@ -76,7 +76,7 @@ class RouteSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         include_fk = True
 
-# Create schema instances
+
 airline_schema = AirlineSchema()
 airlines_schema = AirlineSchema(many=True)
 

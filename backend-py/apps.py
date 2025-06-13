@@ -22,8 +22,8 @@ login = LoginManager(app_flask)
 import logging
 
 logging.basicConfig()
-# logging.getLogger('apscheduler').setLevel(logging.DEBUG)
-# logging.getLogger('sqlalchemy').setLevel(logging.INFO)
+
+
 
 from app.extensions import db, ma, db_session, scheduler
 
@@ -31,7 +31,7 @@ db.init_app(app_flask)
 init_commands(app_flask)
 app_flask.teardown_appcontext(lambda exc: db_session.close())
 app_flask.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", 'pf9Wkove4IKEAXvy-cQkeDPhv9Cb3Ag-wyJILbq_dFw')
-# Generate a good salt for password hashing using: secrets.SystemRandom().getrandbits(128)
+
 app_flask.config['SECURITY_PASSWORD_SALT'] = os.environ.get("SECURITY_PASSWORD_SALT",
                                                       '146585145368132386173505678016728509634')
 jwt = JWTManager(app_flask)

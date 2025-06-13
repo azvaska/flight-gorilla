@@ -28,7 +28,7 @@ def str_to_bool(value: str) -> bool:
         return False
     raise ValueError(f"Invalid boolean value: {value}")
 
-# --- Request Parser ---
+
 def build_base_search_parser():
     parser = reqparse.RequestParser()
     parser.add_argument('departure_id', type=int, required=True,
@@ -64,7 +64,7 @@ flight_search_parser = build_base_search_parser()
 flight_search_parser.add_argument('departure_date', type=str, required=True,
                                  help='Departure date (DD-MM-YYYY)', location='args')
 
-# Flexible date search parser (month)
+
 flexible_date_search_parser = build_base_search_parser()
 flexible_date_search_parser.add_argument('departure_date', type=str, required=True,
                                          help='Departure date (MM-YYYY)', location='args')
@@ -72,7 +72,7 @@ flexible_date_search_parser.add_argument('departure_date', type=str, required=Tr
 
 
 
-# --- Flight Search Model (for Swagger UI) ---
+
 
 
 segment_model = api.model('FlightSegment', {
