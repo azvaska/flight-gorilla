@@ -26,7 +26,7 @@ class User(sqla.FsUserMixin,db.Model):
     address: Mapped[str] = mapped_column(db.String(255), nullable=True)
     zip: Mapped[str] = mapped_column(db.String(255), nullable=True)
     nation_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey(Nation.id,ondelete='RESTRICT'), nullable=True)
-    airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id,ondelete='Cascade'), nullable=True)
+    airline_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), db.ForeignKey(Airline.id,ondelete='CASCADE'), nullable=True)
 
 
     nation: Mapped[Nation] = relationship(Nation, foreign_keys=[nation_id], lazy='joined')
