@@ -772,14 +772,7 @@ class MyAirlineFlightsList(Resource):
             new_flight = flight_schema.load(data)
             
             if 'price_insurance' not in data:
-                new_flight.price_insurance = 0.0
-                
-            # Calculate default checkin and boarding times
-            new_flight.checkin_start_time = new_flight.departure_time - datetime.timedelta(hours=2)
-            new_flight.checkin_end_time = new_flight.departure_time - datetime.timedelta(hours=1)
-            new_flight.boarding_start_time = new_flight.departure_time - datetime.timedelta(hours=1)
-            new_flight.boarding_end_time = new_flight.departure_time
-            
+                new_flight.price_insurance = 0.0            
             
             db.session.add(new_flight)
             db.session.flush()  # Get the flight ID without committing

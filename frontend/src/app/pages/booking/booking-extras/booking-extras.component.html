@@ -1,65 +1,61 @@
 <div class="flex flex-col gap-10 items-center">
   <div
     hlmCard
-    class="flex justify-center hover:scale-101 transition-all duration-300 max-w-4xl w-full "
+    class="flex justify-center hover:scale-101 transition-all duration-300 max-w-4xl w-full"
   >
     <div
       hlmCardContent
-      class="relative flex justify-between items-start w-full p-6 "
+      class="relative flex justify-between items-start w-full p-6"
       [ngClass]="{
         'border-black': isInsuranceSelected,
         'border-transparent': !isInsuranceSelected
       }"
     >
       <!-- Left: Title -->
-      <div class="flex-shrink-0">
-        <h2 class="text-2xl font-bold text-gray-800">Flex Plan</h2>
+      <div class="flex-shrink-0 flex flex-col gap-2">
+        <h2 class="text-4xl font-bold text-gray-800">Flex Plan</h2>
+        <h2 class="text-lg text-gray-800 text-muted-foreground">
+          Benefit from our flexible booking policy <br>with free cancellation
+        </h2>
       </div>
 
       <!-- Center: Two-column benefits text -->
       <div
         class="flex-1 mx-20 my-4 grid grid-cols-2 gap-2 text-sm text-gray-700"
-      >
-        <ul class="list-disc pl-5 space-y-2">
-          <li>Benefit one description</li>
-          <li>Benefit two description</li>
-          <li>Benefit three description</li>
-        </ul>
-        <ul class="list-disc pl-5 space-y-2">
-          <li>Benefit four description</li>
-          <li>Benefit five description</li>
-          <li>Benefit six description</li>
-        </ul>
-      </div>
+      ></div>
 
       <!-- Right: Pink placeholder for future icon -->
-      <div class="flex-shrink-0">
-        <img
-          ngSrc="/assets/travel-insurance.png"
-          alt="Travel Insurance Icon"
-          class="w-16 h-16 object-contain rounded-md"
-          height="256"
-          width="256"
-        />
-      </div>
+      <div class="flex flex-col items-end gap-4">
+        <div class="flex-shrink-0">
+          <img
+            ngSrc="/assets/travel-insurance.png"
+            alt="Travel Insurance Icon"
+            class="w-16 h-16 object-contain rounded-md"
+            height="256"
+            width="256"
+          />
+        </div>
 
-      <!-- Bottom-right: Add to cart button -->
-      <button
-        hlmBtn
-        variant="outline"
-        class="bg-black text-white absolute bottom-4 right-4 scale-90"
-        (click)="isInsuranceSelected = !isInsuranceSelected"
-      >
-        {{!isInsuranceSelected ? `Buy for ${insurancePrice.toFixed(2).replace('.', ',')} €` : "Added to cart"}}
-      </button>
+        <!-- Bottom-right: Add to cart button -->
+        <button
+          hlmBtn
+          variant="outline"
+          class="bg-black text-white bottom-4 right-4 scale-90"
+          (click)="isInsuranceSelected = !isInsuranceSelected"
+        >
+          {{!isInsuranceSelected ? `Buy for ${insurancePrice.toFixed(2).replace('.', ',')} €` : "Added to cart"}}
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Extras panel and placeholder side-by-side -->
   <div class="flex justify-center flex-col items-center gap-3">
-    <h1 class="text-xl font-semibold text-gray-700 w-4xl">Extra for flight: {{ currentFlight!.departure_airport.iata_code }} - {{ currentFlight!.arrival_airport.iata_code }}</h1>
+    <h1 class="text-xl font-semibold text-gray-700 w-4xl">
+      Extra for flight: {{ currentFlight!.departure_airport.iata_code }} -
+      {{ currentFlight!.arrival_airport.iata_code }}
+    </h1>
     <div hlmCard class="flex w-full max-w-4xl">
-
       <div hlmCardContent class="w-full max-h-200 p-4 flex flex-col">
         <ul class="flex-1 overflow-y-auto custom-scrollbar space-y-3">
           <extra-line
