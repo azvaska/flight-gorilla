@@ -183,7 +183,13 @@ export const flightInputSchema = z.object({
   price_business_class: z.number().min(0, 'Business class price must be non-negative').openapi({ description: 'Business class price', example: 599.99 }),
   price_first_class: z.number().min(0, 'First class price must be non-negative').openapi({ description: 'First class price', example: 999.99 }),
   price_insurance: z.number().min(0).optional().openapi({ description: 'Insurance price', example: 49.99 }),
-  extras: z.array(flightExtraItemSchema).optional().openapi({ description: 'List of extras to add to the flight' })
+  extras: z.array(flightExtraItemSchema).optional().openapi({ description: 'List of extras to add to the flight' }),
+  gate: z.string().optional().openapi({ description: 'Gate', example: 'A12' }),
+  terminal: z.string().optional().openapi({ description: 'Terminal', example: '1' }),
+  checkin_start_time: z.string().datetime().openapi({ description: 'Checkin start time', example: '2024-06-15T08:00:00Z' }),
+  checkin_end_time: z.string().datetime().openapi({ description: 'Checkin end time', example: '2024-06-15T09:00:00Z' }),
+  boarding_start_time: z.string().datetime().openapi({ description: 'Boarding start time', example: '2024-06-15T09:00:00Z' }),
+  boarding_end_time: z.string().datetime().openapi({ description: 'Boarding end time', example: '2024-06-15T10:00:00Z' })
 }).openapi({ title: 'FlightInput', description: 'Flight creation input' });
 
 export const flightUpdateSchema = z.object({

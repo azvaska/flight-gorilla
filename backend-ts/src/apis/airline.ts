@@ -1833,15 +1833,6 @@ router.post('/flights', authenticateToken, requireRoles(['airline-admin']), asyn
       }
     }
 
-    const departureTime = new Date(data.departure_time);
-    const arrivalTime = new Date(data.arrival_time);
-
-    // Calculate default checkin and boarding times
-    const checkinStartTime = new Date(departureTime.getTime() - 2 * 60 * 60 * 1000); // 2 hours before
-    const checkinEndTime = new Date(departureTime.getTime() - 1 * 60 * 60 * 1000); // 1 hour before
-    const boardingStartTime = new Date(departureTime.getTime() - 1 * 60 * 60 * 1000); // 1 hour before
-    const boardingEndTime = departureTime;
-
     const completeNewFlight = await prisma.$transaction(async (tx) => {
       // Create the flight
       const newFlight = await tx.flight.create({
@@ -1849,21 +1840,21 @@ router.post('/flights', authenticateToken, requireRoles(['airline-admin']), asyn
           id: randomUUID(),
           route_id: data.route_id,
           aircraft_id: data.aircraft_id,
-          departure_time: departureTime,
-          arrival_time: arrivalTime,
+          departure_time: data.departure_time,
+          arrival_time: data.arrival_time,
           price_economy_class: data.price_economy_class,
           price_business_class: data.price_business_class,
           price_first_class: data.price_first_class,
           price_insurance: data.price_insurance || 0.0,
-          checkin_start_time: checkinStartTime,
-          checkin_end_time: checkinEndTime,
-          boarding_start_time: boardingStartTime,
-          boarding_end_time: boardingEndTime,
-          gate: null,
-          terminal: null,
+          checkin_start_time: data.checkin_start_time,
+          checkin_end_time: data.checkin_end_time,
+          boarding_start_time: data.boarding_start_time,
+          boarding_end_time: data.boarding_end_time,
+          gate: data.gate,
+          terminal: data.terminal,
           fully_booked: false
         }
-      });
+      }); 
 
       // Handle extras if provided
       if (data.extras && data.extras.length > 0 && airlineExtras) {
