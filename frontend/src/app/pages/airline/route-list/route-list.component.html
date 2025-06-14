@@ -4,18 +4,20 @@
     <div class="overflow-y-auto overflow-x-hidden max-h-200 custom-scrollbar">
       <hlm-table class="w-full">
         <hlm-trow class="sticky top-0 bg-white z-10">
-          <hlm-th class="w-1/5">Departure Airport</hlm-th>
-          <hlm-th class="w-1/5">Arrival Airport</hlm-th>
-          <hlm-th class="w-1/5">Period Start</hlm-th>
-          <hlm-th class="w-1/5">Period End</hlm-th>
+          <hlm-th class="w-1/6">Route Number</hlm-th>
+          <hlm-th class="w-1/6">Departure Airport</hlm-th>
+          <hlm-th class="w-1/6">Arrival Airport</hlm-th>
+          <hlm-th class="w-1/6">Period Start</hlm-th>
+          <hlm-th class="w-1/6">Period End</hlm-th>
         </hlm-trow>
         <ng-container *ngFor="let rt of routes">
           <hlm-trow>
-            <hlm-th class="w-1/5">{{ rt.departure_airport.iata_code }}</hlm-th>
-            <hlm-th class="w-1/5">{{ rt.arrival_airport.iata_code }}</hlm-th>
-            <hlm-th class="w-1/5">{{ formatDate(rt.period_start) }}</hlm-th>
-            <hlm-th class="w-1/5">{{ formatDate(rt.period_end) }}</hlm-th>
-            <hlm-th class="w-1/5 flex justify-end gap-2">
+            <hlm-th class="w-1/6 cursor-pointer hover:underline" [routerLink]="'/routes/' + rt.id">{{ rt.flight_number }}</hlm-th>
+            <hlm-th class="w-1/6">{{ rt.departure_airport.iata_code }}</hlm-th>
+            <hlm-th class="w-1/6">{{ rt.arrival_airport.iata_code }}</hlm-th>
+            <hlm-th class="w-1/6">{{ formatDate(rt.period_start) }}</hlm-th>
+            <hlm-th class="w-1/6">{{ formatDate(rt.period_end) }}</hlm-th>
+            <hlm-th class="w-1/6 flex justify-end gap-2">
               <app-popover
                 #popover="appPopover"
                 [popoverRelativePosition]="{

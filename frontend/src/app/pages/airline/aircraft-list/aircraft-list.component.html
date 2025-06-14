@@ -10,12 +10,12 @@
         </hlm-trow>
         <ng-container *ngFor="let ac of aircrafts">
           <hlm-trow>
-            <hlm-th class="w-1/4">{{ ac.tail_number }}</hlm-th>
-            <hlm-th
-              class="w-1/4 cursor-pointer hover:underline"
-              [routerLink]="'/aircraft/' + ac.id"
-              >{{ ac.aircraft.name }}</hlm-th
-            >
+            <hlm-th class="w-1/4 cursor-pointer hover:underline" [routerLink]="'/aircraft/' + ac.id">{{
+              ac.tail_number
+            }}</hlm-th>
+            <hlm-th class="w-1/4">{{
+              ac.aircraft.name
+            }}</hlm-th>
             <hlm-th class="w-1/4">
               {{
                 ac.first_class_seats.length +
