@@ -38,6 +38,8 @@ class User(sqla.FsUserMixin,db.Model):
         # For authentication and user lookups
         db.Index('ix_user_email', 'email'),
         db.Index('ix_user_active', 'active'),
+        db.Index('ix_user_airline', 'airline_id'),
+        
 
     )
 

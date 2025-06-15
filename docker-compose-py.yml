@@ -1,0 +1,144 @@
+services:
+  # PostgreSQL database service
+  db:
+    image: postgres:17.4
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: flight_gorilla_ts
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis_sv:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+        test: ["CMD", "redis-cli", "ping"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+  # Angular frontend application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      web:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider --timeout=10 http://127.0.0.1:80/health 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Flask web application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis_sv:6379/0
+    volumes:
+      - .:/app
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis_sv:
+        condition: service_started
+    command: >
+      sh -c "
+      # Seed the database with initial data
+        echo 'Seeding database...' &&
+        FLASK_APP=apps:app_flask
+
+        flask seed-nations || echo 'Skipping seed-nations' &&
+        flask seed-airports || echo 'Skipping seed-airports' &&
+        flask seed-aircraft || echo 'Skipping seed-aircraft' &&
+        flask seed-airlines || echo 'Skipping seed-airlines' &&
+        flask seed-airline-aircrafts || echo 'Skipping seed-airline-aircrafts' &&
+        flask seed-flights || echo 'Skipping seed-flights' &&
+        flask seed-extras || echo 'Skipping seed-users' &&
+        flask seed-users || echo 'Skipping seed-users' &&
+        flask seed-bookings || echo 'Skipping seed-bookings' &&
+      
+        echo 'Database seeded.' &&
+
+        # Start the application
+        echo 'Starting application...' &&
+        if [ \"$FLASK_ENV\" = 'production' ]; then
+          gunicorn --bind 0.0.0.0:5000 'apps:app_flask'
+        else
+          flask run --host=0.0.0.0 --reload
+        fi
+      "
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis_sv:6379/0
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis_sv:
+        condition: service_healthy
+      web:
+        condition: service_started
+    command: >
+      sh -c "
+      # Start the rq worker
+        echo 'Starting worker...' &&
+        python worker.py
+      "
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis_sv:6379/0
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis_sv:
+        condition: service_healthy
+      web:
+        condition: service_started
+    command: >
+      sh -c "
+      # Start the rq scheduler
+        echo 'Starting scheduler...' &&
+        rqscheduler -i 10 --url redis://redis_sv:6379/0
+      "
+
+volumes:
+  postgres_data:
+  redis_data:
+  
+

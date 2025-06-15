@@ -15,6 +15,9 @@ class Extra(db.Model):
     stackable: Mapped[bool] = mapped_column(db.Boolean, default=False)
     __table_args__ = (
         UniqueConstraint('name', 'airline_id', name='uq_extra_name_airline'),
+        
+        # For extra type filtering
+        db.Index('ix_extra_segments_stackable', 'required_on_all_segments', 'stackable'),
     )
 
     airline: Mapped[Airline] = relationship(Airline, back_populates="extras", foreign_keys=[airline_id], lazy='joined')

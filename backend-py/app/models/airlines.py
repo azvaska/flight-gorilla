@@ -124,6 +124,10 @@ class AirlineAircraftSeat(db.Model):
 
     airline_aircraft: Mapped[AirlineAircraft] = relationship(AirlineAircraft, back_populates='seats', foreign_keys=[airline_aircraft_id])
     __table_args__ = (
-        # Index for efficient seat queries by aircraft and class
-        db.Index('ix_airline_aircraft_seat_class', 'airline_aircraft_id', 'class_type'),
+        
+        # CRITICAL: Seat availability lookup optimization
+        db.Index('ix_airline_aircraft_seat_lookup', 'airline_aircraft_id', 'class_type', 'seat_number'),
+        
+        # For seat number searches and validation
+        db.Index('ix_airline_aircraft_seat_number', 'airline_aircraft_id', 'seat_number'),
     )

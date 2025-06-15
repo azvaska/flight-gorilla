@@ -36,6 +36,10 @@ class Route(db.Model):
         # For period filtering
         db.Index('ix_route_period', 'period_start', 'period_end'),
         
+        # CRITICAL: Composite index for route filtering with airports and airline
+        db.Index('ix_route_airline_airports', 'airline_id', 'departure_airport_id', 'arrival_airport_id'),
+        
+
         
         # Existing constraints...
         db.CheckConstraint('period_start <= period_end', name='ck_route_period'),
@@ -79,13 +83,17 @@ class Flight(db.Model):
     return_bookings = relationship("BookingReturnFlight", back_populates="flight",lazy='joined',cascade='all, delete-orphan',)
 
     __table_args__ = (
-        # For flight search queries - most important
-        db.Index('ix_flight_departure_time', 'departure_time'),
-        db.Index('ix_flight_route_departure', 'route_id', 'departure_time'),
-        db.Index('ix_flight_search_composite', 'route_id', 'departure_time', 'fully_booked'),
         db.Index('ix_flight_fully_booked', 'fully_booked'),
-        # For price filtering
         db.Index('ix_flight_prices', 'price_economy_class', 'price_business_class', 'price_first_class'),
+
+        # CRITICAL: RAPTOR search algorithm optimization (most important index)
+        db.Index('ix_flight_search_optimization', 'route_id', 'departure_time', 'arrival_time', 'fully_booked'),
+        
+        # Time-based searches for analytics and availability
+        db.Index('ix_flight_time_range', 'departure_time', 'arrival_time'),
+        
+        # Aircraft-based searches (for maintenance scheduling, etc.)
+        db.Index('ix_flight_aircraft_time', 'aircraft_id', 'departure_time'),
 
         db.CheckConstraint('departure_time < arrival_time', name='ck_flight_departure_before_arrival'),
         db.CheckConstraint('checkin_start_time < checkin_end_time', name='ck_flight_checkin_times'),
@@ -178,4 +186,9 @@ class FlightExtra(db.Model):
     __table_args__ = (
         db.Index('ix_flight_extra_flight', 'flight_id'),
         db.Index('ix_flight_extra_extra', 'extra_id'),
-        db.UniqueConstraint('flight_id', 'extra_id', name='uq_flight_extra'),)
+        db.UniqueConstraint('flight_id', 'extra_id', name='uq_flight_extra'),
+        
+        
+        db.Index('ix_flight_extra_lookup', 'flight_id', 'extra_id', 'limit'),
+    
+    )

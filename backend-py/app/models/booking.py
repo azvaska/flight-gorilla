@@ -36,7 +36,11 @@ class Booking(db.Model):
     __table_args__ = (
         # For user booking queries
         db.Index('ix_booking_user', 'user_id'),
-        db.Index('ix_booking_number', 'booking_number')
+        db.Index('ix_booking_number', 'booking_number'),
+
+        # For payment and insurance queries
+        db.Index('ix_booking_payment_insurance', 'payment_confirmed', 'has_booking_insurance'),
+
         
     )
 
@@ -106,7 +110,13 @@ class BookingDepartureFlight(db.Model):
     __table_args__ = (
         db.Index('ix_booking_departure_flight', 'flight_id'),
         db.Index('ix_booking_departure_booking', 'booking_id'),
-        db.UniqueConstraint('flight_id', 'seat_number', name='uq_booking_departure_flight')
+        db.UniqueConstraint('flight_id', 'seat_number', name='uq_booking_departure_flight'),
+        
+        # CRITICAL: Duplicate booking prevention and user flight history
+        db.Index('ix_booking_departure_user_flight', 'booking_id', 'flight_id'),
+        
+        # For seat availability queries by flight and class
+        db.Index('ix_booking_departure_flight_class', 'flight_id', 'class_type'),
     )
     #create index for booking departure flight
 
@@ -133,7 +143,13 @@ class BookingReturnFlight(db.Model):
     __table_args__ = (
         db.Index('ix_booking_return_flight', 'flight_id'),
         db.Index('ix_booking_return_booking', 'booking_id'),
-        db.UniqueConstraint('flight_id', 'seat_number', name='uq_booking_return_flight')
+        db.UniqueConstraint('flight_id', 'seat_number', name='uq_booking_return_flight'),
+        
+        # For seat class and pricing analytics
+        db.Index('ix_booking_return_class_price', 'class_type', 'price'),
+        
+        # For seat availability queries by flight and class
+        db.Index('ix_booking_return_flight_class', 'flight_id', 'class_type'),
     )
 
 
