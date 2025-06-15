@@ -27,10 +27,10 @@ from app.schemas.booking import (
     bookings_output_schema,
 )
 
+# API namespace for booking operations
 api = Namespace("booking", description="Booking related operations")
 
-
-
+# Input model for flight extras (e.g., meals, baggage)
 extra_model_input = api.model(
     "ExtraInput",
     {
@@ -39,6 +39,7 @@ extra_model_input = api.model(
     },
 )
 
+# Input model for creating a new booking
 booking_model_input = api.model(
     "BookingInput",
     {
@@ -116,6 +117,7 @@ booking_list_parser.add_argument(
     "class_type", type=str, help="Filter by class type", location="args"
 )
 
+# Generates a unique 6-character booking number using uppercase letters
 def generate_unique_booking_number(session):
     while True:
         candidate = "".join(random.choices(string.ascii_uppercase, k=6))
@@ -123,23 +125,24 @@ def generate_unique_booking_number(session):
         if not exists:
             return candidate
         
+# Checks if a flight is fully booked and updates its status accordingly
 def check_and_update_flight_capacity(sql_session, flight_id):
     """Check if a flight is fully booked and update the flag"""
     flight = sql_session.query(Flight).filter(Flight.id == flight_id).first()
     if not flight:
         return
     
-    # Get total seats available on the aircraft
+    # Calculate total available seats across all classes
     total_seats = (
         len(flight.aircraft.first_class_seats) +
         len(flight.aircraft.business_class_seats) +
         len(flight.aircraft.economy_class_seats)
     )
     
-    # Get total booked seats for this flight
+    # Count confirmed bookings for this flight
     booked_seats_count = len(flight.booked_seats_confirmed)
     
-    # Update fully_booked flag
+    # Update fully_booked flag if all seats are taken
     flight.fully_booked = booked_seats_count >= total_seats
     sql_session.commit()
 
@@ -153,26 +156,27 @@ class BookingList(Resource):
     @api.response(404, "Not Found")
     @api.response(400, "Bad Request")
     def get(self):
-        """List bookings with optional filtering"""
+        """List bookings with optional filtering based on user role and permissions"""
         user_id = get_jwt_identity()
         args = booking_list_parser.parse_args()
 
-        # Regular users can only see their own bookings
+        # Get user and their role for permission checking
         datastore = current_app.extensions["security"].datastore
         user = datastore.find_user(id=user_id)
 
         query = Booking.query
 
+        # Apply role-based access control
         if not user.has_role("admin") and not user.has_role("airline-admin"):
             # Regular users can only see their own bookings
             query = query.filter(Booking.user_id == user_id)
         elif user.has_role("airline-admin"):
             if not user.airline_id:
                 return {"error": "Airline ID is required for airline-admin"}, 400
-            # Airline admins can see bookings for their flights
+            # Airline admins can see bookings for their airline's flights
             query = query.join(Flight).filter(Flight.airline_id == user.airline_id)
 
-        # Apply filters
+        # Apply optional filters
         if args["flight_id"]:
             query = query.filter(Booking.flight_id == args["flight_id"])
         if args["class_type"]:
@@ -187,17 +191,16 @@ class BookingList(Resource):
             200,
         )
 
-
     @api.expect(booking_model_input)
     @jwt_required()
-    @roles_required(["user"])
+    @roles_required(["user"])  # Only regular users can create bookings
     @api.response(201, "Created", api.model("BookingCreationResponse", {
         "id": fields.String(readonly=True, description="Booking ID")
     }))
     @api.response(400, "Bad Request")
     @api.response(404, "Not Found")
     def post(self):
-        """Create a new booking"""
+        """Create a new booking with selected flights, extras, and optional insurance"""
         # TODO: AGGIUNGERE LOCK TRANZAZIONALE CHE NON VENGA ELIMINATA LA SESSIONEE
         # CHECK SESSION HIJACKING
 

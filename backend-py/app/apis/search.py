@@ -1,4 +1,3 @@
-
 from collections import defaultdict, deque
 
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
@@ -28,9 +27,10 @@ def str_to_bool(value: str) -> bool:
         return False
     raise ValueError(f"Invalid boolean value: {value}")
 
-
+# Base parser for common search parameters used across different search endpoints
 def build_base_search_parser():
     parser = reqparse.RequestParser()
+    # Required parameters for any flight search
     parser.add_argument('departure_id', type=int, required=True,
                         help='Departure id', location='args')
     parser.add_argument('departure_type', type=str, choices=('airport', 'city'), required=True,
@@ -39,6 +39,7 @@ def build_base_search_parser():
                         help='Arrival id', location='args')
     parser.add_argument('arrival_type', type=str, choices=('airport', 'city'), required=True,
                         help='Type of arrival location: "airport" or "city"', location='args')
+    # Optional filters and sorting parameters
     parser.add_argument('airline_id', type=str,
                         help='Filter by specific airline ID', location='args')
     parser.add_argument('price_max', type=float,
@@ -51,6 +52,7 @@ def build_base_search_parser():
                         help='Order by field (price_economy, duration_minutes, stops)', location='args')
     parser.add_argument('order_by_desc', type=str_to_bool, default="False",
                         help='Order by field descending', location='args')
+    # Pagination parameters
     parser.add_argument('page_number', type=int,
                         help='Pagination offset (for large result sets)', location='args')
     parser.add_argument('limit', type=int,
@@ -58,22 +60,15 @@ def build_base_search_parser():
     parser.add_argument('max_transfers', type=int, default=3)
     return parser
 
-
-
+# Parser for exact date searches
 flight_search_parser = build_base_search_parser()
 flight_search_parser.add_argument('departure_date', type=str, required=True,
                                  help='Departure date (DD-MM-YYYY)', location='args')
 
-
+# Parser for flexible date searches (month-based)
 flexible_date_search_parser = build_base_search_parser()
 flexible_date_search_parser.add_argument('departure_date', type=str, required=True,
                                          help='Departure date (MM-YYYY)', location='args')
-
-
-
-
-
-
 
 segment_model = api.model('FlightSegment', {
     'id': fields.String(description='Flight segment ID'),
@@ -117,9 +112,6 @@ search_output_model = api.model('SearchOutput', {
     'total_pages': fields.Integer(description='Total number of pages for pagination'),
 })
 
-
-
-
 @api.route('/flights')
 class FlightSearch(Resource):
     @api.doc(security=None)
@@ -130,6 +122,7 @@ class FlightSearch(Resource):
         """Search for flights based on departure/arrival airports and date using RAPTOR algorithm"""
         args = flight_search_parser.parse_args()
 
+        # Try to get user ID if authenticated, but don't require authentication
         args['user_id'] = None
         try:
             verify_jwt_in_request(optional=True)
@@ -137,28 +130,27 @@ class FlightSearch(Resource):
         except Exception:
             current_user = None
 
-
-        # Parse and validate date
+        # Validate departure date format and ensure it's not in the past
         try:
             departure_date = datetime.datetime.strptime(args['departure_date'], '%d-%m-%Y').date()
         except ValueError:
             return {'error': 'Invalid departure date format. Use DD-MM-YYYY', 'code': 400}, 400
 
-        # Ensure departure date is not in the past
         if departure_date < datetime.datetime.now().date():
             return {'error': 'Departure date cannot be in the past', 'code': 400}, 400
 
-        # Get airports
+        # Initialize results container
         unfiltered_departure_journeys = []
 
-        departure_airports, arrival_airports ,error = get_airports(args)
+        # Get valid departure and arrival airports based on search criteria
+        departure_airports, arrival_airports, error = get_airports(args)
         if error:
             return error
 
+        # Generate journeys for each valid airport pair
         for departure_airport in departure_airports:
             for arrival_airport in arrival_airports:
-
-                # Generate journeys for each departure and arrival airport
+                # Use RAPTOR algorithm to find optimal routes
                 departure_results = generate_journey(
                     departure_airport,
                     arrival_airport,
@@ -168,20 +160,15 @@ class FlightSearch(Resource):
                 )
                 unfiltered_departure_journeys.extend(departure_results)
         
-        # Sort results by total duration
-        # filter resulting journeys
+        # Apply filters and sorting based on user preferences
         departure_journeys = filter_journeys(unfiltered_departure_journeys, args)
-
-
         departure_journeys = sort_journeys(departure_journeys, args)
 
-        print(departure_journeys)
-
+        # Store original length for pagination calculation
         original_len = len(departure_journeys)
         
-        
+        # Apply pagination if requested
         args['limit'] = args['limit'] if args['limit'] else 10
-        #paginate results
         if args['page_number'] and args['limit']:
             start = (args['page_number'] - 1) * args['limit']
             end = start + args['limit']
@@ -191,10 +178,8 @@ class FlightSearch(Resource):
                 end = min(end, len(departure_journeys))
                 departure_journeys = departure_journeys[start:end]
 
-    
-
-        return marshal({'journeys':departure_journeys,'total_pages':math.ceil(original_len/args['limit'])},search_output_model), 200 #flight_search_result_schema.dump(results)
-
+        # Return paginated results with total page count
+        return marshal({'journeys':departure_journeys,'total_pages':math.ceil(original_len/args['limit'])},search_output_model), 200
 
 @api.route('/flexible-dates')
 class FlexibleFlightSearch(Resource):
@@ -244,7 +229,7 @@ class FlexibleFlightSearch(Resource):
         if departure_date.month == today_d.month and departure_date.year == today_d.year:
             # If the month is the current month, filter out past dates
             departure_date_range = departure_date_range[today_d.day:]
-            #add None as many as the number of days in the month skipped
+            # Add None as many as the number of days in the month skipped
             departure_journeys = [None] * today_d.day
 
         # for each day in the range of dates, generate journeys

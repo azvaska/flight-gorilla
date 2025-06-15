@@ -16,8 +16,10 @@ from flask_login import login_user
 from app.schemas.airline import  airline_schema
 from app.schemas.user import user_schema
 
+# API namespace for authentication operations - no security required at this level
 api = Namespace('auth', description='Login related operations',security=None)
 
+# Input model for login requests - requires email and password
 login_model_input  = api.model('Login', {
     'email': fields.String(required=True, description='Email'),
     'password': fields.String(required=True, description='Password'),
@@ -56,6 +58,7 @@ airline_register_model = api.model('AirlineRegister', {
     
 })
 
+# Generates JWT tokens and sets refresh token as HTTP-only cookie for security
 def generate_token(user):
     token = create_access_token(identity=str(user.id))
     refresh_token = create_refresh_token(identity=str(user.id))
@@ -73,7 +76,7 @@ def generate_token(user):
     # Create response with the data
     response = make_response(data, 200)
     
-    # Set only the refresh token as HTTP-only cookie
+    # Set only the refresh token as HTTP-only cookie for enhanced security
     set_refresh_cookies(response, refresh_token)
 
     return response
@@ -87,6 +90,7 @@ class LoginResource(Resource):
     @api.response(500, 'Internal Server Error')
     @api.doc(security=None)
     def post(self):
+        """Handles user login with email/password authentication"""
         data = request.get_json(force=True)
         email = data.get("email")
         password = data.get("password")
@@ -96,11 +100,12 @@ class LoginResource(Resource):
             if not user:
                 return {"error": "Invalid credentials"}, 401
 
+            # Verify password and update if needed (e.g., if using a new hashing algorithm)
             verified = user.verify_and_update_password(password)
             if not verified:
                 return {"error": "Invalid credentials"}, 401
             
-
+            # Check if user is active and not an airline user
             if not user.active and user.airline_id is None:
                 return {"error": "User is not active"}, 403
 
@@ -154,12 +159,12 @@ class Register(Resource):
     @api.response(400, 'Bad Request')
     @api.response(500, 'Internal Server Error')
     def post(self):
-        """Register a new user"""
+        """Registers a new regular user with the provided details"""
         data = request.json
         try:
             security = current_app.extensions['security']
             passwrd = data.get('password')
-            del data['password']
+            del data['password']  # Remove password from data before schema validation
             _ = user_schema.load(data, partial=True)
             user = security.datastore.create_user(
                 email=data.get('email'),
@@ -170,7 +175,7 @@ class Register(Resource):
                 address=data.get('address'),
                 zip=data.get('zip'),
                 nation_id=data.get('nation_id'),
-                active=True
+                active=True  # Regular users are active by default
                                                   )
 
             security.datastore.db.session.add(user)
@@ -182,7 +187,7 @@ class Register(Resource):
             return {'error': str(e)}, 400
         except IntegrityError as e:
             current_app.extensions['security'].datastore.db.session.rollback()
-            # Check if it's specifically a unique constraint violation
+            # Handle unique constraint violations (e.g., duplicate email)
             if 'unique' in str(e).lower():
                 return {'error': 'User already exists'}, 400
             else:
@@ -208,25 +213,28 @@ register_airline_model_output = api.model('RegisterAirlineModelOutput', {
 class AirlineRegister(Resource):
     @jwt_required()
     @api.expect(airline_register_model)
-    @roles_required('admin')
+    @roles_required('admin')  # Only admin users can register new airlines
     @api.response(201, 'Created', register_airline_model_output)
     @api.response(400, 'Bad Request')
     @api.response(500, 'Internal Server Error')
     def post(self):
-        """Register a new airline"""
+        """Registers a new airline and creates an airline admin user with temporary password"""
         data = request.json
 
         db = current_app.extensions['security'].datastore.db.session
         try:
+            # Create the airline entity first
             airline = Airline(
                 name=data['airline_name'],
             )
             db.add(airline)
             db.flush()
-            print(airline)
+            
+            # Generate a secure temporary password for the airline admin
             tmp_passwd = generate_secure_password()
             print(f"Generated temporary password: {tmp_passwd}")
 
+            # Create the airline admin user with the temporary password
             security = current_app.extensions['security']
             user = security.datastore.create_user(
                 email=data['email'],
@@ -235,20 +243,20 @@ class AirlineRegister(Resource):
                 name=data['name'],
                 surname=data['surname'],
                 airline_id=airline.id,
-                active=False
+                active=False  # Airline users need admin approval to become active
             )
-
 
             db.add(user)
             db.commit()
 
+            # Return the temporary credentials to the admin
             return {'message': 'Airline registered successfully','credentials':{
                 'email': user.email,
                 'password': tmp_passwd,
             }}, 201
         except IntegrityError as e:
             db.rollback()
-            # Check if it's specifically a unique constraint violation
+            # Handle unique constraint violations
             if 'unique' in str(e).lower():
                 return {'error': 'User or Airline already exists'}, 400
             else:

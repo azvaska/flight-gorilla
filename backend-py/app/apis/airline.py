@@ -1,4 +1,3 @@
-
 import json
 
 from flask import request, current_app
@@ -27,9 +26,10 @@ from app.schemas.flight import FlightSchema, flight_schema,all_flights_schema, f
 from app.schemas.airline import AirlineSchema, airline_schema, airlines_schema,route_schema,routes_schema, extra_schema, extras_schema, airline_aircraft_schema, airline_aircrafts_schema
 from app.apis.airport import airport_model
 
+# API namespace for airline management operations
 api = Namespace('airline', description='Airline related operations')
 
-
+# Model for flight extras (e.g., meals, baggage, priority boarding)
 extra_model = api.model('Extra', {
     'id': fields.String(readonly=True, description='Extra ID'),
     'name': fields.String(required=True, description='Extra name'),
@@ -39,6 +39,7 @@ extra_model = api.model('Extra', {
     'stackable': fields.Boolean(default=False, description='Can be stacked with other extras')
 })
 
+# Model for airline's aircraft with seat configuration
 airline_aircraft_model = api.model('AirlineAircraft', {
     'id': fields.String(readonly=True, description='Airline Aircraft ID'),
     'aircraft': fields.Nested(aircraft_model, required=True, description='Aircraft'),
@@ -65,6 +66,7 @@ airline_aircraft_put_model = api.model('AirlineAircraftPut', {
     'tail_number': fields.String(required=False, description='Aircraft tail number')
 })
 
+# Model for airline profile information
 airline_model = api.model('Airline', {
     'id': fields.String(readonly=True, description='Airline ID'),
     'name': fields.String(required=True, description='Airline name'),
@@ -101,6 +103,7 @@ new_airline_model = api.model('NewAirline', {
     "airline": fields.Nested(airline_model),
     "admin_credentials": fields.Nested(admin_credentials_model)})
 
+# Model for flight routes between airports
 route_model = api.model('Route', {
     'id': fields.Integer(readonly=True, description='Route ID'),
     'departure_airport': fields.Nested(airport_model, required=True, description='Departure airport'),
@@ -128,6 +131,7 @@ route_put_model = api.model('RoutePut', {
     'flight_number': fields.String(required=False, description='Flight number'),
 })
 
+# Model for creating new flights with pricing and extras
 flight_model_input = api.model('Flight', {
     'route_id': fields.Integer(required=True, description='Route ID'),
     'aircraft_id': fields.String(required=True, description='Airline Aircraft ID'),
@@ -144,22 +148,7 @@ flight_model_input = api.model('Flight', {
     })), required=False, description='List of extras to add to the flight')
 })
 
-flight_put_model = api.model('FlightPut', {
-    'route_id': fields.Integer(required=False, description='Route ID'),
-    'aircraft_id': fields.String(required=False, description='Airline Aircraft ID'),
-    'departure_time': fields.DateTime(required=False, description='Departure time'),
-    'arrival_time': fields.DateTime(required=False, description='Arrival time'),
-    'price_economy_class': fields.Float(required=False, description='Economy class price'),
-    'price_business_class': fields.Float(required=False, description='Business class price'),
-    'price_first_class': fields.Float(required=False, description='First class price'),
-    'price_insurance': fields.Float(required=False, description='Insurance price'),
-    'extras': fields.List(fields.Nested(api.model('ExtraItemPut', {
-        'extra_id': fields.String(required=True, description='Extra ID'),
-        'price': fields.Float(required=True, description='Price of the extra'),
-        'limit': fields.Integer(required=True, description='Limit of the extra'),
-    })), required=False, description='List of extras to add to the flight')
-})
-
+# Model for flight details including airport and timing information
 flight_model_output = api.model('AirlineFlightOutput', {
     'id': fields.String(readonly=True, description='Flight ID'),
     'flight_number': fields.String(required=True, description='Flight number'),
